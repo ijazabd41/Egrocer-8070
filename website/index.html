@@ -189,7 +189,7 @@
 
 <div id="site-footer"></div>
 
-<script src="js/api.js?v=8.5"></script>
+<script src="js/api.js?v=8.8"></script>
 <script src="js/app.js?v=8.5"></script>
 <script src="js/layout.js"></script>
 <script>
@@ -300,50 +300,80 @@ function buildDealSection(slider, containerId, titleId) {
   enrichDealSection(items);
 }
 
-function enrichDealSection(items) {
-  items.forEach(function(it) {
+async function enrichDealSection(items) {
+  var pids = [];
+  for (var i = 0; i < items.length; i++) {
+    var pid = items[i].product_id && items[i].product_id.length ? items[i].product_id[0].id : null;
+    if (pid) pids.push(pid);
+  }
+  if (!pids.length) return;
+  
+  var prodsMap = {};
+  try {
+    var domain = "[(\"id\", \"in\", [" + pids.join(",") + "])]";
+    var r = await API.getProds({ domain: domain, limit: 100 });
+    var data = r.data || [];
+    for (var j = 0; j < data.length; j++) {
+      prodsMap[data[j].id] = data[j];
+    }
+  } catch(e) {
+    console.warn("Bulk fetch failed", e);
+  }
+
+  for (var i = 0; i < items.length; i++) {
+    var it = items[i];
     var pid = it.product_id && it.product_id.length ? it.product_id[0].id : null;
-    if (!pid) return;
-    API.getProdById(pid).then(function(r) {
-      var p = Array.isArray(r.data) ? r.data[0] : r.data;
-      if (!p) return;
-      var price = parseFloat(p.list_price || 0);
-      var std = parseFloat(p.standard_price || 0);
-      var qty = p.qty_available !== undefined ? parseFloat(p.qty_available) : -1;
-      var oos = qty === 0;
-      var varId = Array.isArray(p.product_variant_id) && p.product_variant_id.length ? p.product_variant_id[0].id : pid;
-      var nm = (p.name || '').replace(/^\[.*?\]\s*/,'').trim();
-      var disc = std > price && std > 0 ? Math.round((1 - price/std)*100) : 0;
-      // Update price display
-      var priceEl = document.getElementById('dpp-' + it.id);
+    if (!pid) continue;
+    var p = prodsMap[pid];
+    var priceEl = document.getElementById("dpp-" + it.id);
+    var btnEl = document.getElementById("dpa-" + it.id);
+    
+    if (!p) {
+      var fallbackPrice = parseFloat(it.product_id[0].partner_price || 0);
       if (priceEl) {
-        priceEl.innerHTML = '<strong style="color:#A8151B">AED ' + price.toFixed(2) + '</strong>' +
-          (disc > 0 ? '<span style="color:#9ca3af;text-decoration:line-through;font-size:9px;margin-left:4px">'+std.toFixed(2)+'</span>' : '');
+         priceEl.innerHTML = fallbackPrice > 0 
+           ? "<strong style=\"color:#A8151B\">AED " + fallbackPrice.toFixed(2) + "</strong>"
+           : "<span style=\"color:#9ca3af;font-size:12px\">Price Unavailable</span>";
       }
-      // Update button
-      var btnEl = document.getElementById('dpa-' + it.id);
       if (btnEl) {
-        if (oos) { btnEl.textContent='Out of Stock'; btnEl.style.background='#9ca3af'; btnEl.disabled=true; }
-        else {
-          var imgSrc2 = p.image_1024 ? API.img(p.image_1024) : API.prodImg(pid);
-          // Update card image with real product image
-          var imgEl = document.querySelector('[data-pid="'+pid+'"] .dp-img img');
-          if (imgEl && p.image_1024) { imgEl.src = imgSrc2; }
-          var pdEnc = encodeURIComponent(JSON.stringify({product_id:pid,variant_id:varId,name:nm,price:price,image:imgSrc2,qty_available:qty}));
-          var wrap = document.querySelector('.cd-qty-ctrl[data-pid="'+pid+'"]');
-          if (wrap) { wrap.setAttribute('data-pdenc', pdEnc); if(typeof tick === 'function') tick(); }
-          btnEl.onclick = function(e) {
-            e.stopPropagation();
-            quickAdd(pid, nm, imgSrc2, varId, price, qty);
-          };
-          if (price > 0) btnEl.textContent = 'AED ' + price.toFixed(2) + ' – Add';
-        }
+         btnEl.textContent = "View Product";
+         btnEl.onclick = function() { location.href = "product.html?id=" + pid; };
       }
-    }).catch(function() {
-      var priceEl = document.getElementById('dpp-' + it.id);
-      if (priceEl) priceEl.innerHTML = '';
-    });
-  });
+      continue;
+    }
+    
+    var price = parseFloat(p.list_price || 0);
+    var std = parseFloat(p.standard_price || 0);
+    var qty = p.qty_available !== undefined ? parseFloat(p.qty_available) : -1;
+    var oos = qty === 0;
+    var varId = Array.isArray(p.product_variant_id) && p.product_variant_id.length ? p.product_variant_id[0].id : pid;
+    var nm = (p.name || "").replace(/^\[.*?\]\s*/,"").trim();
+    var disc = std > price && std > 0 ? Math.round((1 - price/std)*100) : 0;
+    
+    if (priceEl) {
+      priceEl.innerHTML = "<strong style=\"color:#A8151B\">AED " + price.toFixed(2) + "</strong>" +
+        (disc > 0 ? "<span style=\"color:#9ca3af;text-decoration:line-through;font-size:9px;margin-left:4px\">"+std.toFixed(2)+"</span>" : "");
+    }
+    
+    if (btnEl) {
+      if (oos) { btnEl.textContent="Out of Stock"; btnEl.style.background="#9ca3af"; btnEl.disabled=true; }
+      else {
+        var imgSrc2 = p.image_1024 ? API.img(p.image_1024) : API.prodImg(pid);
+        var imgEl = document.querySelector("[data-pid=\""+pid+"\"] .dp-img img");
+        if (imgEl && p.image_1024) { imgEl.src = imgSrc2; }
+        var pdEnc = encodeURIComponent(JSON.stringify({product_id:pid,variant_id:varId,name:nm,price:price,image:imgSrc2,qty_available:qty}));
+        var wrap = document.querySelector(".cd-qty-ctrl[data-pid=\""+pid+"\"]");
+        if (wrap) { wrap.setAttribute("data-pdenc", pdEnc); if(typeof tick === "function") tick(); }
+        btnEl.onclick = (function(enc, p_pid, p_nm, p_img, p_vid, p_pr, p_qty) { 
+          return function(e) {
+            e.stopPropagation();
+            quickAdd(p_pid, p_nm, p_img, p_vid, p_pr, p_qty);
+          };
+        })(pdEnc, pid, nm, imgSrc2, varId, price, qty);
+        if (price > 0) btnEl.textContent = "AED " + price.toFixed(2) + " - Add";
+      }
+    }
+  }
 }
 
 function quickAdd(pid, name, imgSrc, varId, price, qty) {
@@ -508,3 +538,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
+
+
+
+

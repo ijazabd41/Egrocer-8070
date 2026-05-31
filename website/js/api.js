@@ -32,7 +32,7 @@
  */
 
 const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com') => {
-  const API_BUILD = '8.4';
+  const API_BUILD = '8.6';
 
   // ── PROXY BASE URL ─────────────────────────────────────────────
   // Auto-detect: when opened from file:// or a different host, use the full
@@ -187,7 +187,8 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     Object.entries(normal).forEach(([k, v]) => u.searchParams.set(k, v));
     let url = u.toString();
     for (const [k, v] of listParams) {
-      url += (url.includes('?') ? '&' : '?') + k + '=' + v;
+      // Use encodeURIComponent to fully encode everything, preventing Node v24 ERR_UNESCAPED_CHARACTERS
+      url += (url.includes('?') ? '&' : '?') + k + '=' + encodeURIComponent(v);
     }
     return url;
   }
@@ -300,7 +301,9 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     Log.apiFail(method, path, r.status, ms, new Error(msg), rawBody);
     const e = new Error(msg);
     e.isAccessError = /not allowed to access/i.test(msg);
-    notifyError(path, e);
+    if (!(r.status === 404 && path.includes('/bcp-product-template/'))) {
+      notifyError(path, e);
+    }
     throw e;
   }
 
@@ -1106,7 +1109,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   //       → GET /api/order/{oid}/apply_loyalty_point?reward_id=&cart_id=
   const getLoyaltyCoupons  = pid        => GET('/api/loyalty-coupon', {domain:`[('partner_id','=',${pid})]`});
   const getLoyaltyCouponByCode = code   => GET('/api/loyalty-coupon', {domain:`[('code','=','${(code||'').replace(/'/g,"\\'")}')]`});
-  const getLoyaltyCards    = ()         => GET('/api/loyalty-card');
+  const getLoyaltyCards    = async ()   => ({ success: 1, data: [] });
   const getLoyaltyPrograms = ()         => GET('/api/loyalty-program');
   const getLoyaltyReward   = id         => {
     const uid = myUserId();
@@ -1271,7 +1274,6 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
 
     const found = await findLoyaltyByCode(code);
     const points = _loyaltyPoints(found.coupon);
-    if (points <= 0) throw new Error('This loyalty code has no points left to redeem');
 
     let applyData = null;
     try {
@@ -1362,7 +1364,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   // updContact: all address fields + image_1920 (for profile photo)
   const getContact  = pid  => GET(`/api/contacts/${pid}`);
   const getContacts = ()   => GET('/api/contacts');
-  const getChildContacts = pid => GET('/api/contacts', { domain:`[('parent_id','=',${pid})]`, limit:20, Offset:0 });
+  const getChildContacts = pid => GET('/api/contacts', { domain:`[('parent_id','=',${pid})]`, limit:20, offset:0 });
   const addAddress  = data => GET('/api/contacts/new_address', data);
   const updContact  = (pid,f) => GET(`/api/contacts/${pid}/update`, f);
 
@@ -1386,9 +1388,10 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   const getStates    = ()  => GET('/api/country-state');
 
   // ── RIDER/DELIVERY APIs ───────────────────────────────────────
-  const getRiderDeliveries = (userId) => GET('/api/rider-delivery', { user_id:userId||'2' });
+  const getRiderDeliveries = (limit=10, offset=0) => GET('/api/rider-delivery', { limit, Offset:offset });
+  const myRiderDeliveries  = (userId, limit=10, offset=0) => GET('/api/rider-own-delivery', { domain:`[('user_id','=',${userId})]`, limit, Offset:offset });
   const acceptRiderDelivery = (id,userId) => GET(`/api/rider-delivery/${id}/update`, { user_id:userId });
-  const myRiderDeliveries  = (userId) => GET('/api/rider-delivery', { user_id:userId });
+  const markRiderDeliveryDone = (id,userId) => GET(`/api/rider-own-delivery/${id}/mark_done`, { uid:userId });
 
   // ── MY ACCOUNT ────────────────────────────────────────────────
   // IMPORTANT: scope orders/invoices to the logged-in customer (partner_id).
@@ -1452,7 +1455,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     // Countries & States
     getCountries, getCountry, getStates,
     // Rider/Delivery
-    getRiderDeliveries, acceptRiderDelivery, myRiderDeliveries,
+    getRiderDeliveries, acceptRiderDelivery, myRiderDeliveries, markRiderDeliveryDone,
     // My Account
     myOrders, myInvoices, myLoyalty, myCards, myProfile,
     // Raw HTTP

@@ -42,6 +42,7 @@ const Cart=(()=>{
 
   // ── Mutex lock to prevent duplicate order creation from rapid clicks ──
   let _ensureOrderLock = null;
+  let _reusableOid = null;
 
   async function _ensureOrderImpl(){
     let id=oid();
@@ -50,11 +51,14 @@ const Cart=(()=>{
       if(wasPlaced(id)){
         L().info('Cart','ensureOrder discard placed',{orderId:id});
         coid(); clearLineIds(); id=null;
+        _reusableOid = null;
       }
       else{
         try{
+          if(_reusableOid === id) return parseInt(id);
           const reusable=await API.isOrderReusable(parseInt(id));
           if(reusable){
+            _reusableOid = id;
             L().info('Cart','ensureOrder reuse draft',{orderId:id});
             return parseInt(id);
           }
@@ -94,6 +98,30 @@ const Cart=(()=>{
     L().info('Cart','syncToOrder → start',{orderId:oid,itemCount:items.length,replace});
     if(!items.length) throw new Error('Add products to your cart before applying a loyalty code');
     if(!API.loggedIn()) throw new Error('Please sign in first');
+
+    try {
+      const lr = await API.getLines(oid);
+      const remoteLines = lr.data || [];
+      let perfectMatch = true;
+      if (replace && remoteLines.length !== items.length) {
+        perfectMatch = false;
+      } else {
+        for (let i = 0; i < items.length; i++) {
+          const it = items[i];
+          const vid = it.variant_id || it.product_id;
+          const qty = Math.max(1, it.qty || 1);
+          const rl = remoteLines.find(l => String(API.lineVariantId(l)) === String(vid));
+          if (!rl || (rl.product_uom_qty || rl.qty) !== qty) {
+            perfectMatch = false; break;
+          }
+        }
+      }
+      if (perfectMatch) {
+         L().info('Cart', 'syncToOrder perfectly matched. Skipping sequence.');
+         return oid;
+      }
+    } catch(e) { L().warn('Cart', 'syncToOrder fast match failed', { message: e.message }); }
+
     let changed=false;
     let lastErr=null;
     for(let i=0;i<items.length;i++){
@@ -385,31 +413,48 @@ function buildDealCards(slider,containerId){
   enrichCards(items.map(it=>({pid:it.product_id[0].id,sid:it.id})));
 }
 
-async function enrichCards(items){
+async function enrichCards(items) {
+  var pids = items.map(it => it.pid).filter(Boolean);
+  if (!pids.length) return;
+  var prodsMap = {};
+  try {
+    var domain = "[('id', 'in', [" + pids.join(',') + "])]";
+    var r = await API.getProds({ domain: domain, limit: 100 });
+    var data = r.data || [];
+    for (var j = 0; j < data.length; j++) {
+      prodsMap[data[j].id] = data[j];
+    }
+  } catch(e) {
+    console.warn("Bulk fetch failed in enrichCards", e);
+  }
+
   for(const {pid,sid} of items){
     try{
-      const r=await API.getProdById(pid);
-      const p=r.data?.[0]||r.data;if(!p)continue;
+      const p = prodsMap[pid];
+      if(!p)continue;
       const price=parseFloat(p.list_price||0);
       const std=parseFloat(p.standard_price||0);
       const qty=p.qty_available!==undefined?parseFloat(p.qty_available):-1;
       const oos=qty===0;
       const varId=Array.isArray(p.product_variant_id)&&p.product_variant_id.length?p.product_variant_id[0].id:pid;
       const name=(p.name||'').replace(/^\[.*?\]\s*/,'').trim();
-      // Use actual product image (image_1024 is a PATH)
       const imgSrc=p.image_1024?API.img(p.image_1024):API.prodImg(pid);
       const pdEnc=encodeURIComponent(JSON.stringify({product_id:pid,variant_id:varId,name,price,image:imgSrc,qty_available:qty}));
       const pEl=document.getElementById(`dpp-${pid}`);
-      const aEl=document.getElementById(`dpa-${pid}`);
+      const aEl=document.querySelector(`[data-pid="${pid}"] .dp-atc`);
       const imgEl=document.querySelector(`[data-pid="${pid}"] .dp-img img`);
       if(pEl)pEl.innerHTML=`<strong style="color:#a01820">AED ${price.toFixed(2)}</strong>${std>price?`<span style="color:#9ca3af;text-decoration:line-through;font-size:9px;margin-left:4px">${std.toFixed(2)}</span>`:''}`;
-      // Update image with real product image
       if(imgEl&&p.image_1024){imgEl.src=imgSrc;imgEl.style.display='block';}
       if(aEl){
         if(oos){aEl.textContent='Out of Stock';aEl.style.background='#9ca3af';aEl.disabled=true;}
-        else{aEl.setAttribute('onclick',`event.stopPropagation();addToCart(decodeURIComponent('${pdEnc}'))`);if(price>0)aEl.textContent=`AED ${price.toFixed(2)} – Add`;}
+        else{
+          aEl.textContent=`AED ${price.toFixed(2)} - Add`;
+          aEl.onclick=function(e){e.preventDefault();e.stopPropagation();addToCart(decodeURIComponent(pdEnc));};
+          const w=document.querySelector(`.cd-qty-ctrl[data-pid="${pid}"]`);
+          if(w){w.setAttribute('data-pdenc',pdEnc);if(typeof tick==='function')tick();}
+        }
       }
-    }catch(_){}
+    }catch(e){console.warn('enrich fail',pid,e);const el=document.getElementById(`dpp-${pid}`);if(el)el.innerHTML='';}
   }
 }
 

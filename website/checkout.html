@@ -115,14 +115,25 @@
   <div class="chk-row"><span style="color:#6b7280">VAT (5%)</span><span id="chkVat" style="font-weight:700">AED 0.00</span></div>
   <div class="chk-row" id="discRow" style="display:none"><span style="color:#16a34a;font-weight:700">🎁 Discount</span><span id="discAmt" style="font-weight:700;color:#16a34a">–AED 0.00</span></div>
 
-  <!-- COUPON -->
+  <!-- PROMO COUPON -->
   <div style="margin:14px 0;padding:14px;background:#fffbea;border-radius:10px;border:1px solid #f5c518">
-    <div style="font-size:12px;font-weight:700;color:#111;margin-bottom:8px">🎁 Loyalty / Coupon Code</div>
+    <div style="font-size:12px;font-weight:700;color:#111;margin-bottom:8px">🎟️ Promo / Coupon Code</div>
     <div style="display:flex;gap:8px">
-      <input class="fi" id="couponInput" placeholder="Enter coupon code" style="flex:1;padding:9px 12px;font-size:13px">
-      <button onclick="applyCoupon()" style="background:#f5c518;color:#111;border:none;padding:9px 16px;border-radius:8px;font-weight:800;font-size:13px;cursor:pointer">Apply</button>
+      <input class="fi" id="promoInput" placeholder="Enter promo code" style="flex:1;padding:9px 12px;font-size:13px">
+      <button onclick="applyPromoCoupon()" style="background:#f5c518;color:#111;border:none;padding:9px 16px;border-radius:8px;font-weight:800;font-size:13px;cursor:pointer">Apply</button>
     </div>
-    <div id="couponMsg" style="margin-top:7px;font-size:12px;font-weight:600"></div>
+    <div id="promoMsg" style="margin-top:7px;font-size:12px;font-weight:600"></div>
+  </div>
+
+  <!-- LOYALTY POINTS -->
+  <div id="loyaltySection" style="margin:14px 0;padding:14px;background:#e8f5e9;border-radius:10px;border:1px solid #4ade80">
+    <div style="font-size:12px;font-weight:700;color:#111;margin-bottom:8px">💳 Loyalty Points</div>
+    <div style="font-size:13px;color:#374151;margin-bottom:10px" id="loyaltyBalanceText">Loading balance...</div>
+    <div style="display:flex;gap:8px">
+      <input type="hidden" id="loyaltyCodeInput">
+      <button id="redeemLoyaltyBtn" onclick="applyLoyaltyPoints()" disabled style="background:#4ade80;color:#111;border:none;padding:9px 16px;border-radius:8px;font-weight:800;font-size:13px;cursor:pointer">Redeem Points</button>
+    </div>
+    <div id="loyaltyMsg" style="margin-top:7px;font-size:12px;font-weight:600"></div>
   </div>
 
   <div class="chk-total"><span>Total</span><span id="chkTotal">AED 0.00</span></div>
@@ -134,10 +145,8 @@
 </div><!-- /grid -->
 </div></section>
 
-<div id="site-footer"></div>
-<script src="js/api.js?v=8.5"></script><script src="js/app.js?v=8.5"></script><script src="js/layout.js"></script>
-<script>
-var selProvider=22, selProviderName='Cash on Delivery', selCarrierId=1, selCarrierName='Standard delivery', selDeliveryKind='home', selDeliveryMethod=null, discount=0, appliedCoupon=null;
+<div id="site-footer"></div><script src="js/api.js?v=8.6"></script><script src="js/app.js?v=8.5"></script><script src="js/layout.js"></script><script>
+var selProvider=22, selProviderName='Cash on Delivery', selCarrierId=1, selCarrierName='Standard delivery', selDeliveryKind='home', selDeliveryMethod=null, discountPromo=0, discountLoyalty=0, appliedPromoCoupon=null, appliedLoyaltyCoupon=null;
 
 function isStorePickupMethod(m){
   if(!m) return false;
@@ -211,26 +220,28 @@ document.addEventListener('DOMContentLoaded', async function(){
 
 // Auto-fetch best loyalty coupon if logged in
   var preCoupon = new URLSearchParams(location.search).get('coupon');
-  if (!preCoupon && API.loggedIn()) {
-    try {
-      var loyR = await API.myLoyalty();
-      var coupons = loyR.data || [];
-      if (coupons.length > 0) {
-        var best = coupons.reduce(function(max, c){ return parseFloat(c.points||0) > parseFloat(max.points||0) ? c : max; }, coupons[0]);
-        if (best && best.code && parseFloat(best.points||0) > 0) {
-          preCoupon = best.code;
-        }
-      }
-    } catch (_) {}
+  
+  if (preCoupon) {
+    document.getElementById('promoInput').value = preCoupon;
+    if (API.loggedIn()) applyPromoCoupon();
   }
 
-  // Apply pre-filled or auto-fetched coupon
-  if (preCoupon) {
-    document.getElementById('couponInput').value = preCoupon;
-    if (API.loggedIn()) applyCoupon();
-  }
-  
-  if(API.loggedIn()) {
+  if (API.loggedIn()) {
+    API.myLoyalty().then(function(loyR) {
+      var coupons = loyR.data || [];
+      var best = coupons.length > 0 ? coupons.reduce(function(max, c){ return parseFloat(c.points||0) > parseFloat(max.points||0) ? c : max; }, coupons[0]) : null;
+      var pts = best ? parseFloat(best.points||0) : 0;
+      var elText = document.getElementById('loyaltyBalanceText');
+      var elBtn = document.getElementById('redeemLoyaltyBtn');
+      var elInput = document.getElementById('loyaltyCodeInput');
+      if(pts > 0 && best && best.code) {
+         elText.innerHTML = 'You have <strong>' + pts.toFixed(2) + '</strong> points available.';
+         elInput.value = best.code;
+         elBtn.disabled = false;
+      } else {
+         elText.textContent = 'You do not have any loyalty points available yet.';
+      }
+    }).catch(function(){});
     loadCheckoutAddresses();
   } else {
     document.getElementById('coAddrList').innerHTML = '<div style="color:#e41e26;font-size:12px;text-align:center;padding:10px">Sign in to load your address book.</div>';
@@ -304,14 +315,14 @@ async function loadCountriesStates(){
 
 function renderSummary(){
   var items=Cart.raw(), sub=Cart.total();
-  discount=Math.max(0,Math.min(discount||0,sub));
-  var vat=sub*0.05, total=sub+vat-discount;
+  var totalDiscount = Math.max(0, Math.min((discountPromo || 0) + (discountLoyalty || 0), sub));
+  var vat=sub*0.05, total=sub+vat-totalDiscount;
   document.getElementById('chkSub').textContent='AED '+sub.toFixed(2);
   document.getElementById('chkVat').textContent='AED '+vat.toFixed(2);
   document.getElementById('chkTotal').textContent='AED '+total.toFixed(2);
-  if(discount>0){
+  if(totalDiscount>0){
     document.getElementById('discRow').style.display='flex';
-    document.getElementById('discAmt').textContent='–AED '+discount.toFixed(2);
+    document.getElementById('discAmt').textContent='-AED '+totalDiscount.toFixed(2);
   }else{
     document.getElementById('discRow').style.display='none';
   }
@@ -463,18 +474,18 @@ function selPay(id,name){
   selProvider=id; selProviderName=name;
 }
 
-async function applyCoupon(){
-  var code=document.getElementById('couponInput').value.trim();
-  var msg=document.getElementById('couponMsg');
-  if(!code){msg.textContent='Please enter a coupon code';msg.style.color='#e41e26';return;}
-  if(!API.loggedIn()){msg.textContent='❌ Please sign in to use loyalty / coupon codes';msg.style.color='#e41e26';return;}
-  msg.textContent='⏳ Looking up coupon "'+code+'"...';msg.style.color='#9ca3af';
+async function applyPromoCoupon(){
+  var code=document.getElementById('promoInput').value.trim();
+  var msg=document.getElementById('promoMsg');
+  if(!code){msg.textContent='Please enter a promo code';msg.style.color='#e41e26';return;}
+  if(!API.loggedIn()){msg.textContent='⚠️ Please sign in to use promo codes';msg.style.color='#e41e26';return;}
+  msg.textContent='⏳ Looking up promo code "'+code+'"...';msg.style.color='#9ca3af';
   try{
     var oid=Cart.oid()||await Cart.ensureOrder();
     if(!oid) throw new Error('Add an item to your cart first');
 
     var result = await API.applyCouponToOrder(oid, code);
-    appliedCoupon = {
+    appliedPromoCoupon = {
       code: result.code,
       coupon_id: result.coupon.id,
       reward_id: result.rewardId,
@@ -483,28 +494,91 @@ async function applyCoupon(){
     };
 
     var sub = Cart.total();
-    discount = Math.max(0, Math.min(result.discount || 0, sub));
-    if(!discount && result.orderTotal > 0){
-      var expected = Cart.total() * 1.05;
+    var totalServerDiscount = Math.max(0, Math.min(result.discount || 0, sub));
+    if(!totalServerDiscount && result.orderTotal > 0){
+      var expected = sub * 1.05;
       if(result.orderTotal < expected){
-        discount = +(expected - result.orderTotal).toFixed(2);
+        totalServerDiscount = +(expected - result.orderTotal).toFixed(2);
       }
     }
-    discount = Math.max(0, Math.min(discount, sub));
+    totalServerDiscount = Math.max(0, Math.min(totalServerDiscount, sub));
 
-    var extra = result.rewardLabel ? ' — '+result.rewardLabel : '';
+    discountPromo = totalServerDiscount;
+    if (typeof appliedLoyaltyCoupon !== 'undefined' && appliedLoyaltyCoupon && discountLoyalty > 0) {
+       discountPromo = Math.max(0, totalServerDiscount - discountLoyalty);
+    }
+
+    var extra = result.rewardLabel ? ' - '+result.rewardLabel : '';
+    msg.textContent = discountPromo > 0
+      ? '✅ "'+code+'" applied - discount AED '+discountPromo.toFixed(2)+extra
+      : '✅ "'+code+'" applied to your order'+extra;
+    msg.style.color='#065f46';
+    renderSummary();
+  }catch(e){
+    msg.textContent='❌ '+(e.message||'Invalid promo code');
+    msg.style.color='#e41e26';
+    appliedPromoCoupon = null;
+    discountPromo = 0;
+    renderSummary();
+  }
+}
+
+async function applyLoyaltyPoints(){
+  var code=document.getElementById('loyaltyCodeInput').value.trim();
+  var msg=document.getElementById('loyaltyMsg');
+  if(!code){msg.textContent='No loyalty points available';msg.style.color='#e41e26';return;}
+  if(!API.loggedIn()){msg.textContent='⚠️ Please sign in to use loyalty points';msg.style.color='#e41e26';return;}
+  msg.textContent='⏳ Applying points...';msg.style.color='#9ca3af';
+  try{
+    var oid=Cart.oid()||await Cart.ensureOrder();
+    if(!oid) throw new Error('Add an item to your cart first');
+
+    var result = await API.applyCouponToOrder(oid, code);
+    appliedLoyaltyCoupon = {
+      code: result.code,
+      coupon_id: result.coupon.id,
+      reward_id: result.rewardId,
+      programName: result.programName,
+      rewardLabel: result.rewardLabel
+    };
+
+    var sub = Cart.total();
+    var totalServerDiscount = Math.max(0, Math.min(result.discount || 0, sub));
+    if(!totalServerDiscount && result.orderTotal > 0){
+      var expected = sub * 1.05;
+      if(result.orderTotal < expected){
+        totalServerDiscount = +(expected - result.orderTotal).toFixed(2);
+      }
+    }
+    totalServerDiscount = Math.max(0, Math.min(totalServerDiscount, sub));
+
+    discountLoyalty = totalServerDiscount;
+    if (typeof appliedPromoCoupon !== 'undefined' && appliedPromoCoupon && discountPromo > 0) {
+       discountLoyalty = Math.max(0, totalServerDiscount - discountPromo);
+    }
+    
+    // Attempt to parse out if discount didn't show immediately
+    if(discountLoyalty === 0 && result.pointsBefore > 0) {
+       // Odoo backend might not have calculated it yet or it silently failed.
+       // We can fall back to 0.
+    }
+
+    var extra = result.rewardLabel ? ' - '+result.rewardLabel : '';
     var ptsInfo = '';
     if(typeof result.pointsAfter === 'number'){
       ptsInfo = ' | points left: '+result.pointsAfter.toFixed(2);
     }
-    msg.textContent = discount > 0
-      ? '✅ "'+code+'" applied — discount AED '+discount.toFixed(2)+extra+ptsInfo
-      : '✅ "'+code+'" applied to your order'+extra+ptsInfo;
+    msg.textContent = discountLoyalty > 0
+      ? '✅ Points applied - discount AED '+discountLoyalty.toFixed(2)+extra+ptsInfo
+      : '✅ Points applied to your order'+extra+ptsInfo;
     msg.style.color='#065f46';
     renderSummary();
   }catch(e){
-    msg.textContent='❌ '+(e.message||'Invalid coupon');
+    msg.textContent='❌ '+(e.message||'Could not apply points');
     msg.style.color='#e41e26';
+    appliedLoyaltyCoupon = null;
+    discountLoyalty = 0;
+    renderSummary();
   }
 }
 
@@ -531,8 +605,8 @@ async function placeOrder(){
   btn.disabled=true;btn.textContent='⏳ Placing order...';
   var log=API.log;
   try{
-    if(!API.ensureCleanCheckoutOrder||API.build!=='8.4'){
-      throw new Error('Outdated checkout script (need api.js build 8.4). Hard-refresh: Ctrl+Shift+R');
+    if(!API.ensureCleanCheckoutOrder||API.build!=='8.6'){
+      throw new Error('Outdated checkout script (need api.js build 8.6). Hard-refresh: Ctrl+Shift+R');
     }
     log.info('Checkout','placeOrder → start',{
       cartItems:Cart.raw().map(function(it){return{product_id:it.product_id,variant_id:it.variant_id||it.product_id,qty:it.qty};}),
@@ -599,13 +673,23 @@ async function placeOrder(){
       throw new Error('Could not add your cart items to the order. Please try again or contact support.');
     }
 
-    // RE-APPLY COUPON: syncToOrder completely wipes existing lines (including the backend reward line)
-    if(typeof appliedCoupon !== 'undefined' && appliedCoupon && appliedCoupon.code){
+    // RE-APPLY PROMO COUPON
+    if(typeof appliedPromoCoupon !== 'undefined' && appliedPromoCoupon && appliedPromoCoupon.code){
       try {
-        log.info('Checkout','re-applying coupon after sync',{orderId:oid,code:appliedCoupon.code});
-        await API.applyCouponToOrder(parseInt(oid), appliedCoupon.code, { skipSync: true });
+        log.info('Checkout','re-applying promo coupon after sync',{orderId:oid,code:appliedPromoCoupon.code});
+        await API.applyCouponToOrder(parseInt(oid), appliedPromoCoupon.code, { skipSync: true });
       } catch(e) {
-        log.warn('Checkout','failed to re-apply coupon during placeOrder',{orderId:oid,code:appliedCoupon.code,msg:e.message});
+        log.warn('Checkout','failed to re-apply promo coupon during placeOrder',{orderId:oid,code:appliedPromoCoupon.code,msg:e.message});
+      }
+    }
+
+    // RE-APPLY LOYALTY POINTS
+    if(typeof appliedLoyaltyCoupon !== 'undefined' && appliedLoyaltyCoupon && appliedLoyaltyCoupon.code){
+      try {
+        log.info('Checkout','re-applying loyalty points after sync',{orderId:oid,code:appliedLoyaltyCoupon.code});
+        await API.applyCouponToOrder(parseInt(oid), appliedLoyaltyCoupon.code, { skipSync: true });
+      } catch(e) {
+        log.warn('Checkout','failed to re-apply loyalty points during placeOrder',{orderId:oid,code:appliedLoyaltyCoupon.code,msg:e.message});
       }
     }
 

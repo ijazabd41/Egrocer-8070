@@ -68,7 +68,10 @@ function fwd(res, odooPath, method, body, cookie, sessionToken) {
 
   const defaultPort = isS ? 443 : 80;
   const opts = { hostname: odooUrl.hostname, port: odooUrl.port || defaultPort, path: odooPath, method, headers: hdrs };
-  const r = T.request(opts, or => {
+  
+  let r;
+  try {
+    r = T.request(opts, or => {
     // Forward Set-Cookie with SameSite fix
     const sc = or.headers['set-cookie'];
     if (sc) {
@@ -93,12 +96,19 @@ function fwd(res, odooPath, method, body, cookie, sessionToken) {
     });
   });
   r.on('error', e => {
+    console.error(`[Proxy] Error -> ${method} ${odooPath}`, e.message);
     res.statusCode = 502;
     res.setHeader('Content-Type','application/json');
     res.end(JSON.stringify({success:0,error:'Backend unreachable',detail:e.message}));
   });
   if (body) r.write(body);
   r.end();
+  } catch(e) {
+    console.error(`[Proxy] Request creation failed -> ${method} ${odooPath}`, e.message);
+    res.statusCode = 400;
+    res.setHeader('Content-Type','application/json');
+    res.end(JSON.stringify({success:0,error:'Bad Request',detail:e.message}));
+  }
 }
 
 http.createServer((req, res) => {

@@ -11,8 +11,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
   if(!wl.length){Bar.done();return;}
   const el=document.getElementById('wlGrid');
   el.innerHTML='<div class="pgrid" id="wlProds">'+Array(wl.length).fill('<div style="height:300px;border-radius:14px;background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:sk 1.4s infinite"></div>').join('')+'</div><style>@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}</style>';
-  const prods=[];
-  for(const item of wl){try{const r=await API.getProdById(item.id);if(r.data?.[0])prods.push(r.data[0]);}catch(_){}}
+  var prods=[];
+  try {
+    var domain = "[('id','in',[" + wl.map(function(i){return i.id}).join(',') + "])]";
+    var r = await API.getProds({domain: domain, limit: wl.length});
+    if (r.data) prods = r.data;
+  } catch(e) { console.warn("Wishlist bulk fetch failed", e); }
   document.getElementById('wlProds').innerHTML=prods.length?prods.map(buildCard).join(''):'<div style="grid-column:1/-1;text-align:center;color:#9ca3af">Could not load products</div>';
   Bar.done();
 });

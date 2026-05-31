@@ -327,22 +327,29 @@ tr:hover td{background:#1e293b}
 
 <!-- RIDER DELIVERY -->
 <div class="pg" id="pg-rider">
-  <h1 style="font-size:16px;font-weight:900;color:#f1f5f9;margin-bottom:14px">🚴 Rider Delivery</h1>
+  <h1 style="font-size:16px;font-weight:900;color:#f1f5f9;margin-bottom:14px">🚴 Rider Delivery Management</h1>
+  
   <div class="card">
     <div class="ct">Unassigned Deliveries</div>
-    <button class="btn" onclick="loadRiderDeliveries()">🔄 Load Unassigned</button>
-    <div id="riderTable" style="margin-top:10px"><div style="text-align:center;padding:18px;color:#64748b">Click Load</div></div>
+    <div style="margin-bottom:10px;font-size:11px;color:#94a3b8">Pending deliveries that need a rider.</div>
+    <button class="btn" onclick="loadAdminUnassigned()">🔄 Load Unassigned</button>
+    <div id="adminUnassignedTable" style="margin-top:10px"><div style="text-align:center;padding:18px;color:#64748b">Click Load</div></div>
   </div>
-  <div class="card"><div class="ct">Accept Delivery</div>
-    <div class="r2"><div><label class="lbl">Delivery ID</label><input class="inp" id="rd-id" placeholder="4149"></div><div><label class="lbl">Rider User ID</label><input class="inp" id="rd-uid" placeholder="34"></div></div>
-    <button class="btn" onclick="testAcceptRider()">Accept Delivery</button>
-    <div class="json" id="rd-res"></div>
+  
+  <div class="card">
+    <div class="ct">Assigned / In Progress Deliveries</div>
+    <div style="margin-bottom:10px;font-size:11px;color:#94a3b8">Search active deliveries for a specific Rider ID (default shows Rider ID 2).</div>
+    <div class="r2">
+      <div><label class="lbl">Rider User ID</label><input class="inp" id="ar-uid" placeholder="2" value="2"></div>
+      <div style="display:flex;align-items:flex-end;"><button class="btn btn-g" onclick="loadAdminAssigned()">🔄 Load Rider's Deliveries</button></div>
+    </div>
+    <div id="adminAssignedTable" style="margin-top:10px"><div style="text-align:center;padding:18px;color:#64748b">Click Load</div></div>
   </div>
 </div>
 </div><!-- /main -->
 </div><!-- /al -->
 
-<script src="../js/api.js"></script>
+<script src="../js/api.js?v=2"></script>
 <script>
 function toast(m,t){let e=document.getElementById('cd-toast');if(!e){e=document.createElement('div');e.id='cd-toast';e.style.cssText='position:fixed;bottom:16px;right:16px;padding:10px 14px;border-radius:8px;font-size:11px;font-weight:600;z-index:9999;transition:all .3s;transform:translateY(60px);opacity:0;font-family:inherit';document.body.appendChild(e);}e.style.background=t==='err'?'#e41e26':t==='warn'?'#d4a800':'#1c1c2e';e.style.color='#fff';e.textContent=m;requestAnimationFrame(()=>{e.style.transform='translateY(0)';e.style.opacity='1';});setTimeout(()=>{e.style.transform='translateY(60px)';e.style.opacity='0';},2800);}
 
@@ -460,6 +467,10 @@ async function testApplyLoyalty(){const res=document.getElementById('loy-a-res')
 
 async function loadContacts(){const el=document.getElementById('ctTable');el.innerHTML='⏳...';try{const r=await API.getContacts();const items=r.data||[];el.innerHTML=items.length?`<table><thead><tr><th>ID</th><th>Img</th><th>Name</th><th>Email</th><th>Phone</th></tr></thead><tbody>${items.map(c=>`<tr><td style="color:#64748b">#${c.id}</td><td>${c.image_1024?`<img src="${API.img(c.image_1024)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;display:block" onerror="this.src=''">`:'👤'}</td><td style="font-weight:700;color:#e2e8f0">${c.name||'–'}</td><td style="color:#64748b;font-size:10px">${c.email_normalized||'–'}</td><td style="color:#64748b;font-size:10px">${c.phone||c.mobile||'–'}</td></tr>`).join('')}</tbody></table>`:'No contacts';}catch(e){el.innerHTML='❌ '+e.message;}}
 async function viewContact(){const id=document.getElementById('ct-id').value.trim();if(!id)return;try{const r=await API.getContact(parseInt(id));document.getElementById('ctTable').innerHTML=`<div class="json" style="display:block">${JSON.stringify(r,null,2)}</div>`;}catch(e){document.getElementById('ctTable').innerHTML='❌ '+e.message;}}
+
+// RIDER ADMIN
+async function loadAdminUnassigned(){const el=document.getElementById('adminUnassignedTable');el.innerHTML='⏳...';try{const r=await API.getRiderDeliveries(10,0);const items=r.data||[];el.innerHTML=items.length?`<table><thead><tr><th>ID</th><th>Order Ref</th><th>Customer</th><th>Status</th></tr></thead><tbody>${items.map(d=>`<tr><td style="color:#64748b">#${d.id}</td><td style="font-weight:700;color:#e2e8f0">${d.name||'–'}</td><td>${d.partner_name||'–'}</td><td><span class="badge bW">Unassigned</span></td></tr>`).join('')}</tbody></table>`:'No unassigned deliveries';}catch(e){el.innerHTML='❌ '+e.message;}}
+async function loadAdminAssigned(){const uid=document.getElementById('ar-uid').value||'2';const el=document.getElementById('adminAssignedTable');el.innerHTML='⏳...';try{const r=await API.myRiderDeliveries(uid,10,0);const items=r.data||[];el.innerHTML=items.length?`<table><thead><tr><th>ID</th><th>Order Ref</th><th>Customer</th><th>Status</th></tr></thead><tbody>${items.map(d=>{const st=Array.isArray(d.state)?d.state[0]:(d.state||'');const bCls=st==='done'?'bOk':st==='cancel'?'bErr':'bW';const bTxt=st==='done'?'Delivered':st==='cancel'?'Cancelled':'Assigned';return`<tr><td style="color:#64748b">#${d.id}</td><td style="font-weight:700;color:#e2e8f0">${d.name||'–'}</td><td>${d.partner_name||'–'}</td><td><span class="badge ${bCls}">${bTxt}</span></td></tr>`}).join('')}</tbody></table>`:'No assigned deliveries for this rider';}catch(e){el.innerHTML='❌ '+e.message;}}
 
 function preset(ep,params){document.getElementById('t-ep').value=ep;document.getElementById('t-params').value=params||'';}
 function qtest(ep,params){preset(ep,params||'');pg('tester',null);runTest();}
