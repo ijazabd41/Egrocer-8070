@@ -206,7 +206,7 @@ const Cart=(()=>{
       items.push({...prod,qty:1,line_id:lineId});sv(items);
       L().info('Cart','add ✓',{orderId:ordId,lineId,cartCount:count()});
     }
-    tick();renderDrawer();toast('✅ Added to cart');
+    clearCardHtmlCache();tick();renderDrawer();toast('✅ Added to cart');
   }
   function remove(pid){
     const items=raw(),item=items.find(i=>i.product_id===pid);
@@ -221,7 +221,7 @@ const Cart=(()=>{
       });
     }
     if(!next.length){ coid(); L().debug('Cart','cart empty — cleared oid'); }
-    tick();renderDrawer();
+    clearCardHtmlCache();tick();renderDrawer();
   }
   async function setQty(pid,delta){
     const items=raw(),item=items.find(i=>i.product_id===pid);if(!item)return;
@@ -238,14 +238,22 @@ const Cart=(()=>{
         L().warn('Cart','setQty sync failed',{product_id:pid,qty:item.qty,message:e.message});
       }
     }
-    tick();renderDrawer();
+    clearCardHtmlCache();tick();renderDrawer();
   }
-  function clear(){L().info('Cart','clear');localStorage.removeItem(CK);coid();tick();renderDrawer();}
+  function clear(){L().info('Cart','clear');localStorage.removeItem(CK);coid();clearCardHtmlCache();tick();renderDrawer();}
   return{raw,sv,oid,soid,coid,wasPlaced,markPlaced,clearLineIds,count,total,add,remove,setQty,clear,ensureOrder,syncToOrder};
 })();
 
-/* ── TICK: Update ALL cart badges ─────────────────────── */
+/* ── TICK: Update ALL cart badges (batched per frame) ─── */
+let _tickRaf = 0;
 function tick(){
+  if (_tickRaf) return;
+  _tickRaf = requestAnimationFrame(() => {
+    _tickRaf = 0;
+    tickNow();
+  });
+}
+function tickNow(){
   const c=Cart.count();
   // Desktop badge in header
   document.querySelectorAll('.cart-badge').forEach(el=>{
@@ -327,27 +335,32 @@ function openModal(id){document.getElementById(id)?.classList.add('open');}
 function closeModal(id){document.getElementById(id)?.classList.remove('open');}
 
 /* ── PRODUCT CARD — correct image handling ────────────── */
+const _cardHtmlCache=new Map();
+const CARD_CACHE_MAX=500;
+function clearCardHtmlCache(){_cardHtmlCache.clear();}
+
 function buildCard(p){
   if(!p?.id)return'';
   const id=p.id;
   const name=(p.name||p.display_name||'').replace(/^\[.*?\]\s*/,'').trim()||'Product';
   const price=parseFloat(p.list_price||p.lst_price||0);
   const std=parseFloat(p.standard_price||0);
-  // CRITICAL: image_1024 is a PATH like /web/image/product.template/123/image_1024
-  // Must prepend /proxy to load it
   const imgSrc=p.image_1024?API.img(p.image_1024):API.prodImg(id);
   const varId=Array.isArray(p.product_variant_id)&&p.product_variant_id.length?p.product_variant_id[0].id:id;
   const qtyAvail=p.qty_available!==undefined?parseFloat(p.qty_available):-1;
   const oos=qtyAvail===0;
   const ribbon=Array.isArray(p.website_ribbon_id)&&p.website_ribbon_id.length?p.website_ribbon_id[0]?.name:null;
   const disc=std>price&&std>0?Math.round((1-price/std)*100):0;
+  const cartQty=Cart.raw().find(i=>i.product_id===id)?.qty||0;
+  const cacheKey=id+'|'+price+'|'+qtyAvail+'|'+cartQty+'|'+disc+'|'+(oos?1:0);
+  if(_cardHtmlCache.has(cacheKey))return _cardHtmlCache.get(cacheKey);
   const pdEnc=encodeURIComponent(JSON.stringify({product_id:id,variant_id:varId,name,price,image:imgSrc,qty_available:qtyAvail}));
-  return `<div class="pc">
+  const html=`<div class="pc">
     <div class="pc-img">
       ${ribbon?`<span class="ribbon">${ribbon}</span>`:''}
       ${oos?`<span class="oos-tag">Out of Stock</span>`:''}
       <a href="product.html?id=${id}" style="display:block;width:100%;height:100%;position:relative">
-        <img src="${imgSrc}" alt="${name.replace(/"/g,'&quot;')}" loading="lazy"
+        <img src="${imgSrc}" alt="${name.replace(/"/g,'&quot;')}" loading="lazy" decoding="async"
           style="width:100%;height:100%;object-fit:contain;display:block"
           onerror="this.style.display='none';this.nextSibling.style.display='flex'">
         <span style="font-size:44px;display:none;align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">📦</span>
@@ -373,9 +386,22 @@ function buildCard(p){
          </div>`}
     </div>
   </div>`;
+  if(_cardHtmlCache.size>=CARD_CACHE_MAX){
+    const fk=_cardHtmlCache.keys().next().value;
+    if(fk!==undefined)_cardHtmlCache.delete(fk);
+  }
+  _cardHtmlCache.set(cacheKey,html);
+  return html;
 }
 
 function addToCart(json){try{Cart.add(JSON.parse(json));}catch(e){toast('Error','err');}}
+
+function scheduleCatalogPrefetch(){
+  if(typeof API==='undefined'||!API.prefetchCatalog)return;
+  const run=()=>API.prefetchCatalog();
+  if(typeof requestIdleCallback==='function')requestIdleCallback(run,{timeout:3000});
+  else setTimeout(run,1500);
+}
 
 /* ── DEAL CARDS — correct image from image_ids[].id ──── */
 function buildDealCards(slider,containerId){
@@ -465,29 +491,57 @@ const WL={
 };
 
 /* ── SESSION / HEADER USER STATE ─────────────────────── */
+function closeUserMenu(){
+  const dd=document.getElementById('userMenuDd');
+  const trigger=document.querySelector('.u-menu-trigger');
+  dd?.classList.remove('open');
+  trigger?.setAttribute('aria-expanded','false');
+}
+
+function initUserMenu(){
+  const wrap=document.querySelector('.user-menu-wrap');
+  if(!wrap||wrap._umInit)return;
+  wrap._umInit=true;
+  const trigger=wrap.querySelector('.u-menu-trigger');
+  const dd=document.getElementById('userMenuDd');
+  trigger?.addEventListener('click',e=>{
+    e.stopPropagation();
+    const open=dd?.classList.toggle('open');
+    trigger.setAttribute('aria-expanded',open?'true':'false');
+  });
+  wrap.querySelector('.user-menu-logout')?.addEventListener('click',async e=>{
+    e.preventDefault();
+    closeUserMenu();
+    await API.logout();
+    Cart.clear();
+    toast('Signed out');
+    setTimeout(()=>location.href='index.html',600);
+  });
+  document.addEventListener('click',e=>{if(!wrap.contains(e.target))closeUserMenu();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeUserMenu();});
+}
+
 function updateHeaderUser(){
+  initUserMenu();
   const user=API.me();
   if(user?.uid){
     const nm=user.name?user.name.split(' ')[0]:'Account';
+    const full=user.name||'My Account';
     document.querySelectorAll('.u-name').forEach(el=>el.textContent=nm);
-    document.querySelectorAll('.u-link').forEach(el=>{el.href='account.html';el.title=user.name||'My Account';});
+    document.querySelectorAll('.user-menu-fullname').forEach(el=>el.textContent=full);
     document.querySelectorAll('.u-avatar').forEach(el=>{
       el.textContent=nm.charAt(0).toUpperCase();
       el.style.cssText='background:#e41e26;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800';
     });
-    document.querySelectorAll('.logout-btn').forEach(btn=>{
-      btn.style.display='flex';
-      btn.onclick=async()=>{await API.logout();Cart.clear();toast('Signed out');setTimeout(()=>location.href='index.html',600);};
-    });
     document.querySelectorAll('.signin-only').forEach(el=>el.style.display='none');
     document.querySelectorAll('.signedin-only').forEach(el=>el.style.display='flex');
+    closeUserMenu();
   }else{
     document.querySelectorAll('.u-name').forEach(el=>el.textContent='Sign In');
-    document.querySelectorAll('.u-link').forEach(el=>el.href='login.html');
     document.querySelectorAll('.u-avatar').forEach(el=>{el.textContent='👤';el.style.cssText='';});
-    document.querySelectorAll('.logout-btn').forEach(btn=>btn.style.display='none');
     document.querySelectorAll('.signin-only').forEach(el=>el.style.display='');
     document.querySelectorAll('.signedin-only').forEach(el=>el.style.display='none');
+    closeUserMenu();
   }
 }
 
@@ -550,6 +604,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('.mo').forEach(mo=>mo.addEventListener('click',e=>{if(e.target===mo)mo.classList.remove('open');}));
   tick();
   updateHeaderUser(); // ALWAYS run to show correct login state
+  scheduleCatalogPrefetch();
   applyLang(localStorage.getItem('cd_lang')||'en');
   startCD(Date.now()+5*3600000);
   // Search

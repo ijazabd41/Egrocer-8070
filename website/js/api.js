@@ -32,7 +32,8 @@
  */
 
 const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com') => {
-  const API_BUILD = '8.6';
+  const API_BUILD = '8.9';
+  const Cache = (typeof window !== 'undefined' && window.CDApiCache) ? window.CDApiCache : null;
 
   // ── PROXY BASE URL ─────────────────────────────────────────────
   // Auto-detect: when opened from file:// or a different host, use the full
@@ -307,38 +308,75 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     throw e;
   }
 
-  async function httpRequest(method, path, p = {}, body = null) {
-    const url = method === 'POST' && body != null && !Object.keys(p).length ? mkUrl(path) : mkUrl(path, p);
-    Log.apiStart(method, path, method === 'POST' && body ? { bodyKeys: Object.keys(body) } : p);
-    const t0 = performance.now();
-    const opts = { method, credentials: 'include', headers: hdrs() };
-    if (body != null) opts.body = JSON.stringify(body);
-    const r = await fetch(url, opts);
-    const ms = Math.round(performance.now() - t0);
-    if (!r.ok) return extractError(r, path, method, ms);
-    const d = await r.json();
-    if (d.success === 0) {
-      const msg = normalizeApiErrorMessage(d.message || d.error || 'API error');
-      Log.apiFail(method, path, r.status, ms, new Error(msg));
-      const e = new Error(msg);
-      e.isAccessError = /not allowed to access/i.test(msg);
-      notifyError(path, e);
-      throw e;
+  async function httpRequest(method, path, p = {}, body = null, reqOpts = {}) {
+    const isGet = method === 'GET';
+    const cacheTtl = isGet && Cache && !reqOpts.noCache ? Cache.ttl(path) : 0;
+    const cacheKey = cacheTtl > 0 ? Cache.key(method, path, p, mySessionId()) : null;
+
+    if (cacheKey) {
+      const cached = Cache.get(cacheKey, cacheTtl);
+      if (cached !== undefined) {
+        Log.debug('API', 'cache hit', { path, ms: 0 });
+        return cached;
+      }
+      if (Cache.inFlight.has(cacheKey)) return Cache.inFlight.get(cacheKey);
     }
-    const sidHeader = r.headers.get('X-Set-Session-Token');
-    if (sidHeader) d.__session_id = sidHeader;
-    Log.apiDone(method, path, r.status, ms, d);
-    return d;
+
+    const run = async () => {
+      const url = method === 'POST' && body != null && !Object.keys(p).length ? mkUrl(path) : mkUrl(path, p);
+      Log.apiStart(method, path, method === 'POST' && body ? { bodyKeys: Object.keys(body) } : p);
+      const t0 = performance.now();
+      const opts = { method, credentials: 'include', headers: hdrs() };
+      if (body != null) opts.body = JSON.stringify(body);
+      const r = await fetch(url, opts);
+      const ms = Math.round(performance.now() - t0);
+      if (!r.ok) return extractError(r, path, method, ms);
+      const d = await r.json();
+      if (d.success === 0) {
+        const msg = normalizeApiErrorMessage(d.message || d.error || 'API error');
+        Log.apiFail(method, path, r.status, ms, new Error(msg));
+        const e = new Error(msg);
+        e.isAccessError = /not allowed to access/i.test(msg);
+        notifyError(path, e);
+        throw e;
+      }
+      const sidHeader = r.headers.get('X-Set-Session-Token');
+      if (sidHeader) d.__session_id = sidHeader;
+      Log.apiDone(method, path, r.status, ms, d);
+      if (cacheKey && cacheTtl > 0) Cache.set(cacheKey, d, cacheTtl);
+      if (!isGet && Cache) Cache.invalidateMutation(path);
+      else if (isGet && Cache && /\/update|apply_loyalty|create_order|create_invoice|mark_done|new_address|new_registration/.test(path)) {
+        Cache.invalidateMutation(path);
+      }
+      return d;
+    };
+
+    if (!cacheKey) return run();
+
+    const flight = run().finally(() => { Cache.inFlight.delete(cacheKey); });
+    Cache.inFlight.set(cacheKey, flight);
+    return flight;
   }
 
-  async function GET(path, p={}) {
-    return httpRequest('GET', path, p);
+  /** Warm cache without awaiting (catalog / navigation). */
+  function prefetch(path, p = {}) {
+    httpRequest('GET', path, p).catch(() => {});
   }
-  async function PUT(path, p={}) {
-    return httpRequest('PUT', path, p);
+
+  function prefetchCatalog() {
+    prefetch('/api/bcd-website-category');
+    prefetch('/api/deal-day-slider/9');
+    prefetch('/api/bcp-product-template', { limit: 10 });
   }
-  async function POST(path, body={}) {
-    return httpRequest('POST', path, {}, body);
+
+  async function GET(path, p={}, reqOpts={}) {
+    return httpRequest('GET', path, p, null, reqOpts);
+  }
+  async function PUT(path, p={}, reqOpts={}) {
+    return httpRequest('PUT', path, p, null, reqOpts);
+  }
+  async function POST(path, body={}, reqOpts={}) {
+    return httpRequest('POST', path, {}, body, reqOpts);
   }
   function getGeo() {
     return new Promise(res => {
@@ -378,6 +416,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     saveSess(session);
     // After login: update contact with device/geo info
     const pid = Array.isArray(r.partner_id) ? r.partner_id[0] : r.partner_id;
+    if (Cache) Cache.clearAll();
     if(pid) {
       const geo = await getGeo();
       const devId = 'web-' + (navigator.platform||'browser').replace(/[^a-zA-Z0-9]/g,'').substring(0,20);
@@ -391,7 +430,8 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   }
 
   async function logout() {
-    try { await GET('/web/session/logout'); } catch(_){}
+    try { await GET('/web/session/logout', {}, { noCache: true }); } catch(_){}
+    if (Cache) Cache.clearAll();
     clearSess();
   }
 
@@ -1459,7 +1499,9 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     // My Account
     myOrders, myInvoices, myLoyalty, myCards, myProfile,
     // Raw HTTP
-    GET, PUT, POST,
+    GET, PUT, POST, prefetch, prefetchCatalog,
+    cacheStats: () => (Cache ? Cache.stats() : { hits: 0, misses: 0 }),
+    clearApiCache: () => { if (Cache) Cache.clearAll(); },
     // Config
     NOTIFY_EMAIL: NOTIFY,
     // Proxy base URL — use API.PX instead of hardcoding '/proxy'

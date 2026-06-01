@@ -52,7 +52,41 @@ function isImage(path) {
   return path.includes('/web/image/') || path.includes('/web/binary/');
 }
 
-function fwd(res, odooPath, method, body, cookie, sessionToken) {
+// In-memory image cache (proxy → Odoo) — reduces repeat image latency
+const IMG_CACHE = new Map();
+const IMG_CACHE_MAX_ENTRIES = 180;
+const IMG_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
+function imgCacheGet(key) {
+  const row = IMG_CACHE.get(key);
+  if (!row) return null;
+  if (row.exp < Date.now()) {
+    IMG_CACHE.delete(key);
+    return null;
+  }
+  return row;
+}
+
+function imgCacheSet(key, buf, ct) {
+  if (IMG_CACHE.size >= IMG_CACHE_MAX_ENTRIES) {
+    const first = IMG_CACHE.keys().next().value;
+    if (first !== undefined) IMG_CACHE.delete(first);
+  }
+  IMG_CACHE.set(key, { buf, ct, exp: Date.now() + IMG_CACHE_TTL_MS });
+}
+
+function fwd(res, odooPath, method, body, cookie, sessionToken, cacheKey) {
+  if (method === 'GET' && cacheKey && isImage(odooPath)) {
+    const hit = imgCacheGet(cacheKey);
+    if (hit) {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', hit.ct);
+      res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
+      res.setHeader('X-Cache', 'HIT');
+      return res.end(hit.buf);
+    }
+  }
+
   // Use WHATWG URL API instead of deprecated url.parse
   const odooUrl = new URL(ODOO);
   const isS = odooUrl.protocol === 'https:';
@@ -92,6 +126,11 @@ function fwd(res, odooPath, method, body, cookie, sessionToken) {
     or.on('data', chunk => chunks.push(Buffer.from(chunk)));
     or.on('end', () => {
       const data = Buffer.concat(chunks);
+      if (method === 'GET' && cacheKey && isImage(odooPath) && or.statusCode === 200 && data.length) {
+        imgCacheSet(cacheKey, data, ct);
+        res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
+        res.setHeader('X-Cache', 'MISS');
+      }
       res.end(data);
     });
   });
@@ -162,15 +201,17 @@ http.createServer((req, res) => {
   const tag = isImage(odooPath) ? '🖼️' : '📡';
   console.log(`[${new Date().toISOString().substr(11,8)}] ${tag} ${req.method} ${odooPath}`);
 
+  const imgCacheKey = isImage(odooPath) ? full : null;
+
   if (req.method === 'POST') {
     let b = '';
     req.on('data', d => b += d);
-    req.on('end', () => fwd(res, full, 'POST', b, cookie, sessionToken));
+    req.on('end', () => fwd(res, full, 'POST', b, cookie, sessionToken, null));
   } else if (req.method === 'PUT') {
     let b = '';
     req.on('data', d => b += d);
-    req.on('end', () => fwd(res, full, 'PUT', b, cookie, sessionToken));
+    req.on('end', () => fwd(res, full, 'PUT', b, cookie, sessionToken, null));
   } else {
-    fwd(res, full, req.method, null, cookie, sessionToken);
+    fwd(res, full, req.method, null, cookie, sessionToken, imgCacheKey);
   }
 }).listen(PORT, '0.0.0.0', () => console.log(`✅ http://localhost:${PORT}/health\n`));

@@ -145,7 +145,7 @@
 </div><!-- /grid -->
 </div></section>
 
-<div id="site-footer"></div><script src="js/api.js?v=8.6"></script><script src="js/app.js?v=8.5"></script><script src="js/layout.js"></script><script>
+<div id="site-footer"></div><script src="js/api-cache.js?v=1"></script><script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.9"></script><script src="js/layout.js"></script><script>
 var selProvider=22, selProviderName='Cash on Delivery', selCarrierId=1, selCarrierName='Standard delivery', selDeliveryKind='home', selDeliveryMethod=null, discountPromo=0, discountLoyalty=0, appliedPromoCoupon=null, appliedLoyaltyCoupon=null;
 
 function isStorePickupMethod(m){
@@ -605,8 +605,8 @@ async function placeOrder(){
   btn.disabled=true;btn.textContent='⏳ Placing order...';
   var log=API.log;
   try{
-    if(!API.ensureCleanCheckoutOrder||API.build!=='8.6'){
-      throw new Error('Outdated checkout script (need api.js build 8.6). Hard-refresh: Ctrl+Shift+R');
+    if(!API.ensureCleanCheckoutOrder||parseFloat(API.build)<8.6||isNaN(parseFloat(API.build))){
+      throw new Error('Outdated checkout script (need api.js build 8.6+). Hard-refresh: Ctrl+Shift+R');
     }
     log.info('Checkout','placeOrder → start',{
       cartItems:Cart.raw().map(function(it){return{product_id:it.product_id,variant_id:it.variant_id||it.product_id,qty:it.qty};}),

@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   if(h){
     h.innerHTML=buildHeader();
     if(typeof updateHeaderUser === 'function') updateHeaderUser();
+    if(typeof initUserMenu === 'function') initUserMenu();
   }
   if(f)f.innerHTML=buildFooter();
   loadLogo();
@@ -87,6 +88,11 @@ async function loadNavCats(){
         sb.appendChild(d);
       });
     }
+    if(typeof API!=='undefined'&&API.prefetch){
+      const warm=()=>{ API.prefetch('/api/deal-day-slider/9'); API.prefetch('/api/bcp-product-template',{limit:10}); };
+      if(typeof requestIdleCallback==='function')requestIdleCallback(warm,{timeout:2500});
+      else setTimeout(warm,1000);
+    }
   }catch(e){console.warn('loadNavCats:',e);}
 }
 
@@ -121,16 +127,22 @@ function buildHeader(){
     <button class="srch-btn" onclick="doSearch()" aria-label="Search">🔍</button>
   </div>
   <div class="h-acts">
-    <!-- User button — changes after login to show name -->
-    <a class="hbtn u-link" href="login.html" id="userBtn" aria-label="My Account">
-      <span class="ic" style="position:relative">
-        <span class="u-avatar" style="font-size:20px">👤</span>
-      </span>
+  <div class="user-menu-wrap">
+    <a class="hbtn u-link signin-only" href="login.html" id="userBtn" aria-label="Sign In">
+      <span class="ic"><span class="u-avatar" style="font-size:20px">👤</span></span>
       <span class="lbl u-name">Sign In</span>
     </a>
-    <button class="hbtn logout-btn" style="display:none" title="Sign out" aria-label="Sign out">
-      <span class="ic">🚪</span><span class="lbl">Logout</span>
+    <button type="button" class="hbtn u-menu-trigger signedin-only" style="display:none" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+      <span class="ic"><span class="u-avatar" style="font-size:20px">👤</span></span>
+      <span class="lbl u-name">Account</span>
     </button>
+    <div class="user-menu-dd" id="userMenuDd" role="menu" aria-label="Account menu">
+      <div class="user-menu-hdr"><strong class="user-menu-fullname"></strong></div>
+      <a href="account.html" class="user-menu-item" role="menuitem"><span class="en">👤 My Account</span><span class="ar" style="display:none">👤 حسابي</span></a>
+      <a href="track-order.html" class="user-menu-item" role="menuitem"><span class="en">📦 Track Order</span><span class="ar" style="display:none">📦 تتبع الطلب</span></a>
+      <button type="button" class="user-menu-item user-menu-logout" role="menuitem"><span class="en">🚪 Sign Out</span><span class="ar" style="display:none">🚪 تسجيل الخروج</span></button>
+    </div>
+  </div>
     <a class="hbtn" href="wishlist.html" aria-label="Wishlist">
       <span class="ic">❤️</span><span class="lbl">Wishlist</span>
     </a>
