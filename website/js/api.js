@@ -32,8 +32,7 @@
  */
 
 const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com') => {
-  const API_BUILD = '8.9';
-  const Cache = (typeof window !== 'undefined' && window.CDApiCache) ? window.CDApiCache : null;
+  const API_BUILD = '8.6';
 
   // ── PROXY BASE URL ─────────────────────────────────────────────
   // Auto-detect: when opened from file:// or a different host, use the full
@@ -48,6 +47,9 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     return `http://localhost:${PROXY_PORT}/proxy`;
   })();
   const DB = _DB;
+  const CACHE_VERSION = 'v1';
+  const _respCache = new Map();
+  const _inFlight = new Map();
 
   // ── SESSION ───────────────────────────────────────────────────
   const sess      = () => { try { return JSON.parse(localStorage.getItem(SK)||'null'); } catch(_){ return null; } };
@@ -199,6 +201,58 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     if(s) h['X-Session-Token'] = s;
     return h;
   }
+  function cacheKey(method, path, params = {}) {
+    return `${CACHE_VERSION}|${method}|${mySessionId() || 'anon'}|${mkUrl(path, params)}`;
+  }
+  function isCacheableGet(path) {
+    const p = String(path || '');
+    return (
+      p.startsWith('/api/bcd-website-category') ||
+      p.startsWith('/api/bcp-product-template') ||
+      p.startsWith('/api/deal-day-slider') ||
+      p.startsWith('/api/config-settings') ||
+      p.startsWith('/api/payment-provider') ||
+      p.startsWith('/api/delivery-method') ||
+      p.startsWith('/api/country') ||
+      p.startsWith('/api/country-state') ||
+      p.startsWith('/api/loyalty-program')
+    );
+  }
+  function cacheTtlMs(path) {
+    const p = String(path || '');
+    if (p.startsWith('/api/bcp-product-template')) return 30000;
+    if (p.startsWith('/api/deal-day-slider')) return 120000;
+    if (p.startsWith('/api/bcd-website-category')) return 300000;
+    return 180000;
+  }
+  function readCached(key) {
+    const row = _respCache.get(key);
+    if (!row) return null;
+    if (row.exp <= Date.now()) {
+      _respCache.delete(key);
+      return null;
+    }
+    return row.data;
+  }
+  function writeCached(key, data, ttlMs) {
+    _respCache.set(key, { data, exp: Date.now() + ttlMs });
+  }
+  function clearCache() {
+    _respCache.clear();
+    _inFlight.clear();
+  }
+  /** Avoid caching empty catalog lookups (prevents false "Unavailable" on deal cards). */
+  function shouldCacheResponse(path, params, data) {
+    if (!data || data.success === 0) return false;
+    const p = String(path || '');
+    if (!p.includes('/bcp-product-template')) return true;
+    if (/\/bcp-product-template\/\d+/.test(p)) {
+      const row = Array.isArray(data.data) ? data.data[0] : data.data;
+      return !!(row && row.id);
+    }
+    if (params?.domain && Array.isArray(data.data) && data.data.length === 0) return false;
+    return true;
+  }
   /** Map Odoo ACL / access errors to a short message customers can act on. */
   function normalizeApiErrorMessage(msg) {
     if (!msg) return msg;
@@ -308,26 +362,31 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     throw e;
   }
 
-  async function httpRequest(method, path, p = {}, body = null, reqOpts = {}) {
+  async function httpRequest(method, path, p = {}, body = null) {
     const isGet = method === 'GET';
-    const cacheTtl = isGet && Cache && !reqOpts.noCache ? Cache.ttl(path) : 0;
-    const cacheKey = cacheTtl > 0 ? Cache.key(method, path, p, mySessionId()) : null;
-
-    if (cacheKey) {
-      const cached = Cache.get(cacheKey, cacheTtl);
-      if (cached !== undefined) {
-        Log.debug('API', 'cache hit', { path, ms: 0 });
+    const canCache = isGet && isCacheableGet(path);
+    const cKey = canCache ? cacheKey(method, path, p) : null;
+    if (canCache) {
+      const cached = readCached(cKey);
+      if (cached) {
+        Log.debug('API', 'cache hit', { method, path });
         return cached;
       }
-      if (Cache.inFlight.has(cacheKey)) return Cache.inFlight.get(cacheKey);
+      const pending = _inFlight.get(cKey);
+      if (pending) {
+        Log.debug('API', 'dedupe hit', { method, path });
+        return pending;
+      }
     }
-
-    const run = async () => {
-      const url = method === 'POST' && body != null && !Object.keys(p).length ? mkUrl(path) : mkUrl(path, p);
-      Log.apiStart(method, path, method === 'POST' && body ? { bodyKeys: Object.keys(body) } : p);
-      const t0 = performance.now();
-      const opts = { method, credentials: 'include', headers: hdrs() };
-      if (body != null) opts.body = JSON.stringify(body);
+    const url = method === 'POST' && body != null && !Object.keys(p).length ? mkUrl(path) : mkUrl(path, p);
+    Log.apiStart(method, path, method === 'POST' && body ? { bodyKeys: Object.keys(body) } : p);
+    const t0 = performance.now();
+    const opts = { method, credentials: 'include', headers: hdrs() };
+    if (body != null) {
+      opts.body = JSON.stringify(body);
+      clearCache();
+    }
+    const requestPromise = (async () => {
       const r = await fetch(url, opts);
       const ms = Math.round(performance.now() - t0);
       if (!r.ok) return extractError(r, path, method, ms);
@@ -343,40 +402,24 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
       const sidHeader = r.headers.get('X-Set-Session-Token');
       if (sidHeader) d.__session_id = sidHeader;
       Log.apiDone(method, path, r.status, ms, d);
-      if (cacheKey && cacheTtl > 0) Cache.set(cacheKey, d, cacheTtl);
-      if (!isGet && Cache) Cache.invalidateMutation(path);
-      else if (isGet && Cache && /\/update|apply_loyalty|create_order|create_invoice|mark_done|new_address|new_registration/.test(path)) {
-        Cache.invalidateMutation(path);
-      }
+      if (canCache && shouldCacheResponse(path, p, d)) writeCached(cKey, d, cacheTtlMs(path));
       return d;
-    };
-
-    if (!cacheKey) return run();
-
-    const flight = run().finally(() => { Cache.inFlight.delete(cacheKey); });
-    Cache.inFlight.set(cacheKey, flight);
-    return flight;
+    })();
+    if (canCache) {
+      _inFlight.set(cKey, requestPromise);
+      return requestPromise.finally(() => _inFlight.delete(cKey));
+    }
+    return requestPromise;
   }
 
-  /** Warm cache without awaiting (catalog / navigation). */
-  function prefetch(path, p = {}) {
-    httpRequest('GET', path, p).catch(() => {});
+  async function GET(path, p={}) {
+    return httpRequest('GET', path, p);
   }
-
-  function prefetchCatalog() {
-    prefetch('/api/bcd-website-category');
-    prefetch('/api/deal-day-slider/9');
-    prefetch('/api/bcp-product-template', { limit: 10 });
+  async function PUT(path, p={}) {
+    return httpRequest('PUT', path, p);
   }
-
-  async function GET(path, p={}, reqOpts={}) {
-    return httpRequest('GET', path, p, null, reqOpts);
-  }
-  async function PUT(path, p={}, reqOpts={}) {
-    return httpRequest('PUT', path, p, null, reqOpts);
-  }
-  async function POST(path, body={}, reqOpts={}) {
-    return httpRequest('POST', path, {}, body, reqOpts);
+  async function POST(path, body={}) {
+    return httpRequest('POST', path, {}, body);
   }
   function getGeo() {
     return new Promise(res => {
@@ -390,6 +433,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
 
   // ── AUTH ──────────────────────────────────────────────────────
   async function login(emailOrPhone, password) {
+    clearCache();
     const d = await POST('/web/session/authenticate', {
       jsonrpc:'2.0', method:'call', id:1,
       params: { db:DB, login:emailOrPhone, password }
@@ -411,12 +455,17 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
       uid: r.uid, name: r.name||'', username: r.username||emailOrPhone,
       partner_id: r.partner_id, user_id: r.uid,
       lang: r.user_context?.lang||'en_US', tz: r.user_context?.tz||'Asia/Dubai',
-      session_id: sessionId, login_time: Date.now()
+      session_id: sessionId, login_time: Date.now(),
+      role_code: r.cd_mobile_role?.role_code || ''
     };
     saveSess(session);
+    localStorage.setItem('cd_session_id', sessionId);
+    localStorage.setItem('cd_user_id', String(r.uid));
+    localStorage.setItem('cd_user_name', r.name || '');
+    localStorage.setItem('cd_role_code', r.cd_mobile_role?.role_code || '');
+    localStorage.setItem('cd_role_name', r.cd_mobile_role?.role_name || '');
     // After login: update contact with device/geo info
     const pid = Array.isArray(r.partner_id) ? r.partner_id[0] : r.partner_id;
-    if (Cache) Cache.clearAll();
     if(pid) {
       const geo = await getGeo();
       const devId = 'web-' + (navigator.platform||'browser').replace(/[^a-zA-Z0-9]/g,'').substring(0,20);
@@ -430,9 +479,9 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   }
 
   async function logout() {
-    try { await GET('/web/session/logout', {}, { noCache: true }); } catch(_){}
-    if (Cache) Cache.clearAll();
+    try { await GET('/web/session/logout'); } catch(_){}
     clearSess();
+    clearCache();
   }
 
   // Register by email or mobile — both use same endpoint
@@ -1399,6 +1448,17 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
 
     return { points, coupons, cards };
   }
+  async function prefetchCoreData() {
+    try {
+      await Promise.allSettled([
+        getCats(),
+        getHomeSliders(),
+        getDealOfDay(),
+        getBestSeller(),
+        getFeatured()
+      ]);
+    } catch (_) {}
+  }
 
   // ── CONTACTS & ADDRESS ────────────────────────────────────────
   // updContact: all address fields + image_1920 (for profile photo)
@@ -1498,10 +1558,9 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     getRiderDeliveries, acceptRiderDelivery, myRiderDeliveries, markRiderDeliveryDone,
     // My Account
     myOrders, myInvoices, myLoyalty, myCards, myProfile,
+    prefetchCoreData, clearCache,
     // Raw HTTP
-    GET, PUT, POST, prefetch, prefetchCatalog,
-    cacheStats: () => (Cache ? Cache.stats() : { hits: 0, misses: 0 }),
-    clearApiCache: () => { if (Cache) Cache.clearAll(); },
+    GET, PUT, POST,
     // Config
     NOTIFY_EMAIL: NOTIFY,
     // Proxy base URL — use API.PX instead of hardcoding '/proxy'

@@ -116,7 +116,22 @@ async function doLogin(){
     const r=await API.login(em,pw);
     if(r.ok){
       toast(`✅ Welcome, ${r.data.name}!`);
-      setTimeout(()=>location.href=nextPage,500);
+      setTimeout(()=>{
+        const role = r.data.role_code || localStorage.getItem('cd_role_code');
+        const theme = localStorage.getItem('cd_theme') || 'web1';
+        const map = {
+          'company_owner':    theme + '_owner_dashboard.html',
+          'store_manager':    theme + '_owner_dashboard.html',
+          'delivery_manager': theme + '_delivery_dashboard.html',
+          'delivery_boy':     theme + '_delivery_dashboard.html',
+          'stock_manager':    theme + '_stock_dashboard.html',
+        };
+        if (role && map[role]) {
+          location.href = map[role];
+        } else {
+          location.href = nextPage;
+        }
+      },500);
     }else{err.textContent='❌ '+(r.err||'Invalid credentials');err.style.display='flex';btn.disabled=false;btn.textContent='Sign In →';}
   }catch(e){err.textContent=`❌ ${e.message}`;err.style.display='flex';btn.disabled=false;btn.textContent='Sign In →';}
 }
