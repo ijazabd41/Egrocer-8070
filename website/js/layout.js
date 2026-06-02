@@ -61,7 +61,7 @@ async function loadNavCats(){
         a.onmouseover=function(){this.style.background='#fef2f2';this.style.borderColor='#e41e26';};
         a.onmouseout=function(){this.style.background='#f9fafb';this.style.borderColor='#e5e7eb';};
         a.innerHTML=`<div style="width:36px;height:36px;border-radius:8px;overflow:hidden;background:#fee2e2;flex-shrink:0;display:flex;align-items:center;justify-content:center">
-          <img src="${imgSrc}" alt="${c.name}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.innerHTML='🏷️'">
+          <img src="${imgSrc}" alt="${c.name}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.innerHTML='🏷️'">
         </div>
         <div>
           <div style="font-size:12px;font-weight:700">${c.name}</div>
@@ -81,17 +81,12 @@ async function loadNavCats(){
         const imgSrc=c.image_1024?API.img(c.image_1024):API.catImg(c.id);
         const d=document.createElement('div');
         d.className='sb-item';d.id=`sbc-${c.id}`;
-        d.innerHTML=`<div class="sb-img"><img src="${imgSrc}" alt="${c.name}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none'"></div>
+        d.innerHTML=`<div class="sb-img"><img src="${imgSrc}" alt="${c.name}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none'"></div>
           <span style="flex:1">${c.name}</span>
           ${c.product_tmpl_ids?.length?`<span style="background:#f3f4f6;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px;color:#6b7280;flex-shrink:0">${c.product_tmpl_ids.length}</span>`:''}`;
         d.onclick=()=>filterCat(c.id,c.name);
         sb.appendChild(d);
       });
-    }
-    if(typeof API!=='undefined'&&API.prefetch){
-      const warm=()=>{ API.prefetch('/api/deal-day-slider/9'); API.prefetch('/api/bcp-product-template',{limit:10}); };
-      if(typeof requestIdleCallback==='function')requestIdleCallback(warm,{timeout:2500});
-      else setTimeout(warm,1000);
     }
   }catch(e){console.warn('loadNavCats:',e);}
 }

@@ -206,7 +206,7 @@ const Cart=(()=>{
       items.push({...prod,qty:1,line_id:lineId});sv(items);
       L().info('Cart','add ✓',{orderId:ordId,lineId,cartCount:count()});
     }
-    clearCardHtmlCache();tick();renderDrawer();toast('✅ Added to cart');
+    tick();renderDrawer();toast('✅ Added to cart');
   }
   function remove(pid){
     const items=raw(),item=items.find(i=>i.product_id===pid);
@@ -221,7 +221,7 @@ const Cart=(()=>{
       });
     }
     if(!next.length){ coid(); L().debug('Cart','cart empty — cleared oid'); }
-    clearCardHtmlCache();tick();renderDrawer();
+    tick();renderDrawer();
   }
   async function setQty(pid,delta){
     const items=raw(),item=items.find(i=>i.product_id===pid);if(!item)return;
@@ -238,47 +238,43 @@ const Cart=(()=>{
         L().warn('Cart','setQty sync failed',{product_id:pid,qty:item.qty,message:e.message});
       }
     }
-    clearCardHtmlCache();tick();renderDrawer();
+    tick();renderDrawer();
   }
-  function clear(){L().info('Cart','clear');localStorage.removeItem(CK);coid();clearCardHtmlCache();tick();renderDrawer();}
+  function clear(){L().info('Cart','clear');localStorage.removeItem(CK);coid();tick();renderDrawer();}
   return{raw,sv,oid,soid,coid,wasPlaced,markPlaced,clearLineIds,count,total,add,remove,setQty,clear,ensureOrder,syncToOrder};
 })();
 
-/* ── TICK: Update ALL cart badges (batched per frame) ─── */
-let _tickRaf = 0;
+/* ── TICK: Update ALL cart badges ─────────────────────── */
 function tick(){
-  if (_tickRaf) return;
-  _tickRaf = requestAnimationFrame(() => {
-    _tickRaf = 0;
-    tickNow();
-  });
-}
-function tickNow(){
   const c=Cart.count();
   // Desktop badge in header
   document.querySelectorAll('.cart-badge').forEach(el=>{
-    el.textContent=c;
-    if(c>0)el.classList.add('show');else el.classList.remove('show');
+    if(el.textContent!==String(c)) el.textContent=c;
+    const shown=el.classList.contains('show');
+    if(c>0&&!shown)el.classList.add('show');
+    if(c===0&&shown)el.classList.remove('show');
   });
   // Mobile bottom nav badge
   document.querySelectorAll('.mna-badge').forEach(el=>{
-    el.textContent=c;
-    if(c>0)el.classList.add('show');else el.classList.remove('show');
+    if(el.textContent!==String(c)) el.textContent=c;
+    const shown=el.classList.contains('show');
+    if(c>0&&!shown)el.classList.add('show');
+    if(c===0&&shown)el.classList.remove('show');
   });
 
   // Dynamic Quantity Controls on product cards
   document.querySelectorAll('.cd-qty-ctrl').forEach(el => {
     const pid = parseInt(el.getAttribute('data-pid'), 10);
     const pdEnc = el.getAttribute('data-pdenc') || '';
+    // Deal cards are populated asynchronously — don't replace until ready.
+    if (!pdEnc) return;
     const btnCls = el.getAttribute('data-btnclass') || 'pc-atc';
     const item = Cart.raw().find(i => i.product_id === pid);
     const qty = item ? item.qty : 0;
     if (qty > 0) {
-      el.innerHTML = `<div style="display:flex;border:1.5px solid var(--red);border-radius:8px;overflow:hidden;width:100%;height:38px;margin-top:auto">
-         <button onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},-1)" style="width:34px;background:#fef2f2;color:var(--red);font-size:18px;font-weight:700;border:none;cursor:pointer">−</button>
-         <span style="flex:1;text-align:center;font-size:14px;font-weight:800;line-height:35px;color:var(--red)">${qty}</span>
-         <button onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},1)" style="width:34px;background:#fef2f2;color:var(--red);font-size:18px;font-weight:700;border:none;cursor:pointer">+</button>
-       </div>`;
+      el.innerHTML = dealQtyHtml(pid, qty);
+    } else if (btnCls === 'dp-atc') {
+      renderDealQtyCtrl(el, pid, pdEnc, btnCls);
     } else {
       el.innerHTML = `<button class="${btnCls}" onclick="event.preventDefault();event.stopPropagation();addToCart(decodeURIComponent('${pdEnc}'))">🛒 Add to Cart</button>`;
     }
@@ -335,32 +331,27 @@ function openModal(id){document.getElementById(id)?.classList.add('open');}
 function closeModal(id){document.getElementById(id)?.classList.remove('open');}
 
 /* ── PRODUCT CARD — correct image handling ────────────── */
-const _cardHtmlCache=new Map();
-const CARD_CACHE_MAX=500;
-function clearCardHtmlCache(){_cardHtmlCache.clear();}
-
 function buildCard(p){
   if(!p?.id)return'';
   const id=p.id;
   const name=(p.name||p.display_name||'').replace(/^\[.*?\]\s*/,'').trim()||'Product';
   const price=parseFloat(p.list_price||p.lst_price||0);
   const std=parseFloat(p.standard_price||0);
+  // CRITICAL: image_1024 is a PATH like /web/image/product.template/123/image_1024
+  // Must prepend /proxy to load it
   const imgSrc=p.image_1024?API.img(p.image_1024):API.prodImg(id);
   const varId=Array.isArray(p.product_variant_id)&&p.product_variant_id.length?p.product_variant_id[0].id:id;
   const qtyAvail=p.qty_available!==undefined?parseFloat(p.qty_available):-1;
   const oos=qtyAvail===0;
   const ribbon=Array.isArray(p.website_ribbon_id)&&p.website_ribbon_id.length?p.website_ribbon_id[0]?.name:null;
   const disc=std>price&&std>0?Math.round((1-price/std)*100):0;
-  const cartQty=Cart.raw().find(i=>i.product_id===id)?.qty||0;
-  const cacheKey=id+'|'+price+'|'+qtyAvail+'|'+cartQty+'|'+disc+'|'+(oos?1:0);
-  if(_cardHtmlCache.has(cacheKey))return _cardHtmlCache.get(cacheKey);
   const pdEnc=encodeURIComponent(JSON.stringify({product_id:id,variant_id:varId,name,price,image:imgSrc,qty_available:qtyAvail}));
-  const html=`<div class="pc">
+  return `<div class="pc">
     <div class="pc-img">
       ${ribbon?`<span class="ribbon">${ribbon}</span>`:''}
       ${oos?`<span class="oos-tag">Out of Stock</span>`:''}
       <a href="product.html?id=${id}" style="display:block;width:100%;height:100%;position:relative">
-        <img src="${imgSrc}" alt="${name.replace(/"/g,'&quot;')}" loading="lazy" decoding="async"
+        <img src="${imgSrc}" alt="${name.replace(/"/g,'&quot;')}" loading="lazy"
           style="width:100%;height:100%;object-fit:contain;display:block"
           onerror="this.style.display='none';this.nextSibling.style.display='flex'">
         <span style="font-size:44px;display:none;align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">📦</span>
@@ -386,102 +377,288 @@ function buildCard(p){
          </div>`}
     </div>
   </div>`;
-  if(_cardHtmlCache.size>=CARD_CACHE_MAX){
-    const fk=_cardHtmlCache.keys().next().value;
-    if(fk!==undefined)_cardHtmlCache.delete(fk);
+}
+
+function variantIdFromProduct(p, templateId) {
+  if (!p) return templateId;
+  const pv = p.product_variant_id;
+  if (Array.isArray(pv) && pv.length) {
+    const first = pv[0];
+    return typeof first === 'object' ? (first.id ?? templateId) : first;
   }
-  _cardHtmlCache.set(cacheKey,html);
-  return html;
+  return templateId;
 }
 
-function addToCart(json){try{Cart.add(JSON.parse(json));}catch(e){toast('Error','err');}}
-
-function scheduleCatalogPrefetch(){
-  if(typeof API==='undefined'||!API.prefetchCatalog)return;
-  const run=()=>API.prefetchCatalog();
-  if(typeof requestIdleCallback==='function')requestIdleCallback(run,{timeout:3000});
-  else setTimeout(run,1500);
+function mapProductsById(rows) {
+  const map = {};
+  (rows || []).forEach(p => {
+    if (!p?.id) return;
+    map[p.id] = p;
+    map[String(p.id)] = p;
+  });
+  return map;
 }
 
-/* ── DEAL CARDS — correct image from image_ids[].id ──── */
-function buildDealCards(slider,containerId){
-  const el=document.getElementById(containerId);if(!el)return;
-  const items=(slider.image_ids||[]).filter(it=>it.product_id?.length);
-  if(!items.length){el.innerHTML='<div style="padding:20px;color:#9ca3af;font-size:13px">No products yet</div>';return;}
-  el.innerHTML=items.map(it=>{
-    const pid=it.product_id[0].id;
-    const name=(it.name||it.display_name||'').replace(/^\[.*?\]\s*/,'').trim();
-    // Each image_ids item has .id → use sliderImg(it.id) for the slide image
-    // BUT: 'image' or 'image_url' field is the product image path
-    const imgPath=it.image_url||it.image||null;
-    const imgSrc=imgPath?API.img(imgPath):API.sliderImg(it.id);
-    const pdEnc=encodeURIComponent(JSON.stringify({product_id:pid,variant_id:pid,name,price:0,image:imgSrc,qty_available:-1}));
-    return `<div class="dp" data-pid="${pid}" onclick="location.href='product.html?id=${pid}'">
-      <div class="dp-img">
-        <img src="${imgSrc}" alt="${name.replace(/"/g,'&quot;')}" loading="lazy"
+function sliderTemplateId(item) {
+  const ref = item?.product_id;
+  if (!ref) return null;
+  if (Array.isArray(ref) && ref.length) {
+    const first = ref[0];
+    if (first && typeof first === 'object') return parseInt(first.id, 10) || null;
+    if (typeof first === 'number') return first;
+  }
+  if (typeof ref === 'object' && ref.id) return parseInt(ref.id, 10) || null;
+  if (typeof ref === 'number') return ref;
+  return null;
+}
+
+function sliderDisplayName(item) {
+  return (item?.name || item?.display_name || '')
+    .replace(/^\[.*?\]\s*/, '')
+    .replace(/^"+|"+$/g, '')
+    .trim();
+}
+
+async function fetchProductsByIds(pids) {
+  const unique = [...new Set(pids.filter(Boolean).map(id => parseInt(id, 10)))];
+  if (!unique.length) return {};
+  const map = {};
+  await Promise.all(unique.map(async id => {
+    try {
+      const r = await API.getProdById(id);
+      const p = Array.isArray(r.data) ? r.data[0] : r.data;
+      if (p?.id) {
+        map[p.id] = p;
+        map[String(p.id)] = p;
+      }
+    } catch (_) {}
+  }));
+  const missing = unique.filter(id => !map[id] && !map[String(id)]);
+  if (missing.length) {
+    try {
+      const domain = "[('id', 'in', [" + missing.join(',') + "])]";
+      const r = await API.getProds({ domain, limit: Math.max(missing.length, 20) });
+      Object.assign(map, mapProductsById(r.data || []));
+    } catch (e) {
+      console.warn('Bulk product fetch failed', e);
+    }
+  }
+  return map;
+}
+
+async function resolveProductFromSliderItem(item, prodsMap = {}) {
+  const pid = sliderTemplateId(item);
+  if (pid) {
+    let p = prodsMap[pid] || prodsMap[String(pid)];
+    if (p) return p;
+    try {
+      const r = await API.getProdById(pid);
+      p = Array.isArray(r.data) ? r.data[0] : r.data;
+      if (p?.id) return p;
+    } catch (_) {}
+  }
+  const name = sliderDisplayName(item);
+  if (name.length >= 4) {
+    try {
+      const r = await API.searchProds(name.substring(0, 48));
+      const list = r.data || [];
+      const key = name.toLowerCase();
+      const exact = list.find(p => (p.name || '').replace(/^\[.*?\]\s*/, '').trim().toLowerCase() === key);
+      if (exact) return exact;
+      if (list.length === 1) return list[0];
+    } catch (_) {}
+  }
+  return null;
+}
+
+async function resolveProductForCart(templateId) {
+  const id = parseInt(templateId, 10);
+  if (!id) return null;
+  const map = await fetchProductsById(id);
+  return map[id] || map[String(id)] || null;
+}
+
+async function fetchProductsById(id) {
+  return fetchProductsByIds([id]);
+}
+
+function cartPayloadFromProduct(p) {
+  const pid = p.id;
+  const price = parseFloat(p.list_price || p.lst_price || 0);
+  const qty = p.qty_available !== undefined ? parseFloat(p.qty_available) : -1;
+  const name = (p.name || p.display_name || 'Product').replace(/^\[.*?\]\s*/, '').trim();
+  const image = p.image_1024 ? API.img(p.image_1024) : API.prodImg(pid);
+  return {
+    product_id: pid,
+    variant_id: variantIdFromProduct(p, pid),
+    name,
+    price,
+    image,
+    qty_available: qty
+  };
+}
+
+async function addToCart(json) {
+  let payload;
+  try { payload = typeof json === 'string' ? JSON.parse(json) : json; }
+  catch (_) { toast('Could not add to cart', 'err'); return; }
+  if (!payload?.product_id) { toast('Could not add to cart', 'err'); return; }
+
+  if (!API.loggedIn()) {
+    toast('Please sign in to add to cart', 'warn');
+    setTimeout(() => { location.href = 'login.html?next=' + encodeURIComponent(location.pathname.split('/').pop() || 'index.html'); }, 800);
+    return;
+  }
+
+  try {
+    const p = await resolveProductForCart(payload.product_id);
+    if (!p) {
+      toast('This product is no longer available', 'err');
+      return;
+    }
+    const resolved = cartPayloadFromProduct(p);
+    if (resolved.qty_available === 0) {
+      toast('Out of stock', 'warn');
+      return;
+    }
+    await Cart.add(resolved);
+    openDrw();
+  } catch (e) {
+    toast(e?.message || 'Could not add to cart', 'err');
+  }
+}
+
+function dealQtyHtml(pid, qty) {
+  return `<div style="display:flex;border:1.5px solid var(--red);border-radius:8px;overflow:hidden;width:100%;height:38px">
+     <button type="button" onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},-1)" style="width:34px;background:#fef2f2;color:var(--red);font-size:18px;font-weight:700;border:none;cursor:pointer">−</button>
+     <span style="flex:1;text-align:center;font-size:14px;font-weight:800;line-height:35px;color:var(--red)">${qty}</span>
+     <button type="button" onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},1)" style="width:34px;background:#fef2f2;color:var(--red);font-size:18px;font-weight:700;border:none;cursor:pointer">+</button>
+   </div>`;
+}
+
+function renderDealQtyCtrl(wrap, pid, pdEnc, btnCls) {
+  if (!wrap) return;
+  const item = Cart.raw().find(i => i.product_id === pid);
+  const qty = item ? item.qty : 0;
+  if (qty > 0) {
+    wrap.innerHTML = dealQtyHtml(pid, qty);
+    return;
+  }
+  wrap.innerHTML = `<button type="button" class="${btnCls}" onclick="event.preventDefault();event.stopPropagation();addToCart(decodeURIComponent('${pdEnc}'))">🛒 Add to Cart</button>`;
+}
+
+/* ── DEAL CARDS — slider image_ids[] ─────────────────── */
+function buildDealSection(slider, containerId, titleId) {
+  if (titleId && slider?.name) {
+    const te = document.getElementById(titleId);
+    if (te) {
+      const icon = te.textContent.slice(0, 2);
+      const cleanName = String(slider.name).replace(/\s*\(Web\s*&\s*Mobile\)\s*/gi, '').trim();
+      te.textContent = icon + ' ' + cleanName;
+    }
+  }
+  buildDealCards(slider, containerId);
+}
+
+function buildDealCards(slider, containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const items = (slider?.image_ids || []).filter(it => sliderTemplateId(it));
+  if (!items.length) {
+    el.innerHTML = '<div style="padding:20px;color:#9ca3af;font-size:13px;text-align:center">No products in this section</div>';
+    return;
+  }
+  const cartMap = new Map(Cart.raw().map(i => [i.product_id, i.qty]));
+  el.innerHTML = items.map(it => {
+    const sid = it.id;
+    const pid = sliderTemplateId(it);
+    const name = (it.name || it.display_name || '').replace(/^\[.*?\]\s*/, '').trim();
+    const imgPath = it.image_url || it.image || null;
+    const imgSrc = imgPath ? API.img(imgPath) : API.sliderImg(sid);
+    const inCart = (cartMap.get(pid) || 0) > 0;
+    return `<div class="dp" data-pid="${pid}" data-item-id="${sid}">
+      <div class="dp-img dp-nav" style="cursor:pointer">
+        <img src="${imgSrc}" alt="${name.replace(/"/g, '&quot;')}" loading="lazy" decoding="async"
           style="width:100%;height:100%;object-fit:contain;display:block"
           onerror="this.style.display='none';this.nextSibling.style.display='flex'">
         <span style="font-size:36px;display:none;align-items:center;justify-content:center;width:100%;height:100%">📦</span>
       </div>
-      <div class="dp-nm">${name||'View Product'}</div>
-      <div class="dp-price" id="dpp-${pid}"><span style="color:#9ca3af;font-size:10px">Loading...</span>      </div>
-      <div class="cd-qty-ctrl" data-pid="${pid}" data-pdenc="${pdEnc}" data-btnclass="dp-atc" style="margin-top:auto">
-        ${Cart.raw().find(i=>i.product_id===pid)?.qty > 0 
-          ? `<div style="display:flex;border:1.5px solid var(--red);border-radius:8px;overflow:hidden;width:100%;height:38px">
-               <button onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},-1)" style="width:34px;background:#fef2f2;color:var(--red);font-size:18px;font-weight:700;border:none;cursor:pointer">−</button>
-               <span style="flex:1;text-align:center;font-size:14px;font-weight:800;line-height:35px;color:var(--red)">${Cart.raw().find(i=>i.product_id===pid).qty}</span>
-               <button onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},1)" style="width:34px;background:#fef2f2;color:var(--red);font-size:18px;font-weight:700;border:none;cursor:pointer">+</button>
-             </div>`
-          : `<button class="dp-atc" onclick="event.preventDefault();event.stopPropagation();addToCart(decodeURIComponent('${pdEnc}'))">🛒 Add to Cart</button>`}
+      <div class="dp-nm dp-nav" style="cursor:pointer">${name || 'Product'}</div>
+      <div class="dp-price" id="dpp-${sid}"><span style="color:#9ca3af;font-size:10px">Loading...</span></div>
+      <div class="cd-qty-ctrl" data-pid="${pid}" data-item-id="${sid}" data-pdenc="" data-btnclass="dp-atc" style="margin-top:auto">
+        ${inCart ? dealQtyHtml(pid, cartMap.get(pid)) : '<button type="button" class="dp-atc" disabled style="opacity:.7">Loading...</button>'}
       </div>
     </div>`;
   }).join('');
-  enrichCards(items.map(it=>({pid:it.product_id[0].id,sid:it.id})));
+  enrichDealCards(items.map(it => ({ pid: sliderTemplateId(it), sid: it.id, item: it })));
 }
 
-async function enrichCards(items) {
-  var pids = items.map(it => it.pid).filter(Boolean);
+async function enrichDealCards(items) {
+  const pids = items.map(it => it.pid).filter(Boolean);
   if (!pids.length) return;
-  var prodsMap = {};
-  try {
-    var domain = "[('id', 'in', [" + pids.join(',') + "])]";
-    var r = await API.getProds({ domain: domain, limit: 100 });
-    var data = r.data || [];
-    for (var j = 0; j < data.length; j++) {
-      prodsMap[data[j].id] = data[j];
-    }
-  } catch(e) {
-    console.warn("Bulk fetch failed in enrichCards", e);
-  }
+  const prodsMap = await fetchProductsByIds(pids);
 
-  for(const {pid,sid} of items){
-    try{
-      const p = prodsMap[pid];
-      if(!p)continue;
-      const price=parseFloat(p.list_price||0);
-      const std=parseFloat(p.standard_price||0);
-      const qty=p.qty_available!==undefined?parseFloat(p.qty_available):-1;
-      const oos=qty===0;
-      const varId=Array.isArray(p.product_variant_id)&&p.product_variant_id.length?p.product_variant_id[0].id:pid;
-      const name=(p.name||'').replace(/^\[.*?\]\s*/,'').trim();
-      const imgSrc=p.image_1024?API.img(p.image_1024):API.prodImg(pid);
-      const pdEnc=encodeURIComponent(JSON.stringify({product_id:pid,variant_id:varId,name,price,image:imgSrc,qty_available:qty}));
-      const pEl=document.getElementById(`dpp-${pid}`);
-      const aEl=document.querySelector(`[data-pid="${pid}"] .dp-atc`);
-      const imgEl=document.querySelector(`[data-pid="${pid}"] .dp-img img`);
-      if(pEl)pEl.innerHTML=`<strong style="color:#a01820">AED ${price.toFixed(2)}</strong>${std>price?`<span style="color:#9ca3af;text-decoration:line-through;font-size:9px;margin-left:4px">${std.toFixed(2)}</span>`:''}`;
-      if(imgEl&&p.image_1024){imgEl.src=imgSrc;imgEl.style.display='block';}
-      if(aEl){
-        if(oos){aEl.textContent='Out of Stock';aEl.style.background='#9ca3af';aEl.disabled=true;}
-        else{
-          aEl.textContent=`AED ${price.toFixed(2)} - Add`;
-          aEl.onclick=function(e){e.preventDefault();e.stopPropagation();addToCart(decodeURIComponent(pdEnc));};
-          const w=document.querySelector(`.cd-qty-ctrl[data-pid="${pid}"]`);
-          if(w){w.setAttribute('data-pdenc',pdEnc);if(typeof tick==='function')tick();}
-        }
+  for (const { sid, item } of items) {
+    const card = document.querySelector(`.dp[data-item-id="${sid}"]`);
+    const priceEl = document.getElementById(`dpp-${sid}`);
+    const wrap = card?.querySelector('.cd-qty-ctrl');
+    const navEls = card?.querySelectorAll('.dp-nav');
+    const p = await resolveProductFromSliderItem(item, prodsMap);
+    const pid = p?.id || sliderTemplateId(item);
+
+    if (!p || !pid) {
+      if (priceEl) priceEl.innerHTML = '<span style="color:#9ca3af;font-size:12px">Out of Stock</span>';
+      if (wrap) wrap.innerHTML = '<button type="button" class="dp-atc" disabled style="background:#9ca3af">Out of Stock</button>';
+      card?.removeAttribute('data-href');
+      navEls?.forEach(n => { n.style.cursor = 'default'; });
+      continue;
+    }
+    if (card && String(card.getAttribute('data-pid')) !== String(pid)) {
+      card.setAttribute('data-pid', pid);
+      wrap?.setAttribute('data-pid', pid);
+    }
+
+    const price = parseFloat(p.list_price || 0);
+    const std = parseFloat(p.standard_price || 0);
+    const qty = p.qty_available !== undefined ? parseFloat(p.qty_available) : -1;
+    const oos = qty === 0;
+    const payload = cartPayloadFromProduct(p);
+    const pdEnc = encodeURIComponent(JSON.stringify(payload));
+    const imgSrc = payload.image;
+    const imgEl = card?.querySelector('.dp-img img');
+
+    card?.setAttribute('data-href', `product.html?id=${pid}`);
+    navEls?.forEach(n => { n.style.cursor = 'pointer'; });
+    if (priceEl) {
+      priceEl.innerHTML = price > 0
+        ? `<strong style="color:#a01820">AED ${price.toFixed(2)}</strong>${std > price ? `<span style="color:#9ca3af;text-decoration:line-through;font-size:9px;margin-left:4px">${std.toFixed(2)}</span>` : ''}`
+        : '<span style="color:#9ca3af;font-size:12px">Price unavailable</span>';
+    }
+    if (imgEl && p.image_1024) { imgEl.src = imgSrc; imgEl.style.display = 'block'; }
+
+    if (wrap) {
+      wrap.setAttribute('data-pdenc', pdEnc);
+      if (oos) {
+        wrap.innerHTML = '<button type="button" class="dp-atc" disabled style="background:#9ca3af">Out of Stock</button>';
+      } else {
+        renderDealQtyCtrl(wrap, pid, pdEnc, 'dp-atc');
       }
-    }catch(e){console.warn('enrich fail',pid,e);const el=document.getElementById(`dpp-${pid}`);if(el)el.innerHTML='';}
+    }
   }
+  tick();
+}
+
+function initDealCardInteractions() {
+  if (document.body._dealCardsInit) return;
+  document.body._dealCardsInit = true;
+  document.addEventListener('click', e => {
+    if (e.target.closest('.cd-qty-ctrl, .dp-atc, button')) return;
+    const nav = e.target.closest('.dp-nav');
+    if (!nav) return;
+    const card = nav.closest('.dp');
+    const href = card?.getAttribute('data-href');
+    if (href) location.href = href;
+  });
 }
 
 /* ── WISHLIST ─────────────────────────────────────────── */
@@ -595,6 +772,7 @@ function verifyOtp(email,input){
 
 /* ── GLOBAL INIT ──────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded',()=>{
+  initDealCardInteractions();
   // Inject skeleton CSS
   if(!document.getElementById('sk-st')){const s=document.createElement('style');s.id='sk-st';s.textContent='@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}.skel{background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:sk 1.5s infinite}';document.head.appendChild(s);}
   Bar.init();
@@ -604,9 +782,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('.mo').forEach(mo=>mo.addEventListener('click',e=>{if(e.target===mo)mo.classList.remove('open');}));
   tick();
   updateHeaderUser(); // ALWAYS run to show correct login state
-  scheduleCatalogPrefetch();
   applyLang(localStorage.getItem('cd_lang')||'en');
   startCD(Date.now()+5*3600000);
+  // Warm common, cacheable endpoints in background.
+  if(typeof API?.prefetchCoreData==='function') API.prefetchCoreData().catch(()=>{});
   // Search
   document.querySelector('.srch-inp')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.value.trim())location.href=`shop.html?q=${encodeURIComponent(e.target.value.trim())}`;});
   document.querySelector('.srch-btn')?.addEventListener('click',()=>{const v=document.querySelector('.srch-inp')?.value?.trim();if(v)location.href=`shop.html?q=${encodeURIComponent(v)}`;});

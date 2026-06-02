@@ -1,0 +1,312 @@
+/*
+  cd_dashboard_shared.css
+  =======================
+  Shared layout structure for both Web1 and Web6 dashboard pages.
+  Import this + one theme file (web1_vars.css OR web6_vars.css).
+
+  Layout:
+    .dash-layout
+      .dash-sidebar
+      .dash-main
+        .dash-topbar
+        .dash-content
+*/
+
+/* ── Base ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+a { text-decoration: none; color: inherit; }
+
+/* ── Dashboard Shell ──────────────────────────────────────── */
+.dash-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ──────────────────────────────────────────────── */
+.dash-sidebar {
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0;
+  height: 100vh; width: 240px;
+  z-index: 200; overflow-y: auto;
+}
+.sidebar-logo {
+  padding: 22px 20px;
+  font-size: 22px; font-weight: 900;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: -0.5px;
+  color: var(--text);
+}
+.sidebar-logo span { color: var(--primary); }
+.sidebar-user {
+  padding: 16px 20px;
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.user-avatar {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+.user-info .name { font-size: 13px; font-weight: 600; }
+.user-info .role { font-size: 11px; color: var(--text-mid); }
+.sidebar-nav { padding: 12px 0; flex: 1; }
+.nav-section {
+  font-size: 10px; font-weight: 700; color: var(--text-soft);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  padding: 8px 20px 4px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-mid); cursor: pointer;
+  border-radius: 0; transition: 0.15s;
+  border-left: 3px solid transparent;
+}
+.nav-item:hover { background: var(--nav-hover); color: var(--text); }
+.nav-item.active {
+  background: var(--nav-active-bg);
+  color: var(--primary);
+  border-left-color: var(--primary);
+  font-weight: 600;
+}
+.nav-icon { font-size: 17px; width: 22px; text-align: center; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--primary);
+  color: #fff; border-radius: 20px;
+  padding: 1px 7px; font-size: 10px; font-weight: 700;
+}
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+.logout-btn {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--text-mid);
+  cursor: pointer; padding: 8px 0;
+}
+.logout-btn:hover { color: #ef4444; }
+
+/* ── Main Area ────────────────────────────────────────────── */
+.dash-main {
+  margin-left: 240px;
+  display: flex; flex-direction: column;
+  min-height: 100vh;
+}
+.dash-topbar {
+  background: var(--topbar-bg);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar-left h1 { font-size: 18px; font-weight: 700; }
+.topbar-left p  { font-size: 12px; color: var(--text-mid); margin-top: 1px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.topbar-btn {
+  width: 36px; height: 36px;
+  border-radius: 9px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; cursor: pointer; transition: 0.15s;
+}
+.topbar-btn:hover { border-color: var(--primary); }
+
+.dash-content { padding: 24px 28px; flex: 1; }
+
+/* ── Period Tabs ──────────────────────────────────────────── */
+.period-tabs {
+  display: inline-flex;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 4px;
+  gap: 2px;
+}
+.p-tab {
+  padding: 6px 16px; border-radius: 7px;
+  font-size: 12px; font-weight: 600;
+  color: var(--text-mid); cursor: pointer; transition: 0.15s;
+}
+.p-tab.active {
+  background: var(--primary); color: #fff;
+}
+
+/* ── KPI Cards ────────────────────────────────────────────── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px; margin-bottom: 24px;
+}
+.kpi-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px;
+  transition: 0.2s;
+}
+.kpi-card:hover { box-shadow: var(--card-shadow); }
+.kpi-icon-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.kpi-icon {
+  width: 40px; height: 40px; border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px;
+}
+.kpi-badge {
+  font-size: 11px; font-weight: 700;
+  padding: 3px 8px; border-radius: 20px;
+}
+.badge-up   { background: var(--green-lt); color: var(--green); }
+.badge-down { background: var(--red-lt);   color: var(--red);   }
+.kpi-value  { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+.kpi-label  { font-size: 12px; color: var(--text-mid); margin-top: 3px; }
+.kpi-sub    { font-size: 11px; color: var(--text-soft); margin-top: 2px; }
+
+/* ── Chart Cards ──────────────────────────────────────────── */
+.chart-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px; margin-bottom: 24px;
+}
+.chart-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px; margin-bottom: 24px;
+}
+.chart-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-bottom: 24px;
+}
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px;
+}
+.card-head {
+  display: flex; align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.card-head h3  { font-size: 14px; font-weight: 700; }
+.card-head p   { font-size: 11px; color: var(--text-mid); margin-top: 2px; }
+.card-action {
+  font-size: 12px; font-weight: 600;
+  color: var(--primary); cursor: pointer;
+  padding: 4px 10px; border: 1px solid var(--border);
+  border-radius: 7px; transition: 0.15s; white-space: nowrap;
+}
+.card-action:hover { background: var(--nav-active-bg); }
+canvas { width: 100% !important; }
+
+/* ── Data Table ───────────────────────────────────────────── */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  text-align: left; padding: 10px 14px;
+  font-size: 11px; font-weight: 700;
+  color: var(--text-soft); text-transform: uppercase;
+  letter-spacing: 0.5px; border-bottom: 1px solid var(--border);
+}
+.data-table td {
+  padding: 11px 14px; font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--nav-hover); }
+
+/* ── Status Pills ─────────────────────────────────────────── */
+.pill {
+  display: inline-block;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+}
+.pill-green  { background: var(--green-lt); color: var(--green); }
+.pill-amber  { background: #FEF3C7; color: #D97706; }
+.pill-red    { background: var(--red-lt);   color: var(--red);   }
+.pill-blue   { background: #DBEAFE; color: #2563EB; }
+.pill-gray   { background: var(--nav-hover); color: var(--text-mid); }
+
+/* ── Progress Bar ─────────────────────────────────────────── */
+.progress-wrap {
+  background: var(--nav-hover);
+  border-radius: 4px; overflow: hidden; height: 7px;
+}
+.progress-fill {
+  height: 100%; border-radius: 4px;
+  background: var(--primary); transition: width 0.6s;
+}
+
+/* ── Mini Stat Row ────────────────────────────────────────── */
+.mini-stats {
+  display: flex; gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+  margin-bottom: 24px;
+}
+.mini-stat {
+  flex: 1; padding: 16px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.mini-stat:last-child { border-right: none; }
+.mini-stat .val { font-size: 24px; font-weight: 800; color: var(--primary); }
+.mini-stat .lbl { font-size: 11px; color: var(--text-mid); margin-top: 2px; }
+
+/* ── Delivery Card (row) ──────────────────────────────────── */
+.delivery-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.delivery-row:last-child { border-bottom: none; }
+.dr-avatar {
+  width: 40px; height: 40px; border-radius: 11px;
+  background: var(--primary); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.dr-info { flex: 1; }
+.dr-info .n { font-size: 13px; font-weight: 600; }
+.dr-info .s { font-size: 11px; color: var(--text-mid); margin-top: 1px; }
+.dr-amount { font-size: 13px; font-weight: 700; }
+
+/* ── Stock Count Card ─────────────────────────────────────── */
+.stock-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.stock-item:last-child { border-bottom: none; }
+.stock-emoji { font-size: 26px; width: 40px; text-align: center; }
+.stock-info  { flex: 1; }
+.stock-info .n { font-size: 13px; font-weight: 600; }
+.stock-info .c { font-size: 11px; color: var(--text-mid); }
+.stock-qty { text-align: right; }
+.stock-qty .q { font-size: 14px; font-weight: 700; }
+.stock-qty .u { font-size: 11px; color: var(--text-mid); }
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .chart-row { grid-template-columns: 1fr; }
+  .chart-row-3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .dash-layout { grid-template-columns: 1fr; }
+  .dash-sidebar { transform: translateX(-100%); }
+  .dash-sidebar.open { transform: translateX(0); }
+  .dash-main { margin-left: 0; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .chart-row-3 { grid-template-columns: 1fr; }
+  .chart-row-2 { grid-template-columns: 1fr; }
+}

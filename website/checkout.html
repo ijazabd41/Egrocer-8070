@@ -21,6 +21,17 @@
     🔐 <a href="login.html?next=checkout.html" style="color:#a01820;font-weight:700">Sign in</a> for faster checkout & order history
   </div>
 
+  <div class="fs" id="checkoutStepper">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button type="button" id="stepTab1" onclick="goStep(1)" class="sbtn" style="max-width:max-content;padding:7px 12px">1) Delivery Method</button>
+      <button type="button" id="stepTab2" onclick="goStep(2)" class="sbtn" style="max-width:max-content;padding:7px 12px;background:#f3f4f6;color:#374151">2) Addresses</button>
+      <button type="button" id="stepTab3" onclick="goStep(3)" class="sbtn" style="max-width:max-content;padding:7px 12px;background:#f3f4f6;color:#374151">3) Payment & Rewards</button>
+    </div>
+    <div id="stepMsg" style="margin-top:10px;font-size:12px;color:#6b7280">Step 1 of 3: Choose a delivery method.</div>
+  </div>
+
+  <div id="step1Panel">
+
   <!-- DELIVERY METHOD (carrier_id) -->
   <div class="fs" id="deliverySection">
     <h3>🚚 Delivery Method</h3>
@@ -34,6 +45,12 @@
     </div>
     <div id="carrierMsg" style="margin-top:8px;font-size:12px;font-weight:600"></div>
   </div>
+  <div style="display:flex;justify-content:flex-end;margin-top:12px">
+    <button type="button" onclick="goStep(2)" class="sbtn" style="max-width:max-content;padding:9px 16px">Next: Addresses →</button>
+  </div>
+  </div>
+
+  <div id="step2Panel" style="display:none">
 
   <!-- DELIVERY ADDRESS SELECTOR -->
   <div class="fs" id="homeAddrSection">
@@ -70,6 +87,14 @@
     <div class="fg full" style="margin-top:10px"><label class="fl">Delivery Notes</label><input class="fi" id="notes" placeholder="Leave at door, building gate code..."></div>
   </div>
 
+  <div class="fs" id="invoiceAddrSection">
+    <h3>🧾 Invoice Address</h3>
+    <p style="font-size:11px;color:#6b7280;margin-bottom:12px">Select where invoice/billing details should be attached.</p>
+    <div id="coInvoiceAddrList" style="display:flex;flex-direction:column;gap:10px;max-height:250px;overflow-y:auto">
+      <div style="color:#9ca3af;font-size:12px;text-align:center;padding:10px">⏳ Loading invoice addresses...</div>
+    </div>
+  </div>
+
   <!-- STORE PICKUP — Store address card (hidden by default) -->
   <div class="fs" id="storePickupSection" style="display:none">
     <h3>🏬 Store Pickup Location</h3>
@@ -96,6 +121,13 @@
       </div>
     </div>
   </div>
+  <div style="display:flex;justify-content:space-between;margin-top:12px;gap:8px;flex-wrap:wrap">
+    <button type="button" onclick="goStep(1)" style="background:#f3f4f6;color:#374151;border:none;padding:9px 16px;border-radius:8px;font-weight:700;cursor:pointer">← Back</button>
+    <button type="button" onclick="goStep(3)" class="sbtn" style="max-width:max-content;padding:9px 16px">Next: Payment & Rewards →</button>
+  </div>
+  </div>
+
+  <div id="step3Panel" style="display:none">
 
   <!-- PAYMENT METHOD -->
   <div class="fs">
@@ -104,6 +136,10 @@
       <div style="display:flex;align-items:center;gap:10px;padding:18px;color:#9ca3af;font-size:13px"><span style="font-size:20px">⏳</span>Loading payment options...</div>
     </div>
   </div>
+  <div style="display:flex;justify-content:space-between;margin-top:12px;gap:8px;flex-wrap:wrap">
+    <button type="button" onclick="goStep(2)" style="background:#f3f4f6;color:#374151;border:none;padding:9px 16px;border-radius:8px;font-weight:700;cursor:pointer">← Back</button>
+  </div>
+</div>
 </div>
 
 <!-- RIGHT: ORDER SUMMARY -->
@@ -115,6 +151,7 @@
   <div class="chk-row"><span style="color:#6b7280">VAT (5%)</span><span id="chkVat" style="font-weight:700">AED 0.00</span></div>
   <div class="chk-row" id="discRow" style="display:none"><span style="color:#16a34a;font-weight:700">🎁 Discount</span><span id="discAmt" style="font-weight:700;color:#16a34a">–AED 0.00</span></div>
 
+  <div id="step3SummaryBlocks" style="display:none">
   <!-- PROMO COUPON -->
   <div style="margin:14px 0;padding:14px;background:#fffbea;border-radius:10px;border:1px solid #f5c518">
     <div style="font-size:12px;font-weight:700;color:#111;margin-bottom:8px">🎟️ Promo / Coupon Code</div>
@@ -135,6 +172,7 @@
     </div>
     <div id="loyaltyMsg" style="margin-top:7px;font-size:12px;font-weight:600"></div>
   </div>
+  </div>
 
   <div class="chk-total"><span>Total</span><span id="chkTotal">AED 0.00</span></div>
   <div id="placeErr" class="alert alert-err" style="display:none;margin-top:12px"></div>
@@ -145,8 +183,58 @@
 </div><!-- /grid -->
 </div></section>
 
-<div id="site-footer"></div><script src="js/api-cache.js?v=1"></script><script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.9"></script><script src="js/layout.js"></script><script>
+<div id="site-footer"></div><script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.10"></script><script src="js/layout.js"></script><script>
 var selProvider=22, selProviderName='Cash on Delivery', selCarrierId=1, selCarrierName='Standard delivery', selDeliveryKind='home', selDeliveryMethod=null, discountPromo=0, discountLoyalty=0, appliedPromoCoupon=null, appliedLoyaltyCoupon=null;
+var currentStep=1;
+var checkoutAddressesCache=[];
+var selDeliveryContact=null;
+var selInvoiceContact=null;
+
+function setStepTabState(id, active){
+  var el=document.getElementById('stepTab'+id);
+  if(!el) return;
+  if(active){
+    el.style.background='var(--red)';
+    el.style.color='#fff';
+  }else{
+    el.style.background='#f3f4f6';
+    el.style.color='#374151';
+  }
+}
+function updateStepUi(){
+  document.getElementById('step1Panel').style.display=currentStep===1?'block':'none';
+  document.getElementById('step2Panel').style.display=currentStep===2?'block':'none';
+  document.getElementById('step3Panel').style.display=currentStep===3?'block':'none';
+  document.getElementById('step3SummaryBlocks').style.display=currentStep===3?'block':'none';
+  setStepTabState(1,currentStep===1);
+  setStepTabState(2,currentStep===2);
+  setStepTabState(3,currentStep===3);
+  var msg=document.getElementById('stepMsg');
+  if(!msg) return;
+  if(currentStep===1) msg.textContent='Step 1 of 3: Choose a delivery method.';
+  else if(currentStep===2) msg.textContent='Step 2 of 3: Choose delivery and invoice addresses.';
+  else msg.textContent='Step 3 of 3: Confirm payment and apply rewards.';
+}
+function validateStep(step){
+  if(step===1){
+    if(!selCarrierId){ toast('Please choose a delivery method','warn'); return false; }
+    return true;
+  }
+  if(step===2){
+    if(selDeliveryKind!=='store' && !selDeliveryContact){ toast('Select a delivery address','warn'); return false; }
+    if(!selInvoiceContact && !API.myPid()){ toast('Select an invoice address','warn'); return false; }
+    return true;
+  }
+  return true;
+}
+function goStep(step){
+  if(step<1||step>3) return;
+  if(step>currentStep && !validateStep(currentStep)) return;
+  currentStep=step;
+  updateStepUi();
+  var target=document.getElementById('checkoutStepper');
+  if(target) target.scrollIntoView({behavior:'smooth',block:'start'});
+}
 
 function isStorePickupMethod(m){
   if(!m) return false;
@@ -168,10 +256,21 @@ async function resolveCheckoutContact(){
   var pid=API.myPid();
   if(isStore) {
     syncPickupContactFromHome();
-    return { isStore:true, pid:pid, fn:document.getElementById('fnPk').value, ph:document.getElementById('phPk').value, em:document.getElementById('emPk').value };
+    return {
+      isStore:true,
+      pid:pid,
+      fn:document.getElementById('fnPk').value,
+      ph:document.getElementById('phPk').value,
+      em:document.getElementById('emPk').value,
+      partnerInvoiceId:(selInvoiceContact&&selInvoiceContact.id)||pid||null
+    };
   }
   if(!selDeliveryContact) throw new Error('Please select a delivery address from your Address Book');
-  return { isStore:false, partnerId: selDeliveryContact.id };
+  return {
+    isStore:false,
+    partnerShippingId: selDeliveryContact.id,
+    partnerInvoiceId: (selInvoiceContact&&selInvoiceContact.id)||selDeliveryContact.id
+  };
 }
 function focusPickupContactMissing(contact){
   var el=document.getElementById('storePickupSection');
@@ -181,6 +280,7 @@ function focusPickupContactMissing(contact){
 }
 
 document.addEventListener('DOMContentLoaded', async function(){
+  updateStepUi();
   if(!API.loggedIn()) document.getElementById('loginReminder').style.display='flex';
 
   // PRE-FILL from saved session — populate BOTH home form and pickup-contact form
@@ -246,52 +346,78 @@ document.addEventListener('DOMContentLoaded', async function(){
   } else {
     document.getElementById('coAddrList').innerHTML = '<div style="color:#e41e26;font-size:12px;text-align:center;padding:10px">Sign in to load your address book.</div>';
   }
+  updateStepUi();
 });
-
-var selDeliveryContact = null;
 
 async function loadCheckoutAddresses(){
   var pid = API.myPid(); if(!pid) return;
-  var el = document.getElementById('coAddrList');
+  var delEl = document.getElementById('coAddrList');
+  var invEl = document.getElementById('coInvoiceAddrList');
   try{
     var r = await API.getChildContacts(pid);
     var addrs = r.data || [];
+    checkoutAddressesCache = addrs;
     if(addrs.length===0){
-      el.innerHTML = '<div style="color:#6b7280;font-size:12px;text-align:center;padding:10px">No saved addresses. Please add a new delivery address.</div>';
+      delEl.innerHTML = '<div style="color:#6b7280;font-size:12px;text-align:center;padding:10px">No saved addresses. Please add a new delivery address.</div>';
+      invEl.innerHTML = '<div style="color:#6b7280;font-size:12px;text-align:center;padding:10px">No invoice address found. You can still continue and we will use your account profile.</div>';
       document.getElementById('coNewAddr').style.display = 'block';
     } else {
-      el.innerHTML = addrs.map(function(a){
-        var isDel = a.type==='delivery';
-        var isInv = a.type==='invoice';
-        var tLbl = isDel?'🚚 Delivery':isInv?'🧾 Invoice':'Contact';
-        var isSel = selDeliveryContact && selDeliveryContact.id === a.id;
-        return '<div class="co-addr-card" onclick="selectCheckoutAddress('+a.id+')" style="cursor:pointer;border:1.5px solid '+(isSel?'var(--red)':'#e5e7eb')+';border-radius:10px;padding:12px;background:'+(isSel?'#fff5f5':'#f9fafb')+'">' +
-          '<div style="font-size:11px;font-weight:800;color:var(--red);text-transform:uppercase;margin-bottom:6px">'+tLbl+'</div>' +
-          '<div style="font-weight:700;font-size:13px;margin-bottom:2px">'+(a.name||'')+'</div>' +
-          '<div style="font-size:11px;color:#6b7280">'+[a.street,a.street2,a.city,a.zip].filter(Boolean).join(', ')+'</div>' +
-        '</div>';
-      }).join('');
-      // Auto-select first delivery address if none selected
       if(!selDeliveryContact){
         var defaultDel = addrs.find(a => a.type==='delivery') || addrs[0];
-        selDeliveryContact = defaultDel;
-        loadCheckoutAddresses(); // re-render to show selection
+        selDeliveryContact = defaultDel || null;
       }
+      if(!selInvoiceContact){
+        var defaultInv = addrs.find(a => a.type==='invoice') || selDeliveryContact || addrs[0];
+        selInvoiceContact = defaultInv || null;
+      }
+      function addrDetails(a){
+        var fields = [
+          ['Street', [a.street,a.street2].filter(Boolean).join(', ')],
+          ['City', a.city],
+          ['State', Array.isArray(a.state_id)?a.state_id[1]:a.state_id],
+          ['Country', Array.isArray(a.country_id)?a.country_id[1]:a.country_id],
+          ['ZIP', a.zip],
+          ['Phone', a.phone || a.mobile],
+          ['Email', a.email],
+          ['Company', a.company_name || (Array.isArray(a.parent_id)?a.parent_id[1]:'')],
+          ['VAT', a.vat]
+        ].filter(function(x){ return x[1]; });
+        return fields.map(function(f){ return '<div style="font-size:11px;color:#6b7280"><strong style="color:#374151">'+f[0]+':</strong> '+f[1]+'</div>'; }).join('');
+      }
+      function card(a, kind){
+        var selected = kind==='delivery'
+          ? (selDeliveryContact && selDeliveryContact.id===a.id)
+          : (selInvoiceContact && selInvoiceContact.id===a.id);
+        var chip = kind==='delivery' ? '🚚 Delivery' : '🧾 Invoice';
+        return '<div class="co-addr-card" onclick="selectCheckoutAddress('+a.id+',\''+kind+'\')" style="cursor:pointer;border:1.5px solid '+(selected?'var(--red)':'#e5e7eb')+';border-radius:10px;padding:12px;background:'+(selected?'#fff5f5':'#f9fafb')+'">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><div style="font-size:11px;font-weight:800;color:var(--red);text-transform:uppercase">'+chip+'</div>'+(selected?'<div style="font-size:10px;font-weight:700;color:#065f46">Selected</div>':'')+'</div>' +
+          '<div style="font-weight:700;font-size:13px;margin-bottom:6px">'+(a.name||'Unnamed address')+'</div>' +
+          addrDetails(a) +
+        '</div>';
+      }
+      var deliveryCandidates = addrs.filter(function(a){ return a.type==='delivery'; });
+      if(!deliveryCandidates.length) deliveryCandidates = addrs;
+      var invoiceCandidates = addrs.filter(function(a){ return a.type==='invoice'; });
+      if(!invoiceCandidates.length) invoiceCandidates = addrs;
+      delEl.innerHTML = deliveryCandidates.map(function(a){ return card(a,'delivery'); }).join('');
+      invEl.innerHTML = invoiceCandidates.map(function(a){ return card(a,'invoice'); }).join('');
     }
   }catch(e){
-    el.innerHTML = '<div style="color:var(--red);font-size:12px">❌ Failed to load addresses</div>';
+    delEl.innerHTML = '<div style="color:var(--red);font-size:12px">❌ Failed to load addresses</div>';
+    invEl.innerHTML = '<div style="color:var(--red);font-size:12px">❌ Failed to load invoice addresses</div>';
   }
 }
 
-async function selectCheckoutAddress(id){
-  var pid = API.myPid(); if(!pid) return;
-  var r = await API.getChildContacts(pid);
-  var addrs = r.data || [];
-  var match = addrs.find(a => a.id === id);
-  if(match){
-    selDeliveryContact = match;
-    loadCheckoutAddresses();
+async function selectCheckoutAddress(id, kind){
+  var match = checkoutAddressesCache.find(function(a){ return a.id === id; });
+  if(!match){
+    await loadCheckoutAddresses();
+    match = checkoutAddressesCache.find(function(a){ return a.id === id; });
   }
+  if(!match) return;
+  if(kind === 'invoice') selInvoiceContact = match;
+  else selDeliveryContact = match;
+  loadCheckoutAddresses();
 }
 
 async function loadCountriesStates(){
@@ -585,6 +711,8 @@ async function applyLoyaltyPoints(){
 async function placeOrder(){
   var errEl=document.getElementById('placeErr'), btn=document.getElementById('placeBtn');
   errEl.style.display='none';
+  if(!validateStep(2)){ goStep(2); return; }
+  if(currentStep!==3) goStep(3);
   var contact=await resolveCheckoutContact();
   if(contact.isStore){
     if(!contact.fn||!contact.ph){
@@ -594,7 +722,7 @@ async function placeOrder(){
       return;
     }
   } else {
-    if(!contact.partnerId){
+    if(!contact.partnerShippingId){
       errEl.textContent='❌ Please select a Delivery Address from your Address Book.';
       errEl.style.display='flex';
       return;
@@ -605,8 +733,8 @@ async function placeOrder(){
   btn.disabled=true;btn.textContent='⏳ Placing order...';
   var log=API.log;
   try{
-    if(!API.ensureCleanCheckoutOrder||parseFloat(API.build)<8.6||isNaN(parseFloat(API.build))){
-      throw new Error('Outdated checkout script (need api.js build 8.6+). Hard-refresh: Ctrl+Shift+R');
+    if(!API.ensureCleanCheckoutOrder||API.build!=='8.6'){
+      throw new Error('Outdated checkout script (need api.js build 8.6). Hard-refresh: Ctrl+Shift+R');
     }
     log.info('Checkout','placeOrder → start',{
       cartItems:Cart.raw().map(function(it){return{product_id:it.product_id,variant_id:it.variant_id||it.product_id,qty:it.qty};}),
@@ -695,14 +823,18 @@ async function placeOrder(){
 
     // 3) Update delivery method (carrier_id) on the order AND attach shipping/invoice addresses
     var updOpts = {};
-    if(!contact.isStore && contact.partnerId){
-      updOpts.partner_shipping_id = contact.partnerId;
-      updOpts.partner_invoice_id = contact.partnerId;
+    if(!contact.isStore && contact.partnerShippingId){
+      updOpts.partner_shipping_id = contact.partnerShippingId;
+      updOpts.partner_invoice_id = contact.partnerInvoiceId || contact.partnerShippingId;
+    } else if(contact.isStore && contact.partnerInvoiceId){
+      updOpts.partner_invoice_id = contact.partnerInvoiceId;
     }
     try{await API.updDelivery(parseInt(oid),selCarrierId, updOpts);}catch(_){}
 
     // 4) Add delivery note
-    var note = contact.isStore ? '[STORE PICKUP] ' + contact.fn + ' | ' + contact.ph + (contact.em?' | '+contact.em:'') : '[DELIVERY] Contact ID ' + contact.partnerId;
+    var note = contact.isStore
+      ? '[STORE PICKUP] ' + contact.fn + ' | ' + contact.ph + (contact.em?' | '+contact.em:'') + (contact.partnerInvoiceId?' | Invoice Contact ID '+contact.partnerInvoiceId:'')
+      : '[DELIVERY] Ship Contact ID ' + contact.partnerShippingId + ' | Invoice Contact ID ' + (contact.partnerInvoiceId || contact.partnerShippingId);
     var notesVal = document.getElementById('notes').value.trim();
     if(notesVal) note+=' | Notes: '+notesVal;
     await API.updOrder(parseInt(oid),{note:note,origin:'COOPDISCOUNT-WEB'}).catch(function(e){});

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CD.COM — Stock Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cd_dashboard.css">
+<script src="cd_web_api.js"></script>
+<style>
+:root{--bg:#060D1A;--sidebar:#0D1B2A;--card:#0F1E30;--border:rgba(255,255,255,.08);--primary:#00D4FF;
+--text:#F0F4F8;--text-mid:#94A3B8;--text-soft:#4A5568;--nav-active:rgba(0,212,255,.1);--font:'Poppins',sans-serif;}
+/* Web6 dark overrides */
+.data-table th,.data-table td{border-bottom-color:rgba(255,255,255,.06);}
+.del-row{border-bottom-color:rgba(255,255,255,.06);}
+.mini-stat{border-right-color:rgba(255,255,255,.06);}
+input,select{background:var(--card)!important;color:var(--text)!important;border-color:rgba(255,255,255,.15)!important;}
+input::placeholder{color:var(--text-soft)!important;}
+.otp-box{background:var(--card)!important;color:var(--text)!important;}
+</style>
+</head>
+<body>
+<div class="dash-shell">
+<aside class="dash-sidebar">
+  <div class="sb-logo">CD<span>.COM</span></div>
+  <div class="sb-user">
+    <div class="sb-avatar" id="sbav" style="background:#00D4FF">S</div>
+    <div><div class="sb-name" id="sbname">—</div><div class="sb-role">Stock Manager</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Stock</div>
+    <a class="sb-item active" href="#"><span class="icon">📦</span>Dashboard</a>
+    <a class="sb-item" href="#" onclick="switchTab('count')"><span class="icon">🔢</span>Count Sheet <span class="sb-badge" id="cnt-badge">0</span></a>
+    <a class="sb-item" href="#" onclick="switchTab('alerts')"><span class="icon">⚠️</span>Low Stock <span class="sb-badge" id="low-badge" style="background:#DC2626">0</span></a>
+    <a class="sb-item" href="#" onclick="switchTab('movements')"><span class="icon">↕️</span>Movements</a>
+    <a class="sb-item" href="#" onclick="switchTab('valuation')"><span class="icon">💰</span>Valuation</a>
+    <a class="sb-item" href="#" onclick="switchTab('dead')"><span class="icon">🐌</span>Dead Stock</a>
+  </nav>
+  <div class="sb-footer">
+    <button class="btn-primary" id="validate-btn" onclick="doValidate()" style="width:100%;display:none">✅ Validate (<span id="cnt-count">0</span>)</button>
+    <br style="margin:6px 0">
+    <div class="logout-link" onclick="CdApi.logout()">🚪&nbsp;Logout</div>
+  </div>
+</aside>
+<div class="dash-body">
+  <div class="dash-topbar">
+    <div>
+      <div class="tb-title" id="tb-title">Stock Management</div>
+      <div class="tb-sub">Monthly Inventory 📦</div>
+    </div>
+    <div class="tb-right">
+      <select id="loc-select" onchange="onLocChange()" style="border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13px;background:var(--card);color:var(--text)">
+        <option>Loading locations...</option>
+      </select>
+      <input type="text" id="search-input" placeholder="🔍 Search product..." oninput="onSearch()" style="border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13px;width:200px">
+      <button class="tb-btn" onclick="reload()">🔄</button>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div style="background:var(--card);border-bottom:1px solid var(--border);padding:10px 24px">
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-mid);margin-bottom:6px">
+      <span>Count progress</span><span id="prog-text">0 / 0 products counted</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" id="prog-bar" style="width:0%;background:#00D4FF"></div></div>
+  </div>
+
+  <div class="dash-content">
+    <div id="err" class="error-msg"></div>
+
+    <!-- TAB: OVERVIEW -->
+    <div id="tab-overview">
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-icon" style="background:rgba(245,158,11,.1)">💰</div><div class="kpi-val" id="k-val">—</div><div class="kpi-label">Stock Value</div><div class="kpi-sub" id="k-val-s">—</div></div>
+        <div class="kpi-card"><div class="kpi-icon" style="background:rgba(255,77,109,.1)">⚠️</div><div class="kpi-val" id="k-low" style="color:#DC2626">—</div><div class="kpi-label">Low Stock</div><div class="kpi-sub" id="k-low-s">—</div></div>
+        <div class="kpi-card"><div class="kpi-icon" style="background:rgba(0,212,255,.1)">📥</div><div class="kpi-val" id="k-pen" style="color:#3B82F6">—</div><div class="kpi-label">Pending Receipts</div><div class="kpi-sub">Awaiting arrival</div></div>
+        <div class="kpi-card"><div class="kpi-icon" style="background:rgba(0,230,118,.1)">🔢</div><div class="kpi-val" id="k-cnt" style="color:#16A34A">—</div><div class="kpi-label">Count Progress</div><div class="kpi-sub">items today</div></div>
+      </div>
+      <div class="chart-row chart-row-2">
+        <div class="card">
+          <div class="card-head"><div><div class="card-title">💰 Valuation by Category</div><div class="card-sub" id="val-total">—</div></div></div>
+          <canvas id="c-val" height="180"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">🐌 Slow-Moving Stock</div></div>
+          <div id="dead-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: COUNT -->
+    <div id="tab-count" style="display:none">
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-title">🔢 Physical Count Sheet</div><div class="card-sub">Enter physical quantities</div></div>
+          <button class="card-action" onclick="loadQuants()">Refresh</button>
+        </div>
+        <div id="count-list"></div>
+        <button class="btn-outline" id="load-more-q" onclick="loadMoreQuants()" style="width:100%;margin-top:12px;display:none">Load More Products</button>
+      </div>
+    </div>
+
+    <!-- TAB: ALERTS -->
+    <div id="tab-alerts" style="display:none">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">⚠️ Low Stock Alerts</div><div class="card-sub">Products below minimum quantity</div></div><button class="card-action" onclick="loadLowStock()">Refresh</button></div>
+        <div id="alert-list"></div>
+      </div>
+    </div>
+
+    <!-- TAB: MOVEMENTS -->
+    <div id="tab-movements" style="display:none">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">↕️ Recent Stock Movements</div></div><button class="card-action" onclick="loadMovements()">Refresh</button></div>
+        <table class="data-table">
+          <thead><tr><th>Product</th><th>From</th><th>To</th><th>Qty</th></tr></thead>
+          <tbody id="mv-body"><tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-mid)">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: VALUATION -->
+    <div id="tab-valuation" style="display:none">
+      <div class="chart-row chart-row-equal">
+        <div class="card">
+          <div class="card-head"><div><div class="card-title">💰 By Category</div><div class="card-sub" id="val2-total">—</div></div></div>
+          <div id="val-cat-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">📍 By Location</div></div>
+          <div id="val-loc-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: DEAD STOCK -->
+    <div id="tab-dead" style="display:none">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">🐌 Dead / Slow-Moving Stock</div><div class="card-sub">No sales in 30+ days</div></div><button class="card-action" onclick="loadDeadStock()">Refresh</button></div>
+        <table class="data-table">
+          <thead><tr><th>Product</th><th>Category</th><th>Days</th><th>Qty</th><th>Value</th></tr></thead>
+          <tbody id="dead-body"><tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-mid)">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+let locations=[], selectedLocId=null, qOffset=0, counts={}, valChart;
+
+window.addEventListener('DOMContentLoaded',()=>{
+  CdApi.requireLogin();
+  const n=CdApi.userName();
+  document.getElementById('sbname').textContent=n;
+  document.getElementById('sbav').textContent=n?n[0].toUpperCase():'S';
+  valChart=new Chart(document.getElementById('c-val'),{
+    type:'doughnut',
+    data:{labels:[],datasets:[{data:[],backgroundColor:['#00D4FF','#3B82F6','#F59E0B','#10B981','#8B5CF6'],borderWidth:0}]},
+    options:{cutout:'55%',plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:6}}}}
+  });
+  loadAll();
+});
+
+async function loadAll(){
+  await Promise.all([loadStats(),loadLocations(),loadLowStock(),loadMovements(),loadDeadStock(),loadValuation()]);
+  if(selectedLocId) loadQuants();
+}
+function reload(){loadAll();}
+
+async function loadStats(){
+  try{
+    const r=await CdApi.stockDashboard();
+    if(r.error){showErr(r.message);return;}
+    const s=r.stats||r||{};
+    set('k-val','AED '+CdApi.fmtK(s.total_value||s.total_stock_value||0));
+    set('k-val-s',(s.total_products||0)+' products');
+    set('k-low',s.low_stock_count||0);
+    set('k-low-s',(s.out_of_stock_count||0)+' out of stock');
+    set('k-pen',s.pending_receipts||0);
+    updateProgress();
+  }catch(e){}
+}
+
+async function loadLocations(){
+  try{
+    const r=await CdApi.stockLocations();
+    locations=r.results||[];
+    const sel=document.getElementById('loc-select');
+    sel.innerHTML=locations.map(l=>`<option value="${l.id}">${l.complete_name||l.name||''}</option>`).join('');
+    if(locations.length){selectedLocId=locations[0].id;sel.value=selectedLocId;loadQuants();}
+  }catch(e){}
+}
+
+function onLocChange(){
+  selectedLocId=parseInt(document.getElementById('loc-select').value);
+  qOffset=0; counts={};
+  updateProgress(); loadQuants();
+}
+
+let searchTimer;
+function onSearch(){clearTimeout(searchTimer);searchTimer=setTimeout(()=>{qOffset=0;loadQuants();},400);}
+
+async function loadQuants(){
+  if(!selectedLocId)return;
+  qOffset=0;
+  const search=document.getElementById('search-input').value.trim();
+  try{
+    const r=await CdApi.stockQuants(selectedLocId,search,50,0);
+    renderQuants(r.results||[]);
+    document.getElementById('load-more-q').style.display=(r.results||[]).length===50?'block':'none';
+    qOffset=(r.results||[]).length;
+  }catch(e){}
+}
+async function loadMoreQuants(){
+  const search=document.getElementById('search-input').value.trim();
+  const r=await CdApi.stockQuants(selectedLocId,search,50,qOffset);
+  const d=r.results||[];
+  const existing=document.getElementById('count-list').querySelectorAll('.count-row').length;
+  d.forEach(q=>appendCountRow(q));
+  qOffset+=d.length;
+  if(d.length<50)document.getElementById('load-more-q').style.display='none';
+}
+
+function renderQuants(quants){
+  document.getElementById('count-list').innerHTML=
+    quants.length?quants.map(q=>countRowHtml(q)).join('')
+    :'<div style="text-align:center;padding:20px;color:var(--text-mid)">No products found in this location</div>';
+}
+function appendCountRow(q){
+  const div=document.createElement('div');
+  div.innerHTML=countRowHtml(q);
+  document.getElementById('count-list').appendChild(div.firstChild);
+}
+function countRowHtml(q){
+  const pid=q.product_id,name=Array.isArray(pid)?pid[pid.length-1]:pid||'Product';
+  const sys=parseFloat(q.quantity||0);
+  const counted=counts[q.id]!==undefined?counts[q.id]:null;
+  const diff=counted!==null?counted-sys:null;
+  const diffStr=diff===null?'—':diff>0?'+'+diff:diff===0?'0':diff;
+  const diffColor=diff===null?'var(--text-soft)':diff>0?'#10B981':diff<0?'#DC2626':'var(--text-mid)';
+  return `<div class="del-row count-row" data-qid="${q.id}" data-sys="${sys}">
+    <div style="font-size:18px;width:30px;text-align:center">📦</div>
+    <div style="flex:1"><div style="font-size:13px;font-weight:600">${name}</div><div style="font-size:10px;color:var(--text-soft)">Quant ID: ${q.id}</div></div>
+    <div style="text-align:right;margin-right:12px"><div style="font-size:11px;color:var(--text-mid)">System</div><div style="font-size:16px;font-weight:700">${sys}</div></div>
+    <div style="text-align:right;margin-right:12px">
+      <div style="font-size:11px;color:var(--text-mid)">Counted</div>
+      <input class="count-input" type="number" value="${counted!==null?counted:''}" placeholder="—"
+        onchange="saveCount(${q.id},${sys},this.value)" style="width:70px">
+    </div>
+    <div style="text-align:right;min-width:40px"><div style="font-size:11px;color:var(--text-mid)">Diff</div>
+      <div id="diff-${q.id}" style="font-size:14px;font-weight:700;color:${diffColor}">${diffStr}</div>
+    </div>
+  </div>`;
+}
+
+async function saveCount(qid,sys,val){
+  const qty=parseFloat(val);
+  if(isNaN(qty))return;
+  counts[qid]=qty;
+  const diff=qty-sys;
+  const el=document.getElementById('diff-'+qid);
+  if(el){
+    el.textContent=diff>0?'+'+diff:diff===0?'0':diff;
+    el.style.color=diff>0?'#10B981':diff<0?'#DC2626':'var(--text-mid)';
+  }
+  await CdApi.updateCountedQty(qid,null,null,qty);
+  updateProgress();
+}
+
+function updateProgress(){
+  const cnt=Object.keys(counts).length;
+  set('cnt-count',cnt); set('cnt-badge',cnt);
+  set('k-cnt',cnt+' items');
+  set('prog-text',cnt+' products counted');
+  document.getElementById('prog-bar').style.width=cnt>0?'100%':'0%';
+  document.getElementById('validate-btn').style.display=cnt>0?'block':'none';
+}
+
+async function doValidate(){
+  if(!selectedLocId)return;
+  if(!confirm('Apply '+Object.keys(counts).length+' counted quantities to Odoo?\nThis creates inventory adjustment entries.'))return;
+  document.getElementById('validate-btn').textContent='Validating...';
+  const r=await CdApi.validateInventory(selectedLocId);
+  alert(r.status==='success'?'✅ '+r.message:r.message||'Error');
+  if(r.status==='success'){counts={};updateProgress();loadQuants();}
+  document.getElementById('validate-btn').textContent='✅ Validate ('+Object.keys(counts).length+')';
+}
+
+async function loadLowStock(){
+  try{
+    const r=await CdApi.lowStock(50);
+    const d=r.results||[];
+    set('low-badge',d.length);
+    document.getElementById('alert-list').innerHTML=d.length?
+      d.map(s=>{
+        const pid=s.product_id,name=Array.isArray(pid)?pid[pid.length-1]:pid||'Product';
+        const onH=parseFloat(s.qty_on_hand||0),min=parseFloat(s.product_min_qty||0);
+        const pct=min>0?Math.min(onH/min,1):0;
+        const crit=pct<0.3,c=crit?'#DC2626':'#F59E0B';
+        return `<div style="background:var(--card);border:1px solid ${c}44;border-radius:12px;padding:14px;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="width:36px;height:36px;border-radius:10px;background:${c}22;display:flex;align-items:center;justify-content:center;font-size:18px">${crit?'🔴':'⚠️'}</div>
+            <div style="flex:1"><div style="font-size:14px;font-weight:700">${name}</div></div>
+            <span class="pill" style="background:${c}22;color:${c}">${crit?'Critical':'Low'}</span>
+            <span style="font-size:16px;font-weight:800;color:${c}">${onH.toFixed(0)} / ${min.toFixed(0)}</span>
+          </div>
+          <div class="prog-wrap"><div class="prog-fill" style="width:${(pct*100).toFixed(0)}%;background:${c}"></div></div>
+        </div>`;
+      }).join('')
+      :'<div style="text-align:center;padding:20px;color:#16A34A">✅ All products well stocked</div>';
+  }catch(e){}
+}
+
+async function loadMovements(){
+  try{
+    const r=await CdApi.stockMovements(30);
+    const d=r.results||[];
+    document.getElementById('mv-body').innerHTML=d.length?
+      d.map(m=>{
+        const pid=m.product_id,name=Array.isArray(pid)?pid[pid.length-1]:'Product';
+        const fr=m.location_id,to=m.location_dest_id;
+        const frN=Array.isArray(fr)?fr[fr.length-1]:'';
+        const toN=Array.isArray(to)?to[to.length-1]:'';
+        const qty=parseFloat(m.quantity_done||m.product_qty||0);
+        const isIn=toN.toLowerCase().includes('stock')||toN.toLowerCase().includes('wh');
+        const c=isIn?'#10B981':'#DC2626';
+        return `<tr><td style="font-weight:600">${name}</td><td style="font-size:11px;color:var(--text-mid)">${frN}</td><td style="font-size:11px;color:var(--text-mid)">${toN}</td>
+          <td style="font-weight:700;color:${c}">${isIn?'+':'−'}${qty.toFixed(0)}</td></tr>`;
+      }).join('')
+      :'<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--text-mid)">No movements</td></tr>';
+  }catch(e){}
+}
+
+async function loadValuation(){
+  try{
+    const r=await CdApi.inventoryValuation();
+    if(r.error)return;
+    const total=r.total_value||0;
+    set('val-total','AED '+CdApi.fmtK(total)+' total');
+    set('val2-total','Total AED '+CdApi.fmtK(total));
+    const cats=r.by_category||[];
+    valChart.data.labels=cats.map(c=>c.category_name||'');
+    valChart.data.datasets[0].data=cats.map(c=>c.total_value||0);
+    valChart.update();
+    const C=['#00D4FF','#3B82F6','#F59E0B','#10B981','#8B5CF6','#EC4899'];
+    document.getElementById('val-cat-list').innerHTML=cats.map((c,i)=>`
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+          <span style="display:flex;align-items:center;gap:5px">
+            <span style="width:8px;height:8px;border-radius:50%;background:${C[i%C.length]};display:inline-block"></span>${c.category_name||''}
+          </span>
+          <b>AED ${CdApi.fmtK(c.total_value||0)} (${((c.pct||0)*100).toFixed(0)}%)</b>
+        </div>
+        <div class="prog-wrap"><div class="prog-fill" style="width:${((c.pct||0)*100).toFixed(0)}%;background:${C[i%C.length]}"></div></div>
+      </div>`).join('');
+    const locs=r.by_location||[];
+    document.getElementById('val-loc-list').innerHTML=locs.map(l=>`
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
+        <span>📍 ${l.location_name||''}</span><b style="color:var(--primary)">AED ${CdApi.fmtK(l.total_value||0)}</b>
+      </div>`).join('');
+  }catch(e){}
+}
+
+async function loadDeadStock(){
+  try{
+    const r=await CdApi.deadStock(30);
+    const d=r.products||[];
+    document.getElementById('dead-body').innerHTML=d.length?
+      d.map(p=>`<tr>
+        <td style="font-weight:600">${p.name||''}</td>
+        <td style="color:var(--text-mid)">${p.category||''}</td>
+        <td style="color:#F59E0B;font-weight:700">${p.days_since_last_sale||0}d</td>
+        <td>${p.qty_on_hand||0}</td>
+        <td style="font-weight:700;color:var(--primary)">AED ${CdApi.fmtK(p.value||0)}</td>
+      </tr>`).join('')
+      :'<tr><td colspan="5" style="text-align:center;padding:16px;color:#16A34A">✅ No dead stock</td></tr>';
+
+    // Also render in overview tab
+    document.getElementById('dead-list').innerHTML=d.slice(0,4).map(p=>`
+      <div class="del-row">
+        <div style="font-size:22px">📦</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:600">${p.name||''}</div><div style="font-size:11px;color:var(--text-mid)">${p.days_since_last_sale||0} days · ${p.qty_on_hand||0} units</div></div>
+        <b style="color:#F59E0B">AED ${CdApi.fmtK(p.value||0)}</b>
+      </div>`).join('')||'<div style="text-align:center;padding:16px;color:#16A34A">✅ No dead stock</div>';
+  }catch(e){}
+}
+
+function switchTab(tab){
+  ['overview','count','alerts','movements','valuation','dead'].forEach(t=>
+    document.getElementById('tab-'+t).style.display='none');
+  document.getElementById('tab-'+tab).style.display='block';
+  document.querySelector('.dash-sidebar .sb-item.active')?.classList.remove('active');
+  set('tb-title',{overview:'Stock Dashboard',count:'Count Sheet',alerts:'Low Stock Alerts',movements:'Movements',valuation:'Valuation',dead:'Dead Stock'}[tab]||'Stock');
+  if(tab==='count'&&!document.getElementById('count-list').children.length) loadQuants();
+}
+
+function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function showErr(msg){const e=document.getElementById('err');e.textContent='⚠️ '+msg;e.style.display='block';}
+</script>
+</body>
+</html>

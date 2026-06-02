@@ -189,8 +189,8 @@
 
 <div id="site-footer"></div>
 
-<script src="js/api-cache.js?v=1"></script><script src="js/api.js?v=8.9"></script>
-<script src="js/app.js?v=8.9"></script>
+<script src="js/api.js?v=8.8"></script>
+<script src="js/app.js?v=8.10"></script>
 <script src="js/layout.js"></script>
 <script>
 /* ──────────────────────────────────────────────
@@ -215,7 +215,7 @@ function initSlider(imageItems) {
   sTotal = imageItems.length;
   var sl = document.getElementById('heroSlides');
   sl.innerHTML = '';
-  imageItems.forEach(function(item, idx) {
+  imageItems.forEach(function(item) {
     // Use image_url field directly — it's already a path like /web/image/slider.image/31/image
     var imgSrc = item.image_url ? API.img(item.image_url) : (item.image ? API.img(item.image) : API.sliderImg(item.id));
     var div = document.createElement('div');
@@ -223,9 +223,7 @@ function initSlider(imageItems) {
     var img = document.createElement('img');
     img.src = imgSrc;
     img.alt = item.name || 'Coop Discounts';
-    img.loading = idx === 0 ? 'eager' : 'lazy';
-    img.decoding = 'async';
-    if (idx === 0) img.fetchPriority = 'high';
+    img.loading = 'eager';
     img.onerror = function() {
       // Fallback to brand banner if image fails
       this.style.display = 'none';
@@ -255,138 +253,7 @@ function initSlider(imageItems) {
 }
 function autoSlide() { sIdx = (sIdx + 1) % sTotal; applySlide(); }
 
-/* ──────────────────────────────────────────────
- * DEAL SECTIONS
- * Each slider has image_ids[] with:
- *   { id, name, image_url: "/web/image/slider.image/{id}/image", product_id: [{id:X, name:Y}] }
- * image_url → API.img(image_url) = /proxy + path ✅
- * product_id[0].id = product template ID → link to product.html?id=X
- * ────────────────────────────────────────────── */
-function buildDealSection(slider, containerId, titleId) {
-  if (!slider) return;
-  var items = slider.image_ids || [];
-  // Update title
-  if (titleId && slider.name) {
-    var te = document.getElementById(titleId);
-    if (te) {
-      var icon = te.textContent.charAt(0) + te.textContent.charAt(1);
-      te.textContent = icon + ' ' + slider.name;
-    }
-  }
-  var el = document.getElementById(containerId);
-  if (!el) return;
-  if (!items.length) {
-    el.innerHTML = '<div style="padding:20px;color:#9ca3af;font-size:13px;text-align:center">No products in this section</div>';
-    return;
-  }
-  el.innerHTML = items.map(function(it) {
-    var pid = it.product_id && it.product_id.length ? it.product_id[0].id : null;
-    var pname = (it.name || it.display_name || '').replace(/^\[.*?\]\s*/,'').replace(/"/g,'&quot;').trim();
-    // Use image_url field (already a path) → prepend /proxy
-    var imgSrc = it.image_url ? API.img(it.image_url) : (it.image ? API.img(it.image) : API.sliderImg(it.id));
-    var href = pid ? 'product.html?id=' + pid : 'shop.html';
-    return '<div class="dp" data-pid="' + pid + '" onclick="location.href=\'' + href + '\'">' +
-      '<div class="dp-img">' +
-        '<img src="' + imgSrc + '" alt="' + pname + '" loading="lazy"' +
-             ' onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">' +
-        '<span style="font-size:36px;display:none;align-items:center;justify-content:center;width:100%;height:100%">📦</span>' +
-      '</div>' +
-      '<div class="dp-nm">' + (pname || 'View Product') + '</div>' +
-      '<div class="dp-price" id="dpp-' + it.id + '"><span style="color:#9ca3af;font-size:10px">Loading...</span></div>' +
-      '<div class="cd-qty-ctrl" data-pid="' + pid + '" data-pdenc="" data-btnclass="dp-atc" style="margin-top:auto">' +
-        (pid ? '<button class="dp-atc" id="dpa-' + it.id + '" onclick="event.stopPropagation();quickAdd(' + pid + ',\'' + pname + '\',\'' + imgSrc + '\')">Add to Cart</button>' : '') +
-      '</div>' +
-    '</div>';
-  }).join('');
-  // Enrich with real prices from product API
-  enrichDealSection(items);
-}
-
-async function enrichDealSection(items) {
-  var pids = [];
-  for (var i = 0; i < items.length; i++) {
-    var pid = items[i].product_id && items[i].product_id.length ? items[i].product_id[0].id : null;
-    if (pid) pids.push(pid);
-  }
-  if (!pids.length) return;
-  
-  var prodsMap = {};
-  try {
-    var domain = "[(\"id\", \"in\", [" + pids.join(",") + "])]";
-    var r = await API.getProds({ domain: domain, limit: 100 });
-    var data = r.data || [];
-    for (var j = 0; j < data.length; j++) {
-      prodsMap[data[j].id] = data[j];
-    }
-  } catch(e) {
-    console.warn("Bulk fetch failed", e);
-  }
-
-  for (var i = 0; i < items.length; i++) {
-    var it = items[i];
-    var pid = it.product_id && it.product_id.length ? it.product_id[0].id : null;
-    if (!pid) continue;
-    var p = prodsMap[pid];
-    var priceEl = document.getElementById("dpp-" + it.id);
-    var btnEl = document.getElementById("dpa-" + it.id);
-    
-    if (!p) {
-      var fallbackPrice = parseFloat(it.product_id[0].partner_price || 0);
-      if (priceEl) {
-         priceEl.innerHTML = fallbackPrice > 0 
-           ? "<strong style=\"color:#A8151B\">AED " + fallbackPrice.toFixed(2) + "</strong>"
-           : "<span style=\"color:#9ca3af;font-size:12px\">Price Unavailable</span>";
-      }
-      if (btnEl) {
-         btnEl.textContent = "View Product";
-         btnEl.onclick = function() { location.href = "product.html?id=" + pid; };
-      }
-      continue;
-    }
-    
-    var price = parseFloat(p.list_price || 0);
-    var std = parseFloat(p.standard_price || 0);
-    var qty = p.qty_available !== undefined ? parseFloat(p.qty_available) : -1;
-    var oos = qty === 0;
-    var varId = Array.isArray(p.product_variant_id) && p.product_variant_id.length ? p.product_variant_id[0].id : pid;
-    var nm = (p.name || "").replace(/^\[.*?\]\s*/,"").trim();
-    var disc = std > price && std > 0 ? Math.round((1 - price/std)*100) : 0;
-    
-    if (priceEl) {
-      priceEl.innerHTML = "<strong style=\"color:#A8151B\">AED " + price.toFixed(2) + "</strong>" +
-        (disc > 0 ? "<span style=\"color:#9ca3af;text-decoration:line-through;font-size:9px;margin-left:4px\">"+std.toFixed(2)+"</span>" : "");
-    }
-    
-    if (btnEl) {
-      if (oos) { btnEl.textContent="Out of Stock"; btnEl.style.background="#9ca3af"; btnEl.disabled=true; }
-      else {
-        var imgSrc2 = p.image_1024 ? API.img(p.image_1024) : API.prodImg(pid);
-        var imgEl = document.querySelector("[data-pid=\""+pid+"\"] .dp-img img");
-        if (imgEl && p.image_1024) { imgEl.src = imgSrc2; }
-        var pdEnc = encodeURIComponent(JSON.stringify({product_id:pid,variant_id:varId,name:nm,price:price,image:imgSrc2,qty_available:qty}));
-        var wrap = document.querySelector(".cd-qty-ctrl[data-pid=\""+pid+"\"]");
-        if (wrap) { wrap.setAttribute("data-pdenc", pdEnc); if(typeof tick === "function") tick(); }
-        btnEl.onclick = (function(enc, p_pid, p_nm, p_img, p_vid, p_pr, p_qty) { 
-          return function(e) {
-            e.stopPropagation();
-            quickAdd(p_pid, p_nm, p_img, p_vid, p_pr, p_qty);
-          };
-        })(pdEnc, pid, nm, imgSrc2, varId, price, qty);
-        if (price > 0) btnEl.textContent = "AED " + price.toFixed(2) + " - Add";
-      }
-    }
-  }
-}
-
-function quickAdd(pid, name, imgSrc, varId, price, qty) {
-  if (!API.loggedIn()) {
-    toast('Please sign in to add to cart', 'warn');
-    setTimeout(function(){ location.href = 'login.html?next=index.html'; }, 800);
-    return;
-  }
-  Cart.add({ product_id: pid, variant_id: varId||pid, name: name||'Product', price: price||0, image: imgSrc||'', qty_available: qty!=null?qty:-1 });
-  openDrw();
-}
+/* buildDealSection / buildDealCards / addToCart live in js/app.js */
 
 /* ──────────────────────────────────────────────
  * CATEGORIES

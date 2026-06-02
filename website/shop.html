@@ -102,7 +102,7 @@
 </section>
 
 <div id="site-footer"></div>
-<script src="js/api-cache.js?v=1"></script><script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.9"></script><script src="js/layout.js"></script>
+<script src="js/api.js?v=8.5"></script><script src="js/app.js?v=8.5"></script><script src="js/layout.js"></script>
 <script>
 var PAGE_SIZE = 16;
 var currentPage = 0;
@@ -236,12 +236,6 @@ async function loadProds() {
     el.innerHTML = prods.length ? prods.map(buildCard).join('') :
       '<div style="grid-column:1/-1;text-align:center;padding:52px;color:#9ca3af"><div style="font-size:40px;margin-bottom:12px">🔍</div><h3 style="font-size:14px;font-weight:700">No products found</h3><a href="shop.html" style="color:#e41e26;font-weight:700;font-size:12px;display:block;margin-top:8px">Clear Filters →</a></div>';
     buildPagination(total);
-    if (typeof API !== 'undefined' && API.prefetch && currentPage + 1 < Math.ceil(total / PAGE_SIZE)) {
-      var nextParams = Object.assign({}, params, { Offset: (currentPage + 1) * PAGE_SIZE });
-      var warm = function () { API.prefetch('/api/bcp-product-template', nextParams); };
-      if (typeof requestIdleCallback === 'function') requestIdleCallback(warm, { timeout: 2000 });
-      else setTimeout(warm, 600);
-    }
   } catch(e) {
     el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:52px;color:#e41e26"><div style="font-size:36px;margin-bottom:10px">😕</div><div style="font-size:13px">'+e.message+'</div><button onclick="loadProds()" style="margin-top:14px;background:#e41e26;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit">Retry</button></div>';
   }

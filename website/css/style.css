@@ -77,18 +77,18 @@ input,select,textarea{font-family:inherit}
 
 /* ── HEADER ────────────────────────────────────────────────── */
 .hdr{background:var(--white);border-bottom:3px solid var(--red);position:sticky;top:0;z-index:900;box-shadow:var(--sh-sm)}
-.hdr-in{display:flex;align-items:center;gap:14px;padding:11px 0}
+.hdr-in{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 0}
 
 /* Logo */
 .logo{display:flex;align-items:center;gap:10px;flex-shrink:0}
-.logo-img-w{height:54px;display:flex;align-items:center}
-.logo-img-w img{height:54px;width:auto;object-fit:contain;max-width:180px}
-.logo-fb{width:54px;height:54px;background:var(--red);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;box-shadow:var(--sh-red)}
+.logo-img-w{height:84px;display:flex;align-items:center}
+.logo-img-w img{height:84px;width:auto;object-fit:contain;max-width:270px}
+.logo-fb{width:84px;height:84px;background:var(--red);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:40px;color:#fff;box-shadow:var(--sh-red)}
 .logo-txt h1{font-size:17px;font-weight:900;color:var(--red-dark);line-height:1.2;letter-spacing:-.3px}
 .logo-txt span{font-size:10px;font-weight:600;color:var(--gray-400);letter-spacing:1.5px;text-transform:uppercase}
 
 /* Search */
-.srch-wrap{flex:1;display:flex;align-items:center;background:var(--gray-100);border:2px solid var(--gray-200);border-radius:50px;overflow:hidden;transition:border-color var(--t),box-shadow var(--t),background var(--t)}
+.srch-wrap{flex:0 1 540px;max-width:540px;margin:0 10px;display:flex;align-items:center;background:var(--gray-100);border:2px solid var(--gray-200);border-radius:50px;overflow:hidden;transition:border-color var(--t),box-shadow var(--t),background var(--t)}
 .srch-wrap:focus-within{border-color:var(--red);box-shadow:0 0 0 4px rgba(228, 30, 38,.08);background:var(--white)}
 .srch-sel{border:none;background:transparent;padding:11px 16px;font-size:12px;font-weight:600;color:var(--gray-700);border-right:1px solid var(--gray-200);cursor:pointer;font-family:inherit;max-width:140px;outline:none}
 .srch-inp{flex:1;border:none;background:transparent;padding:11px 16px;font-size:14px;color:var(--gray-900);font-family:inherit;outline:none}
@@ -125,9 +125,6 @@ input,select,textarea{font-family:inherit}
 .nav-a{display:flex;align-items:center;gap:5px;padding:13px 15px;color:rgba(255,255,255,.88);font-size:13px;font-weight:600;white-space:nowrap;transition:background var(--t),color var(--t);border-bottom:3px solid transparent;position:relative}
 .nav-a:hover,.nav-a.active{background:rgba(255,255,255,.12);color:#fff;border-bottom-color:var(--yellow)}
 .n-badge{background:var(--yellow);color:var(--gray-900);font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;line-height:1}
-
-/* Product cards — defer off-screen layout/paint where supported */
-.pc{content-visibility:auto;contain-intrinsic-size:auto 290px}
 
 /* ── CONTAINER ─────────────────────────────────────────────── */
 .ctr{max-width:1300px;margin:0 auto;padding:0 20px}
