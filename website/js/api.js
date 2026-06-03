@@ -1524,7 +1524,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     // Session
     loggedIn, me, myPid, mySessionId, myUserId, myName, sess, saveSess, clearSess,
     // Auth
-    login, logout, register, updatePassword,
+    login, logout, register, updatePassword, forgotPassword,
     // Startup/Sliders
     getLogo, getHomeSliders, getDealOfDay, getBestSeller, getRecommended,
     getFeatured, getFreshPick, getBrands, getAllDeals, getDealById,
