@@ -490,6 +490,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
       deviceid:devId, firebase:'',latitude:'',longitude:''});
 
   const updatePassword = (uid, pw) => GET(`/api/user/${uid}/update`, { password:pw });
+  const forgotPassword = (emailOrPhone) => GET(`/api/contacts/api_reset_password`, { reset: 1, email: emailOrPhone });
 
   // ── STARTUP / SLIDERS ─────────────────────────────────────────
   // Logo:       /api/deal-day-slider/12 → banner_image = path → img(banner_image)

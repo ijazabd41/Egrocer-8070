@@ -29,9 +29,26 @@
     <div id="login-step1">
       <div class="fg" style="margin-bottom:12px"><label class="fl">Email or Mobile Number *</label><input class="fi" type="text" id="lg-em" placeholder="email@example.com or 971501234567" autocomplete="username"></div>
       <div class="fg" style="margin-bottom:12px"><label class="fl">Password *</label><input class="fi" type="password" id="lg-pw" placeholder="••••••••" autocomplete="current-password"></div>
+      <div style="text-align:right;margin-bottom:12px"><button onclick="switchTab('forgot')" style="background:none;border:none;color:#e41e26;font-size:12px;font-weight:700;cursor:pointer">Forgot Password?</button></div>
       <div id="lg-err" style="display:none;margin-bottom:10px" class="alert alert-err"></div>
       <button id="lg-btn" onclick="doLogin()" class="sbtn">Sign In →</button>
       <p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:10px">🔒 Your data is encrypted and secure</p>
+    </div>
+  </div>
+
+  <!-- FORGOT PASSWORD -->
+  <div id="panel-forgot" style="display:none">
+    <div class="fs" style="border-radius:0 0 16px 16px;border-top:none;margin-bottom:0">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:46px;margin-bottom:8px">🔐</div>
+        <h1 style="font-size:20px;font-weight:900;color:#e41e26;margin-bottom:4px">Reset Password</h1>
+        <p style="font-size:12px;color:#9ca3af">Enter your email or phone number to reset your password</p>
+      </div>
+
+      <div class="fg" style="margin-bottom:12px"><label class="fl">Email or Mobile Number *</label><input class="fi" type="text" id="fg-em" placeholder="email@example.com or 971501234567"></div>
+      <div id="fg-err" style="display:none;margin-bottom:10px" class="alert alert-err"></div>
+      <button id="fg-btn" onclick="doForgotPassword()" class="sbtn">Send Reset Link →</button>
+      <div style="text-align:center;margin-top:14px"><button onclick="switchTab('login')" style="background:none;border:none;color:#6b7280;font-size:12px;font-weight:700;cursor:pointer">← Back to Sign In</button></div>
     </div>
   </div>
 
@@ -97,6 +114,7 @@ if(API.loggedIn())location.href=nextPage;
 function switchTab(t){
   document.getElementById('panel-login').style.display=t==='login'?'block':'none';
   document.getElementById('panel-register').style.display=t==='register'?'block':'none';
+  document.getElementById('panel-forgot').style.display=t==='forgot'?'block':'none';
   document.getElementById('tab-login').classList.toggle('on',t==='login');
   document.getElementById('tab-register').classList.toggle('on',t==='register');
 }
@@ -134,6 +152,28 @@ async function doLogin(){
       },500);
     }else{err.textContent='❌ '+(r.err||'Invalid credentials');err.style.display='flex';btn.disabled=false;btn.textContent='Sign In →';}
   }catch(e){err.textContent=`❌ ${e.message}`;err.style.display='flex';btn.disabled=false;btn.textContent='Sign In →';}
+}
+
+async function doForgotPassword() {
+  const em = document.getElementById('fg-em').value.trim();
+  const err = document.getElementById('fg-err'), btn = document.getElementById('fg-btn');
+  err.style.display = 'none';
+  if (!em) { err.textContent = '❌ Please enter your email or phone number'; err.style.display = 'flex'; return; }
+  
+  btn.disabled = true; btn.textContent = '⏳ Sending...';
+  try {
+    const r = await API.forgotPassword(em);
+    if (r.success === 1 || r.response?.success) {
+      toast('✅ Password reset link sent to your email!');
+      setTimeout(() => switchTab('login'), 2000);
+    } else {
+      throw new Error(r.message || r.error || 'Failed to send reset link');
+    }
+  } catch(e) {
+    err.textContent = `❌ ${e.message}`; err.style.display = 'flex';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Send Reset Link →';
+  }
 }
 
 var _regData=null;
