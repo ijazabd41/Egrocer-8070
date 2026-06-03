@@ -236,6 +236,7 @@ function goStep(step){
   if(step>currentStep && !validateStep(currentStep)) return;
   currentStep=step;
   updateStepUi();
+  checkPlaceOrderBtnState();
   var target=document.getElementById('checkoutStepper');
   if(target) target.scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -260,6 +261,7 @@ function checkPlaceOrderBtnState() {
   var btn = document.getElementById('placeBtn');
   if(!btn) return;
   var valid = true;
+  if(currentStep !== 3) valid = false;
   if(!selCarrierId) valid = false;
   if(selDeliveryKind !== 'store' && !selDeliveryContact) valid = false;
   if(selDeliveryKind === 'store') {
@@ -897,6 +899,7 @@ async function placeOrder(){
       : '[DELIVERY] Ship Contact ID ' + contact.partnerShippingId + ' | Invoice Contact ID ' + (contact.partnerInvoiceId || contact.partnerShippingId);
     var notesVal = document.getElementById('notes').value.trim();
     if(notesVal) note+=' | Notes: '+notesVal;
+    note += ' | Payment Method: ' + selProviderName;
     await API.updOrder(parseInt(oid),{note:note,origin:'COOPDISCOUNT-WEB'}).catch(function(e){});
 
     // 5–7) Confirm order on server (Postman: createTx → markDone → createInvoice)

@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>COOP — Store Manager Delivery Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cd_dashboard.css">
+<script src="cd_web_api.js"></script>
+<style>
+/* ── Brand tokens ──────────────────────────────────────────── */
+:root{
+  --bg:#F4F6F9; --sidebar:#fff; --card:#fff; --border:#E8ECF2;
+  --primary:#875A7B; --primary-dark:#6C3D66;
+  --text:#1A1D23; --text-mid:#6B7280; --text-soft:#9CA3AF;
+  --nav-active:#F3EDF7; --font:'Inter',sans-serif;
+
+  /* Source colours */
+  --pos:#4E73DF;   --cweb:#1CC88A; --cmob:#36B9CC;
+  --dweb:#F6C23E;  --dmob:#FD7E14; --intern:#858796;
+
+  /* State colours */
+  --s-new:#858796;    --s-wait:#FD7E14;   --s-approved:#4E73DF;
+  --s-prep:#4E73DF;   --s-ready:#36B9CC;  --s-assign:#6F42C1;
+  --s-dispatch:#FFC107; --s-deliver:#1CC88A; --s-cancel:#E74A3B;
+}
+
+/* ── Sidebar overrides for brand colour ────────────────────── */
+.sb-logo span{color:var(--primary)}
+.sb-item:hover,.sb-item.active{background:var(--nav-active);color:var(--primary);border-left-color:var(--primary)}
+.sb-avatar{background:var(--primary)}
+.sb-badge{background:var(--primary)}
+
+/* ── Topbar ─────────────────────────────────────────────────  */
+.top-gradient{
+  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);
+  color:#fff; padding:0 24px;
+  display:flex; align-items:center; justify-content:space-between;
+  height:56px; position:sticky; top:0; z-index:100;
+}
+.top-gradient .tb-title{color:#fff;font-size:17px;font-weight:800}
+.top-gradient .tb-sub{color:rgba(255,255,255,.7);font-size:11px}
+.tb-right{display:flex;align-items:center;gap:8px}
+.tb-icon-btn{width:34px;height:34px;border-radius:9px;border:1px solid rgba(255,255,255,.3);
+  background:rgba(255,255,255,.12);color:#fff;font-size:16px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
+.tb-icon-btn:hover{background:rgba(255,255,255,.22)}
+
+/* ── Auto-assign badge ─────────────────────────────────────── */
+.aa-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;
+  margin-bottom:16px;
+}
+.aa-on {background:rgba(28,200,138,.1);border:1px solid rgba(28,200,138,.3);color:#1CC88A}
+.aa-off{background:rgba(253,126,20,.1);border:1px solid rgba(253,126,20,.3);color:#FD7E14}
+
+/* ── Source badge ──────────────────────────────────────────── */
+.src-badge{
+  display:inline-block;padding:2px 9px;border-radius:5px;
+  font-size:10px;font-weight:700;color:#fff;
+}
+.src-pos     {background:var(--pos)}
+.src-cweb    {background:var(--cweb)}
+.src-cmob    {background:var(--cmob)}
+.src-dweb    {background:var(--dweb);color:#333}
+.src-dmob    {background:var(--dmob)}
+.src-internal{background:var(--intern)}
+
+/* ── State badge ───────────────────────────────────────────── */
+.st-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;
+}
+.st-new      {background:rgba(133,135,150,.1);color:var(--s-new)}
+.st-waiting  {background:rgba(253,126,20,.1); color:var(--s-wait)}
+.st-approved {background:rgba(78,115,223,.1); color:var(--s-approved)}
+.st-preparing{background:rgba(78,115,223,.1); color:var(--s-prep)}
+.st-ready    {background:rgba(54,185,204,.1); color:var(--s-ready)}
+.st-assigned {background:rgba(111,66,193,.1); color:var(--s-assign)}
+.st-dispatch {background:rgba(255,193,7,.15); color:#b38b00}
+.st-deliver  {background:rgba(28,200,138,.1); color:var(--s-deliver)}
+.st-cancel   {background:rgba(231,74,59,.1);  color:var(--s-cancel)}
+
+/* ── Priority badge ─────────────────────────────────────────  */
+.prio-2{background:rgba(231,74,59,.1);color:var(--s-cancel);padding:2px 7px;
+  border-radius:4px;font-size:9px;font-weight:800}
+.prio-1{background:rgba(255,193,7,.15);color:#b38b00;padding:2px 7px;
+  border-radius:4px;font-size:9px;font-weight:800}
+
+/* ── Pipeline bar ──────────────────────────────────────────── */
+.pipeline{
+  display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:18px;
+}
+.pipe-chip{
+  flex:0 0 100px;background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;
+  transition:box-shadow .15s,transform .15s;user-select:none;
+}
+.pipe-chip:hover{box-shadow:0 4px 12px rgba(0,0,0,.09);transform:translateY(-1px)}
+.pipe-chip.active{border-width:2px}
+.pipe-num{font-size:20px;font-weight:800}
+.pipe-lbl{font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.04em;color:var(--text-mid);margin-top:2px}
+
+/* ── Source bar row ─────────────────────────────────────────  */
+.src-row{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 14px;border-bottom:1px solid var(--border);
+}
+.src-row:last-child{border-bottom:none}
+.src-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.src-label{flex:1;font-size:13px;font-weight:600}
+.src-count{font-size:15px;font-weight:800;min-width:28px;text-align:right}
+.src-bar-wrap{height:5px;border-radius:3px;background:var(--border);margin:0 14px 6px;overflow:hidden}
+.src-bar-fill{height:100%;border-radius:3px;transition:width .5s}
+
+/* ── Order card ─────────────────────────────────────────────  */
+.ord-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:14px;margin-bottom:10px;overflow:hidden;
+  box-shadow:0 2px 6px rgba(0,0,0,.04);
+  transition:box-shadow .15s;cursor:pointer;
+}
+.ord-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.1)}
+.ord-stripe{height:4px}
+.ord-body{padding:14px}
+.ord-ref{font-size:11px;color:var(--text-mid);font-weight:500}
+.ord-name{font-size:14px;font-weight:700;margin:3px 0}
+.ord-origin{font-size:11px;color:var(--text-soft)}
+.ord-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  border-top:1px solid var(--border);padding:8px 14px;background:rgba(0,0,0,.015);
+}
+.ord-driver{font-size:11px;color:var(--text-mid);display:flex;align-items:center;gap:5px}
+
+/* ── Detail panel ───────────────────────────────────────────  */
+.detail-backdrop{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400;
+  align-items:flex-start;justify-content:flex-end;
+}
+.detail-panel{
+  width:480px;max-width:96vw;height:100vh;background:#fff;
+  overflow-y:auto;box-shadow:-8px 0 32px rgba(0,0,0,.15);
+  display:flex;flex-direction:column;
+}
+.dp-header{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  padding:20px 20px 16px;color:#fff;position:sticky;top:0;z-index:10;
+}
+.dp-close{
+  position:absolute;top:16px;right:16px;width:30px;height:30px;
+  border-radius:50%;background:rgba(255,255,255,.2);border:none;
+  color:#fff;font-size:16px;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;
+}
+.dp-body{padding:18px;flex:1}
+.dp-section{font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--text-soft);margin:16px 0 8px}
+.dp-row{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)}
+.dp-row:last-child{border-bottom:none}
+.dp-lbl{font-size:12px;color:var(--text-mid);width:110px;flex-shrink:0}
+.dp-val{font-size:12px;font-weight:600;flex:1}
+.dp-actions{padding:16px;border-top:1px solid var(--border);
+  display:flex;flex-direction:column;gap:8px;position:sticky;bottom:0;background:#fff}
+.action-btn{
+  width:100%;padding:11px;border:none;border-radius:10px;
+  font-size:13px;font-weight:700;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;gap:8px;transition:.15s;
+}
+.action-btn:hover{opacity:.88}
+.action-btn.outline{
+  background:transparent;border:1px solid var(--border);color:var(--text-mid);
+}
+.action-btn.danger{background:rgba(231,74,59,.08);color:var(--s-cancel);border:1px solid rgba(231,74,59,.3)}
+
+/* ── Assign modal ───────────────────────────────────────────  */
+.modal-wrap{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
+  z-index:500;align-items:center;justify-content:center;
+}
+.modal-box{
+  background:#fff;border-radius:18px;padding:24px;width:420px;
+  max-width:92vw;max-height:80vh;overflow-y:auto;
+}
+
+/* ── Filter bar ─────────────────────────────────────────────  */
+.filter-bar{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:10px 14px;background:var(--card);
+  border-bottom:1px solid var(--border);margin-bottom:0;
+}
+.period-select{
+  padding:6px 10px;border:1px solid var(--border);border-radius:8px;
+  font-size:12px;font-weight:600;color:var(--text);background:var(--card);
+  font-family:inherit;cursor:pointer;
+}
+.src-select{
+  padding:6px 10px;border:1px solid var(--border);border-radius:8px;
+  font-size:12px;font-weight:600;color:var(--text);background:var(--card);
+  font-family:inherit;cursor:pointer;
+}
+.date-inp{
+  padding:6px 10px;border:1px solid var(--border);border-radius:8px;
+  font-size:12px;color:var(--text);background:var(--card);font-family:inherit;
+}
+.filter-count{
+  margin-left:auto;font-size:12px;font-weight:600;color:var(--text-mid);
+}
+.active-pill{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 10px;border-radius:20px;
+  background:rgba(135,90,123,.1);border:1px solid rgba(135,90,123,.3);
+  font-size:11px;font-weight:600;color:var(--primary);cursor:pointer;
+}
+.active-pill .x{font-size:12px;opacity:.7}
+
+/* ── KPI grid — 8 cells ──────────────────────────────────────  */
+.kpi8{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+@media(max-width:1024px){.kpi8{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.kpi8{grid-template-columns:repeat(2,1fr)}}
+.k8{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:14px;text-align:center;
+}
+.k8-num{font-size:22px;font-weight:800;line-height:1}
+.k8-lbl{font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.04em;color:var(--text-mid);margin-top:4px}
+
+/* ── Driver card ────────────────────────────────────────────  */
+.drv-row{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 0;border-bottom:1px solid var(--border);
+}
+.drv-row:last-child{border-bottom:none}
+.drv-av{
+  width:42px;height:42px;border-radius:12px;
+  background:var(--primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;flex-shrink:0;position:relative;
+}
+.drv-dot{
+  position:absolute;bottom:-1px;right:-1px;
+  width:12px;height:12px;border-radius:50%;
+  border:2px solid #fff;
+}
+.dot-available{background:#1CC88A}
+.dot-occupied {background:#4E73DF}
+.dot-off      {background:#d1d5db}
+
+/* ── Line items table ─────────────────────────────────────── */
+.lines-table{width:100%;border-collapse:collapse;font-size:12px}
+.lines-table th{
+  text-align:left;padding:6px 8px;font-size:10px;font-weight:700;
+  text-transform:uppercase;color:var(--text-soft);
+  border-bottom:1px solid var(--border);
+}
+.lines-table td{padding:8px;border-bottom:1px solid var(--border)}
+.lines-table tr:last-child td{border-bottom:none}
+
+/* ── Refresh animation ──────────────────────────────────────  */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinning{animation:spin .6s linear infinite}
+</style>
+</head>
+<body>
+<div class="dash-shell">
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<aside class="dash-sidebar">
+  <div class="sb-logo">COOP<span>.DEL</span></div>
+  <div class="sb-user">
+    <div class="sb-avatar" id="sbav">S</div>
+    <div>
+      <div class="sb-name" id="sbname">—</div>
+      <div class="sb-role">Store Manager</div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Dashboard</div>
+    <a class="sb-item active" href="#" onclick="switchTab('dashboard',this)">
+      <span class="icon">📊</span>Overview
+    </a>
+    <div class="sb-section">Orders</div>
+    <a class="sb-item" href="#" onclick="switchTab('orders',this)">
+      <span class="icon">📋</span>All Orders
+      <span class="sb-badge" id="nav-total">0</span>
+    </a>
+    <a class="sb-item" href="#" onclick="switchTab('approvals',this)">
+      <span class="icon">⏳</span>Pending Approval
+      <span class="sb-badge" id="nav-pending" style="background:#FD7E14">0</span>
+    </a>
+    <a class="sb-item" href="#" onclick="switchTab('preparing',this)">
+      <span class="icon">📦</span>Preparing
+    </a>
+    <a class="sb-item" href="#" onclick="switchTab('ready',this)">
+      <span class="icon">✅</span>Ready for Pickup
+    </a>
+    <a class="sb-item" href="#" onclick="switchTab('dispatched',this)">
+      <span class="icon">🚚</span>Dispatched
+    </a>
+    <div class="sb-section" style="margin-top:8px">Teams</div>
+    <a class="sb-item" href="#" onclick="switchTab('drivers',this)">
+      <span class="icon">👷</span>Drivers
+    </a>
+  </nav>
+  <div class="sb-footer">
+    <div class="logout-link" onclick="CdApi.logout()">🚪&nbsp;Logout</div>
+  </div>
+</aside>
+
+<!-- ══════════════ MAIN BODY ══════════════ -->
+<div class="dash-body">
+
+  <!-- Topbar -->
+  <div class="top-gradient">
+    <div>
+      <div class="tb-title" id="tb-title">Delivery Dashboard</div>
+      <div class="tb-sub" id="tb-sub">Real-time store management</div>
+    </div>
+    <div class="tb-right">
+      <div id="live-dot" style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.8)">
+        <span style="width:8px;height:8px;border-radius:50%;background:#1CC88A;animation:blink 1.5s infinite"></span>
+        Live
+      </div>
+      <div class="tb-icon-btn" onclick="hardRefresh()" title="Refresh">
+        <span id="refresh-icon">⟳</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-content">
+    <div id="err-bar" class="error-msg" style="display:none"></div>
+
+    <!-- ══════  TAB: DASHBOARD  ══════ -->
+    <div id="tab-dashboard">
+      <!-- Auto-assign badge -->
+      <div id="aa-badge" class="aa-badge">⚙ Loading settings...</div>
+
+      <!-- 8-cell KPI grid -->
+      <div class="kpi8">
+        <div class="k8" style="border-top:3px solid var(--primary)">
+          <div class="k8-num" id="k-total" style="color:var(--primary)">—</div>
+          <div class="k8-lbl">Total</div>
+        </div>
+        <div class="k8" style="border-top:3px solid var(--s-wait)">
+          <div class="k8-num" id="k-wait" style="color:var(--s-wait)">—</div>
+          <div class="k8-lbl">Pending Approval</div>
+        </div>
+        <div class="k8" style="border-top:3px solid var(--s-prep)">
+          <div class="k8-num" id="k-prep" style="color:var(--s-prep)">—</div>
+          <div class="k8-lbl">Preparing</div>
+        </div>
+        <div class="k8" style="border-top:3px solid var(--s-ready)">
+          <div class="k8-num" id="k-ready" style="color:var(--s-ready)">—</div>
+          <div class="k8-lbl">Ready for Pickup</div>
+        </div>
+        <div class="k8" style="border-top:3px solid var(--s-assign)">
+          <div class="k8-num" id="k-assign" style="color:var(--s-assign)">—</div>
+          <div class="k8-lbl">Driver Assigned</div>
+        </div>
+        <div class="k8" style="border-top:3px solid var(--s-dispatch)">
+          <div class="k8-num" id="k-dispatch" style="color:#b38b00">—</div>
+          <div class="k8-lbl">Dispatched</div>
+        </div>
+        <div class="k8" style="border-top:3px solid var(--s-deliver)">
+          <div class="k8-num" id="k-deliver" style="color:var(--s-deliver)">—</div>
+          <div class="k8-lbl">Delivered</div>
+        </div>
+        <div class="k8" style="border-top:3px solid var(--s-cancel)">
+          <div class="k8-num" id="k-cancel" style="color:var(--s-cancel)">—</div>
+          <div class="k8-lbl">Cancelled</div>
+        </div>
+      </div>
+
+      <!-- Stage pipeline clickable chips -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-head">
+          <div><div class="card-title">📊 Stage Pipeline</div><div class="card-sub">Click any stage to filter orders</div></div>
+          <button class="card-action" onclick="loadDashboard()">Refresh</button>
+        </div>
+        <div class="pipeline" id="pipeline"></div>
+      </div>
+
+      <!-- Two-column: source breakdown + donut chart -->
+      <div class="chart-row chart-row-2">
+        <div class="card">
+          <div class="card-head">
+            <div><div class="card-title">🌐 Orders by Source</div></div>
+          </div>
+          <div id="src-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div><div class="card-title">🔵 Source Distribution</div></div>
+          </div>
+          <canvas id="c-source" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════  TAB: ORDERS (shared)  ══════ -->
+    <div id="tab-orders" style="display:none">
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <select class="period-select" id="ord-period" onchange="applyFilters()">
+          <option value="">All Time</option>
+          <option value="today">Today</option>
+          <option value="yesterday">Yesterday</option>
+          <option value="this_week">This Week</option>
+          <option value="this_month">This Month</option>
+          <option value="last_6_months">Last 6 Months</option>
+          <option value="this_year">This Year</option>
+          <option value="custom">Custom Range</option>
+        </select>
+        <div id="custom-range" style="display:none;display:flex;gap:6px">
+          <input type="date" class="date-inp" id="date-from" onchange="applyFilters()">
+          <input type="date" class="date-inp" id="date-to"   onchange="applyFilters()">
+        </div>
+        <select class="src-select" id="ord-source" onchange="applyFilters()">
+          <option value="">All Sources</option>
+          <option value="pos">COOP POS</option>
+          <option value="coopplus_website">COOPPLUS Website</option>
+          <option value="coopplus_mobile">COOPPLUS Mobile</option>
+          <option value="coop_discount_website">COOP Discount Website</option>
+          <option value="coop_discount_mobile">COOP Discount Mobile</option>
+          <option value="internal">Internal</option>
+        </select>
+        <div id="active-filters" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        <div class="filter-count" id="ord-count">0 orders</div>
+        <button class="btn-outline" style="padding:6px 12px;font-size:12px" onclick="clearFilters()">Clear</button>
+      </div>
+      <div style="padding:14px;padding-bottom:0" id="ord-list"></div>
+      <div style="padding:14px;padding-top:6px">
+        <button class="btn-outline" id="ord-more" onclick="loadMoreOrders()"
+                style="width:100%;display:none">Load More</button>
+      </div>
+    </div>
+
+    <!-- ══════  TAB: APPROVALS  ══════ -->
+    <div id="tab-approvals" style="display:none">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">⏳ Pending Approval</div>
+            <div class="card-sub">COOPPLUS Web &amp; Mobile orders awaiting your approval</div>
+          </div>
+          <button class="card-action" onclick="loadTab('approvals')">Refresh</button>
+        </div>
+        <div id="approvals-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════  TAB: PREPARING  ══════ -->
+    <div id="tab-preparing" style="display:none">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">📦 Preparing Material</div>
+            <div class="card-sub">Click "Mark Ready" when material is packed</div>
+          </div>
+          <button class="card-action" onclick="loadTab('preparing')">Refresh</button>
+        </div>
+        <div id="preparing-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════  TAB: READY  ══════ -->
+    <div id="tab-ready" style="display:none">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">✅ Ready for Pickup</div>
+            <div class="card-sub">Assign a driver or auto-assign</div>
+          </div>
+          <button class="card-action" onclick="loadTab('ready')">Refresh</button>
+        </div>
+        <div id="ready-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════  TAB: DISPATCHED  ══════ -->
+    <div id="tab-dispatched" style="display:none">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">🚚 Dispatched</div>
+            <div class="card-sub">Orders currently out for delivery</div>
+          </div>
+          <button class="card-action" onclick="loadTab('dispatched')">Refresh</button>
+        </div>
+        <div id="dispatched-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════  TAB: DRIVERS  ══════ -->
+    <div id="tab-drivers" style="display:none">
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-title">👷 Delivery Drivers</div></div>
+          <button class="card-action" onclick="loadDrivers()">Refresh</button>
+        </div>
+        <div id="drv-list"></div>
+      </div>
+    </div>
+
+  </div><!-- /dash-content -->
+</div><!-- /dash-body -->
+</div><!-- /dash-shell -->
+
+<!-- ══════ ORDER DETAIL PANEL (slide-in) ══════ -->
+<div class="detail-backdrop" id="detail-backdrop" onclick="closeDetail(event)">
+  <div class="detail-panel" id="detail-panel">
+    <div class="dp-header" id="dp-header">
+      <button class="dp-close" onclick="closeDetail()">✕</button>
+      <div style="font-size:12px;opacity:.8;margin-bottom:4px" id="dp-source-label">Source</div>
+      <div style="font-size:20px;font-weight:800" id="dp-name">—</div>
+      <div id="dp-state-badge" style="margin-top:8px"></div>
+    </div>
+    <div class="dp-body" id="dp-body">
+      <div class="loading">Loading...</div>
+    </div>
+    <div class="dp-actions" id="dp-actions"></div>
+  </div>
+</div>
+
+<!-- ══════ ASSIGN DRIVER MODAL ══════ -->
+<div class="modal-wrap" id="assign-modal" onclick="closeAssignModal(event)">
+  <div class="modal-box">
+    <h3 style="margin-bottom:4px" id="am-title">Assign Driver</h3>
+    <p style="font-size:12px;color:var(--text-mid);margin-bottom:16px" id="am-sub"></p>
+    <div id="am-drivers"></div>
+    <button class="btn-outline" onclick="closeAssignModal()" style="width:100%;margin-top:12px">Cancel</button>
+  </div>
+</div>
+
+<style>
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+</style>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIG — point to your Odoo server via Proxy
+// ═══════════════════════════════════════════════════════════════
+const PROXY_PORT = '3001';
+const BASE = (() => {
+  if (typeof location === 'undefined') return '/proxy';
+  if (location.protocol === 'file:') return `http://localhost:${PROXY_PORT}/proxy`;
+  if (location.port === PROXY_PORT) return '/proxy';
+  return `http://localhost:${PROXY_PORT}/proxy`;
+})();
+
+// ── API ─────────────────────────────────────────────────────
+const Api = {
+  _get: async (path, params={}) => {
+    const url = new URL(BASE + path);
+    url.searchParams.set('by_AJR', '1');
+    Object.entries(params).forEach(([k,v]) => { if(v!==undefined&&v!=='') url.searchParams.set(k,v); });
+    try {
+      const res  = await fetch(url, {
+        headers: {
+          'Content-Type':'application/json',
+          'X-Session-Token': localStorage.getItem('cd_session_id') || ''
+        },
+        credentials: 'include',
+      });
+      const text = await res.text();
+      if (text.trim().startsWith('<')) return {error:'not_available', message: 'Session expired or module not installed.'};
+      return JSON.parse(text);
+    } catch(e) { return {error: e.message}; }
+  },
+
+  dashboard: ()            => Api._get('/api/skytec-delivery/dashboard'),
+  orders: (p={})           => Api._get('/api/skytec-delivery/orders', p),
+  orderDetail: (id)        => Api._get(`/api/skytec-delivery/orders/${id}`),
+  approve:    (id)         => Api._get(`/api/skytec-delivery/orders/${id}/approve`),
+  markReady:  (id)         => Api._get(`/api/skytec-delivery/orders/${id}/ready`),
+  autoAssign: (id)         => Api._get(`/api/skytec-delivery/orders/${id}/auto-assign`),
+  assignDriver:(id,did)    => Api._get(`/api/skytec-delivery/orders/${id}/assign-driver`, {driver_id:did}),
+  dispatch:   (id)         => Api._get(`/api/skytec-delivery/orders/${id}/dispatch`),
+  cancel:     (id)         => Api._get(`/api/skytec-delivery/orders/${id}/cancel`),
+  drivers:    ()           => Api._get('/api/skytec-delivery/drivers'),
+  settings:   ()           => Api._get('/api/skytec-delivery/settings'),
+};
+
+// ── State ───────────────────────────────────────────────────
+let state = {
+  tab: 'dashboard',
+  dashData: {},
+  drivers: [],
+  orders: [], ordOffset:0, ordTotal:0, ordState:'', ordSource:'', ordPeriod:'', ordFrom:'', ordTo:'',
+  detailId: null,
+  autoRefreshTimer: null,
+  sourceChart: null,
+};
+
+// ── Helpers ─────────────────────────────────────────────────
+const srcMap = {
+  pos:'COOP POS', coopplus_website:'COOPPLUS Web', coopplus_mobile:'COOPPLUS Mobile',
+  coop_discount_website:'COOP Discount Web', coop_discount_mobile:'COOP Discount Mobile',
+  internal:'Internal',
+};
+const srcColor = {
+  pos:'#4E73DF', coopplus_website:'#1CC88A', coopplus_mobile:'#36B9CC',
+  coop_discount_website:'#F6C23E', coop_discount_mobile:'#FD7E14', internal:'#858796',
+};
+const stateMap = {
+  new:'New', waiting_approval:'Pending Approval', approved:'Approved',
+  preparing:'Preparing', ready_for_pickup:'Ready for Pickup',
+  assigned_driver:'Driver Assigned', dispatched:'Dispatched',
+  delivered:'Delivered', cancelled:'Cancelled',
+};
+const stateClass = {
+  new:'st-new', waiting_approval:'st-waiting', approved:'st-approved',
+  preparing:'st-preparing', ready_for_pickup:'st-ready',
+  assigned_driver:'st-assigned', dispatched:'st-dispatch',
+  delivered:'st-deliver', cancelled:'st-cancel',
+};
+const stateColor = {
+  new:'#858796', waiting_approval:'#FD7E14', approved:'#4E73DF',
+  preparing:'#4E73DF', ready_for_pickup:'#36B9CC',
+  assigned_driver:'#6F42C1', dispatched:'#FFC107',
+  delivered:'#1CC88A', cancelled:'#E74A3B',
+};
+const stateIcon = {
+  new:'🆕', waiting_approval:'⏳', approved:'✅',
+  preparing:'📦', ready_for_pickup:'🏷️',
+  assigned_driver:'👤', dispatched:'🚚',
+  delivered:'🎉', cancelled:'❌',
+};
+
+function srcBadge(s){
+  const cls={pos:'src-pos',coopplus_website:'src-cweb',coopplus_mobile:'src-cmob',
+    coop_discount_website:'src-dweb',coop_discount_mobile:'src-dmob',internal:'src-internal'};
+  return `<span class="src-badge ${cls[s]||'src-internal'}">${srcMap[s]||s}</span>`;
+}
+function stateBadge(s){
+  return `<span class="st-badge ${stateClass[s]||'st-new'}">${stateIcon[s]||'•'} ${stateMap[s]||s}</span>`;
+}
+function prioBadge(p){
+  if(p==='2') return `<span class="prio-2">VERY URGENT</span>`;
+  if(p==='1') return `<span class="prio-1">URGENT</span>`;
+  return '';
+}
+function setText(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function showErr(msg){const e=document.getElementById('err-bar');if(e){e.textContent=msg;e.style.display=msg?'block':'none';}}
+function fmtDate(s){return s?s.substring(0,10):'';}
+
+// ── Init ─────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  if (!localStorage.getItem('cd_session_id')) { window.location.href='login.html'; return; }
+  
+  const role = localStorage.getItem('cd_role_code') || '';
+  if (role === 'delivery_boy') {
+    alert("Access Denied: Store Manager view is not available for riders.");
+    window.location.href = 'rider.html';
+    return;
+  }
+  
+  const name = localStorage.getItem('cd_user_name') || 'Manager';
+  const roleName = localStorage.getItem('cd_role_name') || 'Store Manager';
+  
+  setText('sbname', name);
+  setText('sbav', name[0]?.toUpperCase() || 'S');
+  document.querySelector('.sb-role').textContent = roleName.replace(/_/g, ' ');
+  
+  await loadDashboard();
+  await loadDrivers();
+  // Auto-refresh every 30s
+  state.autoRefreshTimer = setInterval(() => {
+    if (state.tab === 'dashboard') loadDashboard(true);
+  }, 30000);
+});
+
+// ── Tab switching ─────────────────────────────────────────────
+function switchTab(tab, el) {
+  state.tab = tab;
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  if(el) el.classList.add('active');
+  ['dashboard','orders','approvals','preparing','ready','dispatched','drivers'].forEach(t =>
+    document.getElementById('tab-'+t).style.display = t===tab ? 'block':'none');
+
+  const titles = {
+    dashboard:'Delivery Dashboard', orders:'All Orders', approvals:'Pending Approval',
+    preparing:'Preparing Material', ready:'Ready for Pickup',
+    dispatched:'Dispatched', drivers:'Delivery Drivers',
+  };
+  setText('tb-title', titles[tab]||tab);
+  setText('tb-sub', {
+    dashboard:'Real-time store management', orders:'Filter and manage all delivery orders',
+    approvals:'COOPPLUS orders needing your approval',
+    preparing:'Material being prepared for pickup',
+    ready:'Ready — assign a driver',
+    dispatched:'Out for delivery',
+    drivers:'Driver availability and status',
+  }[tab]||'');
+
+  loadTab(tab);
+}
+
+function loadTab(tab) {
+  if (tab==='orders')     { state.ordOffset=0; state.orders=[]; loadOrders(); }
+  else if (tab==='approvals') loadStateList('approvals','waiting_approval');
+  else if (tab==='preparing') loadStateList('preparing','preparing');
+  else if (tab==='ready')     loadStateList('ready','ready_for_pickup');
+  else if (tab==='dispatched')loadStateList('dispatched','dispatched');
+  else if (tab==='drivers')   loadDrivers();
+}
+
+// ── Dashboard ─────────────────────────────────────────────────
+async function loadDashboard(silent=false) {
+  try {
+    const [dash, settings] = await Promise.all([Api.dashboard(), Api.settings()]);
+    const data = dash.data || dash;
+    const totals = data.totals || {};
+    const byState = data.by_state || {};
+    const bySrc   = data.by_source || {};
+    state.dashData = data;
+
+    // KPI cells
+    setText('k-total',   totals.total     || 0);
+    setText('k-wait',    totals.pending   || 0);
+    setText('k-prep',    byState.preparing|| 0);
+    setText('k-ready',   byState.ready_for_pickup || 0);
+    setText('k-assign',  byState.assigned_driver  || 0);
+    setText('k-dispatch',byState.dispatched || 0);
+    setText('k-deliver', totals.delivered || 0);
+    setText('k-cancel',  byState.cancelled|| 0);
+
+    // Nav badges
+    setText('nav-total',  totals.total   || 0);
+    setText('nav-pending',totals.pending || 0);
+
+    // Auto-assign badge
+    const aa = (settings.data||settings).auto_assign === true;
+    const ab = document.getElementById('aa-badge');
+    ab.className = 'aa-badge ' + (aa ? 'aa-on':'aa-off');
+    ab.textContent = aa
+      ? '⚡ Auto-Assign ON — drivers assigned automatically'
+      : '⚙ Auto-Assign OFF — store marks "Ready for Pickup" first';
+
+    // Pipeline chips
+    const stages = [
+      {k:'new',label:'New'},
+      {k:'waiting_approval',label:'Pending'},
+      {k:'approved',label:'Approved'},
+      {k:'preparing',label:'Preparing'},
+      {k:'ready_for_pickup',label:'Ready'},
+      {k:'assigned_driver',label:'Assigned'},
+      {k:'dispatched',label:'Dispatched'},
+      {k:'delivered',label:'Delivered'},
+      {k:'cancelled',label:'Cancelled'},
+    ];
+    const col = stateColor;
+    document.getElementById('pipeline').innerHTML = stages.map(s => {
+      const n = (byState[s.k]||0);
+      return `<div class="pipe-chip" style="border-color:${col[s.k]}"
+        onclick="filterByStage('${s.k}')">
+        <div class="pipe-num" style="color:${col[s.k]}">${n}</div>
+        <div class="pipe-lbl">${s.label}</div>
+      </div>`;
+    }).join('');
+
+    // Source rows
+    const total = totals.total || 1;
+    const sources = [
+      {k:'pos',label:'COOP POS'},
+      {k:'coopplus_website',label:'COOPPLUS Website'},
+      {k:'coopplus_mobile',label:'COOPPLUS Mobile'},
+      {k:'coop_discount_website',label:'COOP Discount Website'},
+      {k:'coop_discount_mobile',label:'COOP Discount Mobile'},
+      {k:'internal',label:'Internal / Manual'},
+    ];
+    document.getElementById('src-list').innerHTML = sources.map(s => {
+      const n = bySrc[s.k]||0;
+      const pct = Math.round(n*100/total);
+      return `<div class="src-row">
+        <div class="src-dot" style="background:${srcColor[s.k]}"></div>
+        <div class="src-label">${s.label}</div>
+        <div class="src-count" style="color:${srcColor[s.k]}">${n}</div>
+      </div>
+      <div class="src-bar-wrap">
+        <div class="src-bar-fill" style="width:${pct}%;background:${srcColor[s.k]}"></div>
+      </div>`;
+    }).join('');
+
+    // Donut chart
+    const sData = sources.map(s => bySrc[s.k]||0);
+    const sColors = sources.map(s => srcColor[s.k]);
+    if (state.sourceChart) {
+      state.sourceChart.data.datasets[0].data   = sData;
+      state.sourceChart.data.datasets[0].backgroundColor = sColors;
+      state.sourceChart.update();
+    } else {
+      state.sourceChart = new Chart(document.getElementById('c-source'), {
+        type: 'doughnut',
+        data: {
+          labels: sources.map(s=>s.label),
+          datasets: [{data:sData, backgroundColor:sColors, borderWidth:0}],
+        },
+        options: {
+          cutout: '60%',
+          plugins: {
+            legend: {position:'bottom', labels:{font:{size:10}, padding:8}},
+          },
+        },
+      });
+    }
+  } catch(e) { showErr('Dashboard load failed: '+e.message); }
+}
+
+// ── Orders list ───────────────────────────────────────────────
+function applyFilters() {
+  const period = document.getElementById('ord-period').value;
+  const source = document.getElementById('ord-source').value;
+  const from   = document.getElementById('date-from').value;
+  const to     = document.getElementById('date-to').value;
+  document.getElementById('custom-range').style.display =
+    period==='custom' ? 'flex':'none';
+  state.ordPeriod = period;
+  state.ordSource = source;
+  state.ordFrom   = from;
+  state.ordTo     = to;
+  state.ordOffset = 0;
+  state.orders    = [];
+  loadOrders();
+  renderActiveFilters();
+}
+
+function clearFilters() {
+  document.getElementById('ord-period').value = '';
+  document.getElementById('ord-source').value = '';
+  document.getElementById('date-from').value  = '';
+  document.getElementById('date-to').value    = '';
+  document.getElementById('custom-range').style.display = 'none';
+  state.ordPeriod=state.ordSource=state.ordFrom=state.ordTo=state.ordState='';
+  state.ordOffset=0; state.orders=[];
+  loadOrders();
+  renderActiveFilters();
+}
+
+function renderActiveFilters() {
+  const chips = [];
+  const periodLabels = {today:'Today',yesterday:'Yesterday',this_week:'This Week',
+    this_month:'This Month',last_6_months:'Last 6 Months',this_year:'This Year',custom:'Custom'};
+  if (state.ordPeriod) chips.push({label:periodLabels[state.ordPeriod]||state.ordPeriod, key:'period'});
+  if (state.ordSource) chips.push({label:srcMap[state.ordSource]||state.ordSource, key:'source'});
+  document.getElementById('active-filters').innerHTML = chips.map(c =>
+    `<span class="active-pill" onclick="clearFilter('${c.key}')">
+      ${c.label} <span class="x">✕</span>
+    </span>`
+  ).join('');
+}
+
+function clearFilter(key) {
+  if(key==='period'){document.getElementById('ord-period').value=''; state.ordPeriod='';}
+  if(key==='source'){document.getElementById('ord-source').value=''; state.ordSource='';}
+  state.ordOffset=0; state.orders=[];
+  loadOrders(); renderActiveFilters();
+}
+
+function filterByStage(stg) {
+  state.ordState = stg;
+  state.ordOffset=0; state.orders=[];
+  switchTab('orders', document.querySelector('.sb-item[onclick*="orders"]'));
+  loadOrders();
+}
+
+async function loadOrders() {
+  const params = {limit:20, offset:state.ordOffset};
+  if(state.ordState)  params.state    = state.ordState;
+  if(state.ordSource) params.source   = state.ordSource;
+  if(state.ordPeriod) params.period   = state.ordPeriod;
+  if(state.ordFrom)   params.date_from= state.ordFrom;
+  if(state.ordTo)     params.date_to  = state.ordTo;
+  try {
+    const res  = await Api.orders(params);
+    const data = res.data || res;
+    const items = data.results || [];
+    if (state.ordOffset===0) state.orders=items; else state.orders=[...state.orders,...items];
+    state.ordTotal = data.total || 0;
+    state.ordOffset+= items.length;
+    setText('ord-count', state.ordTotal+' order'+(state.ordTotal===1?'':'s'));
+    renderOrderList('ord-list', state.orders, true);
+    document.getElementById('ord-more').style.display =
+      items.length===20 ? 'block':'none';
+  } catch(e) { showErr('Orders load failed: '+e.message); }
+}
+
+function loadMoreOrders() {
+  const params = {limit:20, offset:state.ordOffset};
+  if(state.ordState)  params.state    = state.ordState;
+  if(state.ordSource) params.source   = state.ordSource;
+  if(state.ordPeriod) params.period   = state.ordPeriod;
+  if(state.ordFrom)   params.date_from= state.ordFrom;
+  if(state.ordTo)     params.date_to  = state.ordTo;
+  Api.orders(params).then(res => {
+    const data  = res.data || res;
+    const items = data.results || [];
+    state.orders = [...state.orders, ...items];
+    state.ordOffset += items.length;
+    renderOrderList('ord-list', state.orders, true);
+    document.getElementById('ord-more').style.display =
+      items.length===20 ? 'block':'none';
+  });
+}
+
+// ── State-filtered lists (approvals, preparing, ready, dispatched) ──
+async function loadStateList(tab, stateFilter) {
+  try {
+    const res   = await Api.orders({state:stateFilter, limit:50});
+    const data  = res.data || res;
+    const items = data.results || [];
+    const listId = tab+'-list';
+    const el = document.getElementById(listId);
+    if(!el) return;
+    if(!items.length){
+      el.innerHTML='<div style="text-align:center;padding:32px;color:var(--text-mid)">'+
+        (stateFilter==='waiting_approval'?'🎉 No pending approvals!':
+         stateFilter==='ready_for_pickup'?'📦 No orders ready yet':
+         'No orders in this state')+
+        '</div>';
+      return;
+    }
+    renderOrderList(listId, items, false);
+  } catch(e) {}
+}
+
+// ── Order card renderer ───────────────────────────────────────
+function renderOrderList(containerId, items, showQuickActions) {
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  if(!items.length){
+    el.innerHTML='<div style="text-align:center;padding:32px;color:var(--text-mid)">No orders found</div>';
+    return;
+  }
+  el.innerHTML = items.map(d => {
+    const src    = d.delivery_source || 'internal';
+    const st     = d.delivery_state  || 'new';
+    const cust   = Array.isArray(d.partner_id) ? d.partner_id[1] : (d.partner_id||'Customer');
+    const driver = Array.isArray(d.assign_to_id) ? d.assign_to_id[1] : (d.assign_to_id||'');
+    const col    = srcColor[src]||'#858796';
+    let quickBtn = '';
+    if(showQuickActions){
+      if(st==='waiting_approval')
+        quickBtn=`<button onclick="event.stopPropagation();quickApprove(${d.id},this)"
+          style="background:#1CC88A;color:#fff;border:none;border-radius:7px;
+          padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">✅ Approve</button>`;
+      else if(st==='preparing')
+        quickBtn=`<button onclick="event.stopPropagation();quickReady(${d.id},this)"
+          style="background:#36B9CC;color:#fff;border:none;border-radius:7px;
+          padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">📦 Ready</button>`;
+    }
+    return `<div class="ord-card" onclick="openDetail(${d.id})">
+      <div class="ord-stripe" style="background:${col}"></div>
+      <div class="ord-body">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${srcBadge(src)}
+            ${prioBadge(d.priority||'0')}
+          </div>
+          ${stateBadge(st)}
+        </div>
+        <div class="ord-ref">${d.name||''}</div>
+        <div class="ord-name">${cust}</div>
+        ${d.origin?`<div class="ord-origin">Ref: ${d.origin}</div>`:''}
+      </div>
+      <div class="ord-footer">
+        <div class="ord-driver">
+          ${driver?`🏍 ${driver}`:'<span style="color:#EF4444">⚠ No driver</span>'}
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          ${d.scheduled_date?`<span style="font-size:10px;color:var(--text-soft)">${fmtDate(d.scheduled_date)}</span>`:''}
+          ${quickBtn}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Quick actions from list ───────────────────────────────────
+async function quickApprove(id, btn) {
+  btn.textContent='...'; btn.disabled=true;
+  const res = await Api.approve(id);
+  const ok  = (res.data||res).id;
+  btn.textContent = ok?'✅ Approved':'Error';
+  btn.style.background = ok?'#1CC88A':'#EF4444';
+  if(ok){ setTimeout(()=>loadTab(state.tab),600); }
+}
+
+async function quickReady(id, btn) {
+  btn.textContent='...'; btn.disabled=true;
+  const res = await Api.markReady(id);
+  const ok  = (res.data||res).id;
+  btn.textContent = ok?'✅ Ready':'Error';
+  btn.style.background = ok?'#36B9CC':'#EF4444';
+  if(ok){ setTimeout(()=>loadTab(state.tab),600); }
+}
+
+// ── Detail panel ──────────────────────────────────────────────
+async function openDetail(id) {
+  state.detailId = id;
+  document.getElementById('detail-backdrop').style.display='flex';
+  document.getElementById('dp-body').innerHTML='<div class="loading">Loading...</div>';
+  document.getElementById('dp-actions').innerHTML='';
+  try {
+    const res = await Api.orderDetail(id);
+    const d   = res.data || res;
+    const src = d.delivery_source || 'internal';
+    const st  = d.delivery_state  || 'new';
+    const col = srcColor[src] || '#858796';
+
+    document.getElementById('dp-source-label').textContent = srcMap[src]||src;
+    document.getElementById('dp-name').textContent         = d.name||'';
+    document.getElementById('dp-state-badge').innerHTML    = stateBadge(st);
+
+    // Build body
+    const rows = (label, value) =>
+      `<div class="dp-row"><div class="dp-lbl">${label}</div><div class="dp-val">${value||'—'}</div></div>`;
+
+    let lines = '';
+    if (d.lines && d.lines.length) {
+      lines = `<div class="dp-section">Order Lines</div>
+        <table class="lines-table">
+          <thead><tr><th>Product</th><th>Qty</th><th>UOM</th></tr></thead>
+          <tbody>
+            ${d.lines.map(l=>`<tr><td>${l.product||''}</td><td style="font-weight:700">${l.qty_demand||0}</td><td>${l.uom||''}</td></tr>`).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    document.getElementById('dp-body').innerHTML = `
+      <div class="dp-section">Customer</div>
+      ${rows('Name',    d.partner||'')}
+      ${rows('Phone',   d.partner_phone||'')}
+      ${rows('Address', d.partner_address||'')}
+      <div class="dp-section">Order Info</div>
+      ${rows('Reference', d.name)}
+      ${rows('Source Ref',d.origin||'')}
+      ${rows('Scheduled', fmtDate(d.scheduled_date||''))}
+      ${rows('Priority',  d.priority==='2'?'⚠ Very Urgent':d.priority==='1'?'Urgent':'Normal')}
+      <div class="dp-section">Approval</div>
+      ${rows('Approved by', d.approved_by||'')}
+      ${rows('Approved at', fmtDate(d.approved_date||''))}
+      <div class="dp-section">Delivery</div>
+      ${rows('Driver',   d.assign_to||'')}
+      ${rows('Ready at', fmtDate(d.ready_date||''))}
+      ${rows('Dispatch', fmtDate(d.dispatched_date||''))}
+      ${rows('Delivered',fmtDate(d.delivered_date||''))}
+      ${d.approval_notes?`<div class="dp-section">Notes</div>
+        <div style="font-size:12px;padding:8px;background:var(--bg);border-radius:8px">${d.approval_notes}</div>`:''}
+      ${lines}`;
+
+    // Actions
+    const acts = [];
+    if (st==='waiting_approval')
+      acts.push({label:'✅ Approve Delivery', color:'#1CC88A', fn:`doDetailAction('approve')`});
+    if (st==='preparing'||st==='approved')
+      acts.push({label:'📦 Mark Ready for Pickup', color:'#36B9CC', fn:`doDetailAction('ready')`});
+    if (st==='ready_for_pickup'||st==='approved') {
+      acts.push({label:'⚡ Auto-Assign Driver', color:'#6F42C1', fn:`doDetailAction('auto-assign')`});
+      acts.push({label:'👤 Select Driver Manually', color:'var(--primary)', fn:`openAssignModal(${id})`});
+    }
+    if (st==='assigned_driver')
+      acts.push({label:'🚚 Dispatch', color:'#FFC107', textColor:'#333', fn:`doDetailAction('dispatch')`});
+    if (!['delivered','cancelled'].includes(st))
+      acts.push({label:'❌ Cancel Delivery', color:'#EF4444', fn:`doDetailAction('cancel')`, outline:true});
+
+    document.getElementById('dp-actions').innerHTML = acts.map(a =>
+      a.outline
+        ? `<button class="action-btn danger" onclick="${a.fn}">${a.label}</button>`
+        : `<button class="action-btn" style="background:${a.color};color:${a.textColor||'#fff'}" onclick="${a.fn}">${a.label}</button>`
+    ).join('');
+  } catch(e) {
+    document.getElementById('dp-body').innerHTML='<div class="error-msg">Failed to load: '+e.message+'</div>';
+  }
+}
+
+async function doDetailAction(action) {
+  const id  = state.detailId;
+  const map = {
+    approve:     Api.approve,
+    ready:       Api.markReady,
+    'auto-assign': Api.autoAssign,
+    dispatch:    Api.dispatch,
+    cancel:      Api.cancel,
+  };
+  const fn  = map[action]; if(!fn) return;
+  const btn = event.target;
+  const orig= btn.textContent;
+  btn.textContent='⏳ Processing...'; btn.disabled=true;
+  const res = await fn(id);
+  const ok  = (res.data||res).id || (res.data||res).delivery_state;
+  if (ok) {
+    closeDetail();
+    loadDashboard(true);
+    loadTab(state.tab);
+  } else {
+    btn.textContent = (res.data||res).message || 'Error';
+    btn.style.background = '#EF4444';
+    setTimeout(()=>{ btn.textContent=orig; btn.disabled=false; btn.style.background=''; },2000);
+  }
+}
+
+function closeDetail(e) {
+  if (e && e.target !== document.getElementById('detail-backdrop')) return;
+  document.getElementById('detail-backdrop').style.display='none';
+}
+
+// ── Assign modal ──────────────────────────────────────────────
+function openAssignModal(ordId) {
+  state.detailId = ordId;
+  document.getElementById('am-title').textContent = 'Assign Driver';
+  document.getElementById('am-sub').textContent   = 'Select an available driver';
+  document.getElementById('am-drivers').innerHTML = state.drivers.length
+    ? state.drivers.map(d => `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div class="drv-av" style="width:40px;height:40px;border-radius:10px">
+            ${(d.name||'D')[0].toUpperCase()}
+          </div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700">${d.name||''}</div>
+            <div style="font-size:11px;color:var(--text-mid)">${d.active_jobs||0} active · ${d.team||'No team'}</div>
+          </div>
+          <button onclick="doAssignDriver(${ordId},${d.user_id||d.id},'${d.name||''}')"
+            style="background:var(--primary);color:#fff;border:none;border-radius:8px;
+            padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">
+            Assign
+          </button>
+        </div>`).join('')
+    : '<div style="text-align:center;padding:20px;color:var(--text-mid)">No drivers available</div>';
+  document.getElementById('assign-modal').style.display='flex';
+}
+
+function closeAssignModal(e) {
+  if (e && e.target !== document.getElementById('assign-modal')) return;
+  document.getElementById('assign-modal').style.display='none';
+}
+
+async function doAssignDriver(ordId, driverId, driverName) {
+  const res = await Api.assignDriver(ordId, driverId);
+  closeAssignModal();
+  const ok = (res.data||res).delivery_state || (res.data||res).id;
+  alert(ok ? `✅ Assigned to ${driverName}` : (res.data||res).message || 'Error');
+  if(ok){ openDetail(ordId); loadTab(state.tab); loadDashboard(true); }
+}
+
+// ── Drivers tab ───────────────────────────────────────────────
+async function loadDrivers() {
+  try {
+    const res     = await Api.drivers();
+    state.drivers = (res.data || res.results || []);
+    const el      = document.getElementById('drv-list');
+    if(!el) return;
+    if(!state.drivers.length){
+      el.innerHTML='<div style="text-align:center;padding:32px;color:var(--text-mid)">No drivers configured</div>';
+      return;
+    }
+    el.innerHTML = state.drivers.map(d => {
+      const st  = d.duty_status||'off';
+      const dotCls = st==='available'?'dot-available':st==='occupied'?'dot-occupied':'dot-off';
+      const stColor= st==='available'?'#1CC88A':st==='occupied'?'#4E73DF':'#9CA3AF';
+      const bat = d.battery||0;
+      const batColor = bat>60?'#1CC88A':bat>30?'#FFC107':'#EF4444';
+      return `<div class="drv-row">
+        <div class="drv-av">
+          ${(d.name||'D')[0].toUpperCase()}
+          <span class="drv-dot ${dotCls}"></span>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700">${d.name||''}</div>
+          <div style="font-size:11px;color:var(--text-mid)">${d.team||'No team'}</div>
+          <div style="margin-top:4px;display:flex;align-items:center;gap:8px">
+            <span class="pill" style="background:${stColor}22;color:${stColor}">${st}</span>
+            <span style="font-size:11px;color:var(--text-soft)">${d.active_jobs||0} active jobs</span>
+          </div>
+        </div>
+        ${bat>0?`<div style="font-size:12px;font-weight:700;color:${batColor}">🔋${bat}%</div>`:''}
+      </div>`;
+    }).join('');
+  } catch(e) {}
+}
+
+// ── Hard refresh ──────────────────────────────────────────────
+async function hardRefresh() {
+  const ic = document.getElementById('refresh-icon');
+  ic.classList.add('spinning');
+  await loadDashboard();
+  await loadDrivers();
+  if(state.tab!=='dashboard') loadTab(state.tab);
+  ic.classList.remove('spinning');
+}
+</script>
+</body>
+</html>

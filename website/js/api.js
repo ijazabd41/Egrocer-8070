@@ -889,9 +889,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   }
   function buildPaymentProviderCandidates(preferredId) {
     const pref = parseInt(preferredId, 10) || 22;
-    const ids = [pref];
-    if (pref !== 22) ids.push(22);
-    return ids;
+    return [pref];
   }
   function refId(field) {
     if (field == null || field === '' || field === false) return null;
@@ -1135,8 +1133,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
       Log.warn('Payment', 'stale-tx check skipped (access rights)', { orderId: oid, txId, message: e.message });
     }
 
-    const markProvIds = [provId, preferred, 22];
-    if (!markProvIds.includes(6)) markProvIds.push(6);
+    const markProvIds = [provId, preferred];
     let markOk = false;
     let markErr = null;
     try {
