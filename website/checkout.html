@@ -90,6 +90,10 @@
   <div class="fs" id="invoiceAddrSection">
     <h3>🧾 Invoice Address</h3>
     <p style="font-size:11px;color:#6b7280;margin-bottom:12px">Select where invoice/billing details should be attached.</p>
+    <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+      <input type="checkbox" id="sameAsDeliveryBtn" onchange="toggleSameAsDelivery()" style="width:16px;height:16px;cursor:pointer">
+      <label for="sameAsDeliveryBtn" style="font-size:13px;font-weight:600;cursor:pointer">Same as Delivery Address</label>
+    </div>
     <div id="coInvoiceAddrList" style="display:flex;flex-direction:column;gap:10px;max-height:250px;overflow-y:auto">
       <div style="color:#9ca3af;font-size:12px;text-align:center;padding:10px">⏳ Loading invoice addresses...</div>
     </div>
@@ -236,6 +240,49 @@ function goStep(step){
   if(target) target.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
+function toggleSameAsDelivery(){
+  var cb = document.getElementById('sameAsDeliveryBtn');
+  var list = document.getElementById('coInvoiceAddrList');
+  if(cb && cb.checked){
+    list.style.display = 'none';
+    selInvoiceContact = selDeliveryContact;
+  } else {
+    list.style.display = 'flex';
+    // If they uncheck, try to default back to an invoice type
+    var defaultInv = checkoutAddressesCache.find(function(a){ return a.type==='invoice'; });
+    selInvoiceContact = defaultInv || checkoutAddressesCache[0] || null;
+    loadCheckoutAddresses();
+  }
+  checkPlaceOrderBtnState();
+}
+
+function checkPlaceOrderBtnState() {
+  var btn = document.getElementById('placeBtn');
+  if(!btn) return;
+  var valid = true;
+  if(!selCarrierId) valid = false;
+  if(selDeliveryKind !== 'store' && !selDeliveryContact) valid = false;
+  if(selDeliveryKind === 'store') {
+     var fn = document.getElementById('fnPk') ? document.getElementById('fnPk').value.trim() : '';
+     var ph = document.getElementById('phPk') ? document.getElementById('phPk').value.trim() : '';
+     if(!fn || !ph) valid = false;
+  } else {
+     var sameCb = document.getElementById('sameAsDeliveryBtn');
+     if((!sameCb || !sameCb.checked) && !selInvoiceContact) valid = false;
+  }
+  if(!selProvider) valid = false;
+  
+  if(valid) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+  } else {
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+  }
+}
+
 function isStorePickupMethod(m){
   if(!m) return false;
   var name=(m.name||'').toLowerCase();
@@ -347,6 +394,11 @@ document.addEventListener('DOMContentLoaded', async function(){
     document.getElementById('coAddrList').innerHTML = '<div style="color:#e41e26;font-size:12px;text-align:center;padding:10px">Sign in to load your address book.</div>';
   }
   updateStepUi();
+  checkPlaceOrderBtnState();
+  
+  // Listeners for store pickup contacts
+  if(document.getElementById('fnPk')) document.getElementById('fnPk').addEventListener('input', checkPlaceOrderBtnState);
+  if(document.getElementById('phPk')) document.getElementById('phPk').addEventListener('input', checkPlaceOrderBtnState);
 });
 
 async function loadCheckoutAddresses(){
@@ -406,6 +458,7 @@ async function loadCheckoutAddresses(){
     delEl.innerHTML = '<div style="color:var(--red);font-size:12px">❌ Failed to load addresses</div>';
     invEl.innerHTML = '<div style="color:var(--red);font-size:12px">❌ Failed to load invoice addresses</div>';
   }
+  checkPlaceOrderBtnState();
 }
 
 async function selectCheckoutAddress(id, kind){
@@ -417,7 +470,12 @@ async function selectCheckoutAddress(id, kind){
   if(!match) return;
   if(kind === 'invoice') selInvoiceContact = match;
   else selDeliveryContact = match;
+  var cb = document.getElementById('sameAsDeliveryBtn');
+  if(cb && cb.checked && kind === 'delivery') {
+    selInvoiceContact = selDeliveryContact;
+  }
   loadCheckoutAddresses();
+  checkPlaceOrderBtnState();
 }
 
 async function loadCountriesStates(){
@@ -503,6 +561,7 @@ function selDelivery(id,name,kind,method){
   selDeliveryMethod=method||null;
   toggleAddressSection();
   pushCarrierToOrder();
+  checkPlaceOrderBtnState();
 }
 
 function toggleAddressSection(){
@@ -598,6 +657,7 @@ function selPay(id,name){
   document.querySelectorAll('.pmeth').forEach(function(m){m.classList.remove('on');});
   var el=document.getElementById('pm-'+id); if(el)el.classList.add('on');
   selProvider=id; selProviderName=name;
+  checkPlaceOrderBtnState();
 }
 
 async function applyPromoCoupon(){
