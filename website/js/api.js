@@ -1133,6 +1133,23 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
       Log.warn('Payment', 'stale-tx check skipped (access rights)', { orderId: oid, txId, message: e.message });
     }
 
+    let isCod = false;
+    try {
+      const pR = await getPayProvider(provId);
+      const provData = Array.isArray(pR.data) ? pR.data[0] : pR.data;
+      const pName = String(provData?.name || '').toLowerCase();
+      const pCode = Array.isArray(provData?.code) ? String(provData.code[0] || '') : String(provData?.code || '');
+      isCod = /cash|cod/.test(pName) || pCode === 'custom';
+    } catch (e) {
+      Log.warn('Payment', 'Failed to fetch provider details, assuming not COD', { provId });
+    }
+
+    if (isCod) {
+      Log.info('Payment', 'Skipping markDone for Cash on Delivery', { orderId: oid });
+      // COD orders remain as quotations; they are confirmed manually by staff upon delivery.
+      return { orderId: oid, txId, providerId: provId };
+    }
+
     const markProvIds = [provId, preferred];
     let markOk = false;
     let markErr = null;
