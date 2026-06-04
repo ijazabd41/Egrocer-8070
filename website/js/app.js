@@ -320,7 +320,7 @@ function renderDrawer(){
 let _tt;
 function toast(msg,type='ok'){
   let el=document.getElementById('cd-toast');
-  if(!el){el=document.createElement('div');el.id='cd-toast';el.style.cssText='position:fixed;bottom:72px;right:16px;padding:12px 18px;border-radius:12px;font-size:12px;font-weight:600;z-index:99998;box-shadow:0 8px 32px rgba(0,0,0,.18);transition:all .3s;transform:translateY(80px);opacity:0;max-width:280px;pointer-events:none;font-family:Nunito,"Almarai",sans-serif';document.body.appendChild(el);}
+  if(!el){el=document.createElement('div');el.id='cd-toast';el.style.cssText='position:fixed;bottom:72px;right:16px;padding:12px 18px;border-radius:12px;font-size:12px;font-weight:600;z-index:99998;box-shadow:0 8px 32px rgba(0,0,0,.18);transition:all .3s;transform:translateY(80px);opacity:0;max-width:280px;pointer-events:none;font-family:Inter,"Tajawal",sans-serif';document.body.appendChild(el);}
   el.style.background=type==='err'?'#ED1C24':type==='warn'?'#d4a800':'#1c1c2e';
   el.style.color='#fff';el.textContent=msg;
   requestAnimationFrame(()=>{el.style.transform='translateY(0)';el.style.opacity='1';});
@@ -776,6 +776,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   // Inject skeleton CSS
   if(!document.getElementById('sk-st')){const s=document.createElement('style');s.id='sk-st';s.textContent='@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}.skel{background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:sk 1.5s infinite}';document.head.appendChild(s);}
   Bar.init();
+  // Initialize Odoo App Error Logger (global uncaught error handlers)
+  if (typeof ErrorLogger !== 'undefined' && ErrorLogger.init) ErrorLogger.init();
   // Cart overlay
   if(!document.getElementById('cOv')){const o=document.createElement('div');o.id='cOv';o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9400;display:none;backdrop-filter:blur(4px)';o.onclick=closeDrw;document.body.appendChild(o);}
   // Modal close on backdrop click

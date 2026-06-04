@@ -349,6 +349,7 @@ tr:hover td{background:#1e293b}
 </div><!-- /main -->
 </div><!-- /al -->
 
+<script src="../js/error-logger.js?v=1.0"></script>
 <script src="../js/api.js?v=2"></script>
 <script>
 function toast(m,t){let e=document.getElementById('cd-toast');if(!e){e=document.createElement('div');e.id='cd-toast';e.style.cssText='position:fixed;bottom:16px;right:16px;padding:10px 14px;border-radius:8px;font-size:11px;font-weight:600;z-index:9999;transition:all .3s;transform:translateY(60px);opacity:0;font-family:inherit';document.body.appendChild(e);}e.style.background=t==='err'?'#ED1C24':t==='warn'?'#d4a800':'#1c1c2e';e.style.color='#fff';e.textContent=m;requestAnimationFrame(()=>{e.style.transform='translateY(0)';e.style.opacity='1';});setTimeout(()=>{e.style.transform='translateY(60px)';e.style.opacity='0';},2800);}

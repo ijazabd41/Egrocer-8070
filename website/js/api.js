@@ -163,6 +163,10 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   // ── ERROR NOTIFICATION ────────────────────────────────────────
   function notifyError(endpoint, error) {
     Log.error('API', 'notify', { endpoint, message: error.message || String(error), notify: NOTIFY });
+    // Push to Odoo App Error Logger (fire-and-forget)
+    if (typeof ErrorLogger !== 'undefined' && ErrorLogger.captureApiError) {
+      ErrorLogger.captureApiError('API', endpoint, null, error);
+    }
   }
 
   // ── HTTP ──────────────────────────────────────────────────────

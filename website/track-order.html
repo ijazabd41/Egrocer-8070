@@ -2,13 +2,13 @@
 <html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Track Order – Coop Discounts</title>
-<link rel="stylesheet" href="css/style.css?v=12.0">
+<title>Track Order â€“ Coop Discounts</title>
+<link rel="stylesheet" href="css/style.css?v=13.0">
 </head>
 <body>
 <div id="site-header"></div>
 <div class="phero" style="background:linear-gradient(120deg,var(--red-d) 0%,var(--red) 100%)">
-  <h1>📦 Track Your Order</h1>
+  <h1>ðŸ“¦ Track Your Order</h1>
   <p>Real-time order & delivery status</p>
 </div>
 
@@ -18,7 +18,7 @@
     <h3>Enter Order Details</h3>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <input class="fi" id="trOid" placeholder="Order ID (e.g. 61)" style="flex:1;min-width:180px" type="number">
-      <button class="sbtn" style="width:auto;padding:11px 24px" onclick="trackOrder()">🔍 Track</button>
+      <button class="sbtn" style="width:auto;padding:11px 24px" onclick="trackOrder()">ðŸ” Track</button>
     </div>
     <p style="font-size:11px;color:#9ca3af;margin-top:8px">Or <a href="account.html" style="color:var(--red);font-weight:700">view all your orders</a> in My Account</p>
   </div>
@@ -27,7 +27,8 @@
 </div>
 </section>
 <div id="site-footer"></div>
-<script src="js/api-cache.js?v=1"></script><script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.9"></script><script src="js/layout.js?v=12.0"></script>
+<script src="js/api-cache.js?v=1"></script><script src="js/error-logger.js?v=1.0"></script>
+<script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.9"></script><script src="js/layout.js?v=13.0"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function(){
   var oid = new URLSearchParams(location.search).get('oid');
@@ -38,7 +39,7 @@ async function trackOrder(){
   var oidVal = document.getElementById('trOid').value.trim();
   if(!oidVal){ toast('Please enter an order ID','err'); return; }
   var el = document.getElementById('trackResult');
-  el.innerHTML = '<div style="text-align:center;padding:30px;color:#9ca3af"><span style="font-size:32px">⏳</span><div style="margin-top:10px;font-size:13px">Loading order...</div></div>';
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:#9ca3af"><span style="font-size:32px">â³</span><div style="margin-top:10px;font-size:13px">Loading order...</div></div>';
 
   try{
     var r = await API.getOrder(parseInt(oidVal));
@@ -47,7 +48,7 @@ async function trackOrder(){
 
     var state = Array.isArray(o.state) ? o.state[1] : o.state || 'Draft';
     var stateKey = Array.isArray(o.state) ? o.state[0] : o.state || 'draft';
-    // Normalize invoice_ids[] and picking_ids[] — backend may return [{id:..}] OR [12,34]
+    // Normalize invoice_ids[] and picking_ids[] â€” backend may return [{id:..}] OR [12,34]
     var invoiceIds = (Array.isArray(o.invoice_ids) ? o.invoice_ids : (o.invoice_ids?[o.invoice_ids]:[]))
       .map(function(x){ return typeof x==='object'?x.id:x; });
     var pickingIds = (Array.isArray(o.picking_ids) ? o.picking_ids : (o.picking_ids?[o.picking_ids]:[]))
@@ -67,10 +68,10 @@ async function trackOrder(){
     if(stateKey === 'done' || (pickingIds.length && stepsDone >= 3)) stepsDone = 4;
 
     var steps = [
-      {l:'Order Placed',ic:'📋',k:'draft'},
-      {l:'Confirmed',ic:'✅',k:'sale'},
-      {l:'Out for Delivery',ic:'🚚',k:'shipping'},
-      {l:'Delivered',ic:'📦',k:'done'}
+      {l:'Order Placed',ic:'ðŸ“‹',k:'draft'},
+      {l:'Confirmed',ic:'âœ…',k:'sale'},
+      {l:'Out for Delivery',ic:'ðŸšš',k:'shipping'},
+      {l:'Delivered',ic:'ðŸ“¦',k:'done'}
     ];
 
     var html = '<div class="fs">';
@@ -78,7 +79,7 @@ async function trackOrder(){
     html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:20px">'
       +'<div><h2 style="font-size:18px;font-weight:900">'+(o.name||'Order #'+oidVal)+'</h2>'
       +'<div style="font-size:12px;color:#6b7280;margin-top:3px">Placed: '+(o.date_order||'').slice(0,16)+'</div>'
-      +(carrier?'<div style="font-size:12px;color:#6b7280;margin-top:2px">🚚 '+carrier+'</div>':'')
+      +(carrier?'<div style="font-size:12px;color:#6b7280;margin-top:2px">ðŸšš '+carrier+'</div>':'')
       +'</div>'
       +'<div style="text-align:right">'
       +'<span class="os '+(stateKey==='done'?'os-ok':stateKey==='cancel'?'os-cancel':'os-proc')+'" style="display:block;margin-bottom:6px">'+state+'</span>'
@@ -92,12 +93,12 @@ async function trackOrder(){
       +'<div style="display:flex;justify-content:space-between;position:relative;z-index:1">'
       +steps.map(function(s,i){ var done=i<stepsDone;
         return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;flex:1">'
-          +'<div style="width:40px;height:40px;border-radius:50%;border:3px solid '+(done?'var(--red)':'#e5e7eb')+';background:'+(done?'var(--red)':'#fff')+';display:flex;align-items:center;justify-content:center;font-size:17px;transition:all .3s">'+(done?s.ic:'○')+'</div>'
+          +'<div style="width:40px;height:40px;border-radius:50%;border:3px solid '+(done?'var(--red)':'#e5e7eb')+';background:'+(done?'var(--red)':'#fff')+';display:flex;align-items:center;justify-content:center;font-size:17px;transition:all .3s">'+(done?s.ic:'â—‹')+'</div>'
           +'<div style="font-size:11px;font-weight:700;color:'+(done?'var(--red-d)':'#9ca3af')+';max-width:70px">'+s.l+'</div>'
           +'</div>';}).join('')
       +'</div></div>';
 
-    // Order lines — handle multiple line shapes (product_id as [id,"Name"] OR [{id,name}])
+    // Order lines â€” handle multiple line shapes (product_id as [id,"Name"] OR [{id,name}])
     if(lines.length){
       html += '<div style="border-top:1.5px solid #f3f4f6;padding-top:16px;margin-bottom:16px">'
         +'<div style="font-size:13px;font-weight:800;margin-bottom:10px;color:#374151">Items in this order ('+lines.length+')</div>'
@@ -108,7 +109,7 @@ async function trackOrder(){
             if(typeof first==='object' && first){ pnm = first.name || first.display_name || ''; }
             else { pnm = l.product_id[1] || ''; }
           }
-          if(!pnm) pnm = l.name || l.display_name || '–';
+          if(!pnm) pnm = l.name || l.display_name || 'â€“';
           pnm = (pnm||'').replace(/^\[.*?\]\s*/,'').trim();
           var qty  = parseFloat(l.product_uom_qty || l.qty || 1);
           var unit = parseFloat(l.price_unit || 0);
@@ -116,7 +117,7 @@ async function trackOrder(){
           if(!sub) sub = qty * unit;
           return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f9fafb;font-size:12px;gap:10px">'
             +'<div><div style="font-weight:700">'+pnm+'</div>'
-            +'<div style="font-size:10px;color:#9ca3af">Qty: '+qty+(unit?' × AED '+unit.toFixed(2):'')+'</div></div>'
+            +'<div style="font-size:10px;color:#9ca3af">Qty: '+qty+(unit?' Ã— AED '+unit.toFixed(2):'')+'</div></div>'
             +'<span style="font-weight:700;color:var(--red-d)">AED '+sub.toFixed(2)+'</span>'
             +'</div>';}).join('')
         + (amtSub||amtTax ? '<div style="margin-top:10px;padding-top:10px;border-top:1.5px solid #e5e7eb;font-size:12px">'
@@ -128,16 +129,16 @@ async function trackOrder(){
     }
 
     if(o.note){
-      html += '<div style="font-size:11px;color:#6b7280;margin-bottom:12px;padding:10px;background:#f9fafb;border-radius:8px;line-height:1.5"><strong>📝 Delivery Note:</strong><br>'+o.note+'</div>';
+      html += '<div style="font-size:11px;color:#6b7280;margin-bottom:12px;padding:10px;background:#f9fafb;border-radius:8px;line-height:1.5"><strong>ðŸ“ Delivery Note:</strong><br>'+o.note+'</div>';
     }
 
     html += '</div>';
     el.innerHTML = html;
 
-    // INVOICE block — fetch each invoice by id so we get its access_token for the PDF.
-    // For Cash on Delivery still in Quotation, no invoice exists yet — show a placeholder.
+    // INVOICE block â€” fetch each invoice by id so we get its access_token for the PDF.
+    // For Cash on Delivery still in Quotation, no invoice exists yet â€” show a placeholder.
     if(invoiceIds.length){
-      var invHtml = '<div class="fs" style="margin-top:14px"><h3>🧾 Invoice'+(invoiceIds.length>1?'s':'')+' ('+invoiceIds.length+')</h3>';
+      var invHtml = '<div class="fs" style="margin-top:14px"><h3>ðŸ§¾ Invoice'+(invoiceIds.length>1?'s':'')+' ('+invoiceIds.length+')</h3>';
       for(var i=0;i<invoiceIds.length;i++){
         try{
           var ir = await API.getInvoice(invoiceIds[i]);
@@ -148,28 +149,28 @@ async function trackOrder(){
           invHtml += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid #f3f4f6">'
             +'<div><div style="font-size:14px;font-weight:800">'+(inv.name||'Invoice #'+inv.id)+'</div>'
             +'<div style="font-size:11px;color:#6b7280">Invoice ID: <strong>'+inv.id+'</strong></div>'
-            +'<div style="font-size:11px;color:#6b7280">Date: '+(inv.invoice_date||inv.date||'').slice(0,10)+(inv.invoice_date_due?' · Due: '+(inv.invoice_date_due||'').slice(0,10):'')+'</div>'
+            +'<div style="font-size:11px;color:#6b7280">Date: '+(inv.invoice_date||inv.date||'').slice(0,10)+(inv.invoice_date_due?' Â· Due: '+(inv.invoice_date_due||'').slice(0,10):'')+'</div>'
             +'</div>'
             +'<div style="text-align:right">'
             +'<span class="os '+(istate.toLowerCase().includes('post')?'os-ok':istate.toLowerCase().includes('cancel')?'os-cancel':'os-draft')+'" style="display:block;margin-bottom:4px">'+istate+'</span>'
             +'<div style="font-weight:800;color:var(--red-d)">AED '+parseFloat(inv.amount_total||0).toFixed(2)+'</div>'
             +(inv.amount_residual&&parseFloat(inv.amount_residual)>0?'<div style="font-size:10px;color:#9ca3af">Due: AED '+parseFloat(inv.amount_residual).toFixed(2)+'</div>':'')
             +'</div>'
-            +(pdfUrl?'<div style="width:100%;margin-top:8px"><a href="'+pdfUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;padding:9px 18px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">📄 Download Invoice PDF</a></div>':'<div style="width:100%;margin-top:6px;font-size:11px;color:#9ca3af">PDF available once the invoice is posted</div>')
+            +(pdfUrl?'<div style="width:100%;margin-top:8px"><a href="'+pdfUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;padding:9px 18px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">ðŸ“„ Download Invoice PDF</a></div>':'<div style="width:100%;margin-top:6px;font-size:11px;color:#9ca3af">PDF available once the invoice is posted</div>')
             +'</div>';
-        }catch(_){ invHtml += '<div style="padding:6px 0;font-size:11px;color:#9ca3af">Invoice #'+invoiceIds[i]+' — could not load</div>'; }
+        }catch(_){ invHtml += '<div style="padding:6px 0;font-size:11px;color:#9ca3af">Invoice #'+invoiceIds[i]+' â€” could not load</div>'; }
       }
       invHtml += '</div>';
       el.innerHTML += invHtml;
     } else if (stateKey==='draft' || state.toLowerCase().includes('quot')) {
-      el.innerHTML += '<div class="fs" style="margin-top:14px"><h3>🧾 Invoice</h3>'
+      el.innerHTML += '<div class="fs" style="margin-top:14px"><h3>ðŸ§¾ Invoice</h3>'
         +'<div style="font-size:12px;color:#92400e;background:#fffbea;border:1px solid #f5c518;border-radius:8px;padding:10px;line-height:1.5">Your invoice will be generated once payment is confirmed. For Cash on Delivery, the invoice is issued when the order is marked as paid.</div>'
         +'</div>';
     }
 
-    // DELIVERY block — fetch every picking by id (orders can have multiple shipments)
+    // DELIVERY block â€” fetch every picking by id (orders can have multiple shipments)
     if(pickingIds.length){
-      var delHtml = '<div class="fs" style="margin-top:14px"><h3>🚚 Delivery Details'+(pickingIds.length>1?' ('+pickingIds.length+' shipments)':'')+'</h3>';
+      var delHtml = '<div class="fs" style="margin-top:14px"><h3>ðŸšš Delivery Details'+(pickingIds.length>1?' ('+pickingIds.length+' shipments)':'')+'</h3>';
       for(var j=0;j<pickingIds.length;j++){
         try{
           var delivR = await API.getDelivery(pickingIds[j]);
@@ -192,22 +193,22 @@ async function trackOrder(){
             +(del.scheduled_date?'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Scheduled</div><div style="font-size:12px">'+(del.scheduled_date||'').slice(0,16)+'</div></div>':'')
             +(del.date_done?'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Completed</div><div style="font-size:12px">'+(del.date_done||'').slice(0,16)+'</div></div>':'')
             +'</div>'
-            +(mapUrl?'<a href="'+mapUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#f3f4f6;color:#374151;padding:9px 16px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">'+(isStorePickup?'🏪 Get Store Directions':'📍 Get Directions')+'</a>':'')
+            +(mapUrl?'<a href="'+mapUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#f3f4f6;color:#374151;padding:9px 16px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">'+(isStorePickup?'ðŸª Get Store Directions':'ðŸ“ Get Directions')+'</a>':'')
             +(isStorePickup?'<div style="margin-top:8px;font-size:11px;color:#6b7280">Store pickup: Al Ghandi Complex, Showroom 03, Nadd Al Hamar, Dubai</div>':'')
             +'</div>';
-        }catch(_){ delHtml += '<div style="padding:6px 0;font-size:11px;color:#9ca3af">Picking #'+pickingIds[j]+' — could not load</div>'; }
+        }catch(_){ delHtml += '<div style="padding:6px 0;font-size:11px;color:#9ca3af">Picking #'+pickingIds[j]+' â€” could not load</div>'; }
       }
       delHtml += '</div>';
       el.innerHTML += delHtml;
     } else {
       // No picking yet (typical for Cash on Delivery before confirmation)
-      el.innerHTML += '<div class="fs" style="margin-top:14px"><h3>🚚 Delivery Details</h3>'
+      el.innerHTML += '<div class="fs" style="margin-top:14px"><h3>ðŸšš Delivery Details</h3>'
         +'<div style="font-size:12px;color:#1e40af;background:#eff6ff;border:1px solid #93c5fd;border-radius:8px;padding:10px;line-height:1.5">Your delivery will be scheduled shortly after the order is confirmed. We\'ll send tracking details as soon as it ships.</div>'
         +'</div>';
     }
 
   }catch(e){
-    el.innerHTML='<div class="alert alert-err">❌ '+e.message+'</div>';
+    el.innerHTML='<div class="alert alert-err">âŒ '+e.message+'</div>';
   }
 }
 </script>

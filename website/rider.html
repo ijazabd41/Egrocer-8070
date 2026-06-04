@@ -18,7 +18,7 @@
       --text: #111827;
       --text-l: #6b7280;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
     body { background: #f3f4f6; color: var(--text); -webkit-font-smoothing: antialiased; padding-bottom: 70px; }
     
     /* Header */
@@ -87,7 +87,7 @@
   <!-- Auth Overlay -->
   <div id="authOverlay">
     <div class="auth-box">
-      <div class="logo-ic" style="width:56px;height:56px;font-size:28px;margin:0 auto 16px;">🚴</div>
+      <div class="logo-ic" style="width:56px;height:56px;font-size:28px;margin:0 auto 16px;">ðŸš´</div>
       <h2 style="font-size:20px;font-weight:900;margin-bottom:6px;">Rider Login</h2>
       <p style="font-size:13px;color:var(--text-l);margin-bottom:24px;">Login with your rider account to continue.</p>
       
@@ -102,7 +102,7 @@
   <!-- App Header -->
   <header class="hdr">
     <div class="logo">
-      <div class="logo-ic">🚴</div>
+      <div class="logo-ic">ðŸš´</div>
       Coop Riders
     </div>
     <button class="logout-btn" onclick="logout()">Logout</button>
@@ -133,7 +133,8 @@
 
   <div id="toast"></div>
 
-<script src="js/api-cache.js?v=1"></script><script src="js/api.js?v=8.9"></script>
+<script src="js/api-cache.js?v=1"></script><script src="js/error-logger.js?v=1.0"></script>
+<script src="js/api.js?v=8.9"></script>
 <script>
   // Utility: Toast Notification
   let toastTimer;
@@ -222,7 +223,7 @@
       if (items.length === 0) {
         cont.innerHTML = `
           <div class="empty">
-            <div class="empty-ic">🗺️</div>
+            <div class="empty-ic">ðŸ—ºï¸</div>
             <div class="empty-t">No jobs available</div>
             <div style="font-size:13px;">Check back later for new deliveries in your area.</div>
             <button class="btn btn-r" style="margin-top:20px;max-width:160px;margin-left:auto;margin-right:auto;padding:10px" onclick="loadUnassigned()">Refresh</button>
@@ -241,16 +242,16 @@
             <div class="amt">AED ${parseFloat(d.amount_total||0).toFixed(2)}</div>
           </div>
           
-          <div class="c-row"><div class="c-ic">👤</div><div class="c-val">${d.partner_name || 'Customer'}</div></div>
-          <div class="c-row"><div class="c-ic">📍</div><div class="c-val">${fmtAddr(d)}</div></div>
-          ${d.note ? `<div class="c-row" style="background:#fef3c7;padding:8px;border-radius:8px;color:#92400e"><div class="c-ic">📝</div><div class="c-val" style="color:#92400e;font-size:12px">${d.note}</div></div>` : ''}
+          <div class="c-row"><div class="c-ic">ðŸ‘¤</div><div class="c-val">${d.partner_name || 'Customer'}</div></div>
+          <div class="c-row"><div class="c-ic">ðŸ“</div><div class="c-val">${fmtAddr(d)}</div></div>
+          ${d.note ? `<div class="c-row" style="background:#fef3c7;padding:8px;border-radius:8px;color:#92400e"><div class="c-ic">ðŸ“</div><div class="c-val" style="color:#92400e;font-size:12px">${d.note}</div></div>` : ''}
           
           <button class="btn btn-r" id="btn-acc-${d.id}" onclick="acceptDelivery(${d.id})">Accept Delivery</button>
         </div>
       `).join('');
       
     } catch (e) {
-      cont.innerHTML = `<div class="empty"><div class="empty-ic">⚠️</div><div class="empty-t">Failed to load</div><div style="font-size:13px;color:var(--r)">${e.message}</div><button class="btn btn-r" style="margin-top:20px;max-width:160px;margin-left:auto;margin-right:auto;padding:10px" onclick="loadUnassigned()">Try Again</button></div>`;
+      cont.innerHTML = `<div class="empty"><div class="empty-ic">âš ï¸</div><div class="empty-t">Failed to load</div><div style="font-size:13px;color:var(--r)">${e.message}</div><button class="btn btn-r" style="margin-top:20px;max-width:160px;margin-left:auto;margin-right:auto;padding:10px" onclick="loadUnassigned()">Try Again</button></div>`;
     }
   }
 
@@ -265,7 +266,7 @@
       if (items.length === 0) {
         cont.innerHTML = `
           <div class="empty">
-            <div class="empty-ic">📦</div>
+            <div class="empty-ic">ðŸ“¦</div>
             <div class="empty-t">No assigned deliveries</div>
             <div style="font-size:13px;">Accept a job from the Available Jobs tab to see it here.</div>
             <button class="btn btn-r" style="margin-top:20px;max-width:160px;margin-left:auto;margin-right:auto;padding:10px" onclick="switchTab('unassigned')">Find Jobs</button>
@@ -294,17 +295,17 @@
             <div class="amt">AED \${parseFloat(d.amount_total||0).toFixed(2)}</div>
           </div>
           
-          <div class="c-row"><div class="c-ic">👤</div><div class="c-val">\${d.partner_name || 'Customer'}</div></div>
-          \${d.partner_phone ? \`<div class="c-row"><div class="c-ic">📞</div><div class="c-val"><a href="tel:\${d.partner_phone}" style="color:#2563eb;text-decoration:none;font-weight:800">\${d.partner_phone}</a></div></div>\` : ''}
-          <div class="c-row"><div class="c-ic">📍</div><div class="c-val">\${fmtAddr(d)}</div></div>
-          \${d.note ? \`<div class="c-row" style="background:#fef3c7;padding:8px;border-radius:8px;color:#92400e"><div class="c-ic">📝</div><div class="c-val" style="color:#92400e;font-size:12px">\${d.note}</div></div>\` : ''}
+          <div class="c-row"><div class="c-ic">ðŸ‘¤</div><div class="c-val">\${d.partner_name || 'Customer'}</div></div>
+          \${d.partner_phone ? \`<div class="c-row"><div class="c-ic">ðŸ“ž</div><div class="c-val"><a href="tel:\${d.partner_phone}" style="color:#2563eb;text-decoration:none;font-weight:800">\${d.partner_phone}</a></div></div>\` : ''}
+          <div class="c-row"><div class="c-ic">ðŸ“</div><div class="c-val">\${fmtAddr(d)}</div></div>
+          \${d.note ? \`<div class="c-row" style="background:#fef3c7;padding:8px;border-radius:8px;color:#92400e"><div class="c-ic">ðŸ“</div><div class="c-val" style="color:#92400e;font-size:12px">\${d.note}</div></div>\` : ''}
           
-          \${(!isDone && !isCancel) ? \`<button class="btn btn-g" id="btn-done-\${d.id}" onclick="markDone(\${d.id})">✅ Mark as Delivered</button>\` : ''}
+          \${(!isDone && !isCancel) ? \`<button class="btn btn-g" id="btn-done-\${d.id}" onclick="markDone(\${d.id})">âœ… Mark as Delivered</button>\` : ''}
         </div>
       \`}).join('');
       
     } catch (e) {
-      cont.innerHTML = \`<div class="empty"><div class="empty-ic">⚠️</div><div class="empty-t">Failed to load</div><div style="font-size:13px;color:var(--r)">\${e.message}</div></div>\`;
+      cont.innerHTML = \`<div class="empty"><div class="empty-ic">âš ï¸</div><div class="empty-t">Failed to load</div><div style="font-size:13px;color:var(--r)">\${e.message}</div></div>\`;
     }
   }
 
@@ -333,7 +334,7 @@
       loadAssigned(); // Refresh list
     } catch (e) {
       showToast('Error: ' + e.message);
-      btn.disabled = false; btn.textContent = '✅ Mark as Delivered';
+      btn.disabled = false; btn.textContent = 'âœ… Mark as Delivered';
     }
   }
 </script>

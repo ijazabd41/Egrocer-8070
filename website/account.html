@@ -2,8 +2,8 @@
 <html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>My Account – Coop Discounts</title>
-<link rel="stylesheet" href="css/style.css?v=12.0">
+<title>My Account â€“ Coop Discounts</title>
+<link rel="stylesheet" href="css/style.css?v=13.0">
 <style>
 .acct-lay{display:grid;grid-template-columns:250px 1fr;gap:20px;align-items:start}
 .pg-tab{display:none}.pg-tab.on{display:block}
@@ -26,18 +26,18 @@
     <!-- SIDEBAR -->
     <div class="acct-sb">
       <div class="acct-usr">
-        <div class="acct-av" id="acctAv"><span id="acctAvLetter">👤</span></div>
+        <div class="acct-av" id="acctAv"><span id="acctAvLetter">ðŸ‘¤</span></div>
         <div class="acct-nm" id="acctName">Loading...</div>
         <div class="acct-em" id="acctEmail"></div>
       </div>
       <nav class="acct-nav">
-        <a href="#" class="on" onclick="showTab('dashboard',this)">📊 Dashboard</a>
-        <a href="#" onclick="showTab('profile',this)">👤 My Profile</a>
-        <a href="#" onclick="showTab('orders',this)">🛒 My Orders</a>
-        <a href="#" onclick="showTab('invoices',this)">🧾 My Invoices</a>
-        <a href="#" onclick="showTab('loyalty',this)">⭐ Loyalty & Rewards</a>
-        <a href="#" onclick="showTab('address',this)">📍 My Address</a>
-        <a href="#" onclick="doLogout()" style="color:var(--red)">🚪 Sign Out</a>
+        <a href="#" class="on" onclick="showTab('dashboard',this)">ðŸ“Š Dashboard</a>
+        <a href="#" onclick="showTab('profile',this)">ðŸ‘¤ My Profile</a>
+        <a href="#" onclick="showTab('orders',this)">ðŸ›’ My Orders</a>
+        <a href="#" onclick="showTab('invoices',this)">ðŸ§¾ My Invoices</a>
+        <a href="#" onclick="showTab('loyalty',this)">â­ Loyalty & Rewards</a>
+        <a href="#" onclick="showTab('address',this)">ðŸ“ My Address</a>
+        <a href="#" onclick="doLogout()" style="color:var(--red)">ðŸšª Sign Out</a>
       </nav>
     </div>
 
@@ -47,32 +47,32 @@
       <!-- DASHBOARD -->
       <div class="pg-tab on" id="tab-dashboard">
         <div class="sgrid">
-          <div class="sc"><div class="sc-n" id="stOrders">–</div><div class="sc-l">Orders</div></div>
-          <div class="sc"><div class="sc-n" id="stInvoices">–</div><div class="sc-l">Invoices</div></div>
-          <div class="sc"><div class="sc-n" id="stPoints">–</div><div class="sc-l">Loyalty Pts</div></div>
-          <div class="sc"><div class="sc-n" id="stCart">–</div><div class="sc-l">Cart Items</div></div>
+          <div class="sc"><div class="sc-n" id="stOrders">â€“</div><div class="sc-l">Orders</div></div>
+          <div class="sc"><div class="sc-n" id="stInvoices">â€“</div><div class="sc-l">Invoices</div></div>
+          <div class="sc"><div class="sc-n" id="stPoints">â€“</div><div class="sc-l">Loyalty Pts</div></div>
+          <div class="sc"><div class="sc-n" id="stCart">â€“</div><div class="sc-l">Cart Items</div></div>
         </div>
         <div class="fs">
-          <h3>👋 Welcome back, <span id="dashName">–</span>!</h3>
+          <h3>ðŸ‘‹ Welcome back, <span id="dashName">â€“</span>!</h3>
           <p style="font-size:13px;color:#6b7280;margin-bottom:16px">Manage your orders, invoices, loyalty rewards and account settings.</p>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <a href="shop.html" style="background:var(--red);color:#fff;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none">🛍️ Continue Shopping</a>
-            <button onclick="showTab('orders',null)" style="background:#f3f4f6;color:#374151;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;border:none;cursor:pointer">📦 My Orders</button>
+            <a href="shop.html" style="background:var(--red);color:#fff;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none">ðŸ›ï¸ Continue Shopping</a>
+            <button onclick="showTab('orders',null)" style="background:#f3f4f6;color:#374151;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;border:none;cursor:pointer">ðŸ“¦ My Orders</button>
           </div>
         </div>
         <div class="fs">
           <h3 style="margin-bottom:14px">Recent Orders</h3>
-          <div id="recentOrders"><div style="color:#9ca3af;font-size:13px;text-align:center;padding:20px">⏳ Loading...</div></div>
+          <div id="recentOrders"><div style="color:#9ca3af;font-size:13px;text-align:center;padding:20px">â³ Loading...</div></div>
         </div>
       </div>
 
       <!-- PROFILE -->
       <div class="pg-tab" id="tab-profile">
         <div class="fs">
-          <h3>👤 My Profile</h3>
+          <h3>ðŸ‘¤ My Profile</h3>
           <div class="fgrid">
             <div class="fg"><label class="fl">Full Name</label><input class="fi" id="pName"></div>
-            <div class="fg"><label class="fl">Arabic Name</label><input class="fi" id="pNameAr" placeholder="الاسم بالعربي"></div>
+            <div class="fg"><label class="fl">Arabic Name</label><input class="fi" id="pNameAr" placeholder="Ø§Ù„Ø§Ø³Ù… Ø¨Ø§Ù„Ø¹Ø±Ø¨ÙŠ"></div>
             <div class="fg"><label class="fl">Email</label><input class="fi" id="pEmail" type="email"></div>
             <div class="fg"><label class="fl">Phone</label><input class="fi" id="pPhone" type="tel"></div>
             <div class="fg"><label class="fl">Mobile</label><input class="fi" id="pMobile" type="tel"></div>
@@ -90,7 +90,7 @@
           </div>
         </div>
         <div class="fs" id="pwdSec" style="display:none">
-          <h3>🔑 Change Password</h3>
+          <h3>ðŸ”‘ Change Password</h3>
           <div class="fgrid" style="max-width:320px">
             <div class="fg full"><label class="fl">New Password</label><input class="fi" id="newPwd" type="password" placeholder="Min 6 characters"></div>
             <div class="fg full"><label class="fl">Confirm Password</label><input class="fi" id="confirmPwd" type="password" placeholder="Re-enter password"></div>
@@ -103,15 +103,15 @@
       <!-- ORDERS -->
       <div class="pg-tab" id="tab-orders">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-          <h2 style="font-size:17px;font-weight:800">🛒 My Orders</h2>
+          <h2 style="font-size:17px;font-weight:800">ðŸ›’ My Orders</h2>
           <a href="shop.html" style="background:var(--red);color:#fff;padding:8px 16px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">+ Shop More</a>
         </div>
-        <div id="ordersTable"><div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div></div>
+        <div id="ordersTable"><div style="text-align:center;padding:40px;color:#9ca3af">â³ Loading...</div></div>
         <!-- ORDER DETAIL DRAWER -->
         <div id="orderDetailEl" style="display:none;background:#fff;border:1.5px solid #e5e7eb;border-radius:16px;padding:22px;margin-top:14px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
             <h3 id="orderDetailTitle" style="font-size:15px;font-weight:800">Order Detail</h3>
-            <button onclick="document.getElementById('orderDetailEl').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280">✕</button>
+            <button onclick="document.getElementById('orderDetailEl').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280">âœ•</button>
           </div>
           <div id="orderDetailContent"></div>
         </div>
@@ -119,32 +119,32 @@
 
       <!-- INVOICES -->
       <div class="pg-tab" id="tab-invoices">
-        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">🧾 My Invoices</h2>
-        <div id="invoicesTable"><div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div></div>
+        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">ðŸ§¾ My Invoices</h2>
+        <div id="invoicesTable"><div style="text-align:center;padding:40px;color:#9ca3af">â³ Loading...</div></div>
       </div>
 
       <!-- LOYALTY -->
       <div class="pg-tab" id="tab-loyalty">
-        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">⭐ Loyalty & Rewards</h2>
-        <div id="loyaltyContent"><div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div></div>
+        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">â­ Loyalty & Rewards</h2>
+        <div id="loyaltyContent"><div style="text-align:center;padding:40px;color:#9ca3af">â³ Loading...</div></div>
       </div>
 
       <!-- ADDRESS -->
       <!-- ADDRESS BOOK -->
       <div class="pg-tab" id="tab-address">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-          <h2 style="font-size:17px;font-weight:800">📍 Address Book</h2>
+          <h2 style="font-size:17px;font-weight:800">ðŸ“ Address Book</h2>
           <button onclick="showNewAddressForm()" class="sbtn" style="padding:8px 16px;max-width:max-content;font-size:12px">+ Add New</button>
         </div>
         <div id="addressList" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-          <div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">⏳ Loading addresses...</div>
+          <div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">â³ Loading addresses...</div>
         </div>
         
         <!-- NEW ADDRESS FORM -->
         <div id="newAddressFormSec" class="fs" style="display:none;margin-top:20px;border-top:1.5px solid #e5e7eb;padding-top:20px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <h3>🏠 Add New Address</h3>
-            <button onclick="document.getElementById('newAddressFormSec').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer">×</button>
+            <h3>ðŸ  Add New Address</h3>
+            <button onclick="document.getElementById('newAddressFormSec').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer">Ã—</button>
           </div>
           <div class="fgrid">
             <div class="fg"><label class="fl">Name *</label><input class="fi" id="aName" placeholder="e.g. Home, Office"></div>
@@ -167,7 +167,7 @@
           </div>
           <div id="addrMsg" style="margin-top:8px;font-size:12px;font-weight:600"></div>
           <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-            <button onclick="saveNewAddress()" class="sbtn" style="max-width:220px">💾 Save Address</button>
+            <button onclick="saveNewAddress()" class="sbtn" style="max-width:220px">ðŸ’¾ Save Address</button>
           </div>
         </div>
       </div>
@@ -177,7 +177,8 @@
 </div>
 </section>
 <div id="site-footer"></div>
-<script src="js/api-cache.js?v=1"></script><script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.9"></script><script src="js/layout.js?v=12.0"></script>
+<script src="js/api-cache.js?v=1"></script><script src="js/error-logger.js?v=1.0"></script>
+<script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.9"></script><script src="js/layout.js?v=13.0"></script>
 <script>
 if(!API.loggedIn()){ location.href='login.html?next=account.html'; }
 
@@ -234,7 +235,7 @@ async function loadDashboard(){
         +'<span style="font-weight:800;color:var(--red-d)">AED '+parseFloat(o.amount_total||0).toFixed(2)+'</span>'
         +'<button onclick="showTab(\'orders\',null);viewOrderDetail('+o.id+')" style="background:var(--red);color:#fff;border:none;padding:5px 11px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer">Details</button>'
         +'</div></div></div>';
-    }).join('') : '<div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px">No orders yet. <a href="shop.html" style="color:var(--red);font-weight:700">Start shopping →</a></div>';
+    }).join('') : '<div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px">No orders yet. <a href="shop.html" style="color:var(--red);font-weight:700">Start shopping â†’</a></div>';
   }catch(e){ document.getElementById('recentOrders').innerHTML='<div style="color:var(--red);font-size:13px">Could not load orders</div>'; }
 }
 
@@ -276,9 +277,9 @@ async function saveProfile(){
     document.querySelectorAll('.u-name').forEach(function(e){ e.textContent=nm.split(' ')[0]; });
     document.getElementById('acctName').textContent = nm;
     var sess=API.sess(); if(sess){ sess.name=nm; API.saveSess(sess); }
-    msg.className='alert alert-ok'; msg.textContent='✅ Profile saved!'; msg.style.display='flex';
+    msg.className='alert alert-ok'; msg.textContent='âœ… Profile saved!'; msg.style.display='flex';
     setTimeout(function(){ msg.style.display='none'; }, 3000);
-  }catch(e){ msg.className='alert alert-err'; msg.textContent='❌ '+e.message; msg.style.display='flex'; }
+  }catch(e){ msg.className='alert alert-err'; msg.textContent='âŒ '+e.message; msg.style.display='flex'; }
 }
 
 async function changePwd(){
@@ -289,23 +290,23 @@ async function changePwd(){
   if(pw !== cpw){ msg.textContent='Passwords do not match'; msg.style.color='var(--red)'; return; }
   try{ 
     await API.updatePassword(API.myUserId(), pw); 
-    msg.textContent='✅ Password updated!'; 
+    msg.textContent='âœ… Password updated!'; 
     msg.style.color='#065f46'; 
     document.getElementById('newPwd').value=''; 
     document.getElementById('confirmPwd').value=''; 
     setTimeout(() => { document.getElementById('pwdSec').style.display='none'; msg.textContent=''; }, 2500);
   }
-  catch(e){ msg.textContent='❌ '+e.message; msg.style.color='var(--red)'; }
+  catch(e){ msg.textContent='âŒ '+e.message; msg.style.color='var(--red)'; }
 }
 
 async function loadOrders(){
   var el = document.getElementById('ordersTable');
-  el.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div>';
+  el.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af">â³ Loading...</div>';
   try{
     var r = await API.myOrders();
     var orders = r.data||[];
     if(!orders.length){
-      el.innerHTML='<div style="text-align:center;padding:52px 20px"><div style="font-size:52px;margin-bottom:14px">📦</div><h3 style="font-weight:800;color:#374151">No orders yet</h3><a href="shop.html" style="color:var(--red);font-weight:700;text-decoration:none;font-size:13px">Start shopping →</a></div>';
+      el.innerHTML='<div style="text-align:center;padding:52px 20px"><div style="font-size:52px;margin-bottom:14px">ðŸ“¦</div><h3 style="font-weight:800;color:#374151">No orders yet</h3><a href="shop.html" style="color:var(--red);font-weight:700;text-decoration:none;font-size:13px">Start shopping â†’</a></div>';
       return;
     }
     el.innerHTML = orders.map(function(o){
@@ -325,13 +326,13 @@ async function loadOrders(){
         +'<div style="font-size:17px;font-weight:900;color:var(--red-d)">AED '+parseFloat(o.amount_total||0).toFixed(2)+'</div>'
         +'</div></div>'
         +'<div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap;align-items:center">'
-        +'<button onclick="viewOrderDetail('+o.id+')" style="background:var(--red);color:#fff;border:none;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer">📋 View Details</button>'
-        +'<a href="track-order.html?oid='+o.id+'" style="background:#f3f4f6;color:#374151;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;text-decoration:none">📍 Track</a>'
-        +(hasInvoice?'<button onclick="loadOrderInvoice('+o.id+')" style="background:#f0fdf4;color:#065f46;border:1px solid #6ee7b7;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer">🧾 Invoice</button>':'')
-        +(hasDelivery?'<span style="font-size:10px;background:#e0e7ff;color:#3730a3;padding:3px 8px;border-radius:6px;font-weight:700">🚚 Shipped</span>':'')
+        +'<button onclick="viewOrderDetail('+o.id+')" style="background:var(--red);color:#fff;border:none;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer">ðŸ“‹ View Details</button>'
+        +'<a href="track-order.html?oid='+o.id+'" style="background:#f3f4f6;color:#374151;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;text-decoration:none">ðŸ“ Track</a>'
+        +(hasInvoice?'<button onclick="loadOrderInvoice('+o.id+')" style="background:#f0fdf4;color:#065f46;border:1px solid #6ee7b7;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer">ðŸ§¾ Invoice</button>':'')
+        +(hasDelivery?'<span style="font-size:10px;background:#e0e7ff;color:#3730a3;padding:3px 8px;border-radius:6px;font-weight:700">ðŸšš Shipped</span>':'')
         +'</div></div>';
     }).join('');
-  }catch(e){ el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">❌ '+e.message+'</div>'; }
+  }catch(e){ el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">âŒ '+e.message+'</div>'; }
 }
 
 async function viewOrderDetail(oid){
@@ -339,7 +340,7 @@ async function viewOrderDetail(oid){
   var cont = document.getElementById('orderDetailContent');
   el.style.display='block';
   el.scrollIntoView({behavior:'smooth',block:'start'});
-  cont.innerHTML='<div style="text-align:center;padding:20px;color:#9ca3af">⏳ Loading order #'+oid+'...</div>';
+  cont.innerHTML='<div style="text-align:center;padding:20px;color:#9ca3af">â³ Loading order #'+oid+'...</div>';
   try{
     var r = await API.getOrder(oid);
     var o = Array.isArray(r.data)?r.data[0]:r.data;
@@ -355,7 +356,7 @@ async function viewOrderDetail(oid){
         lines=lr.data||[];
       }catch(e){}
     }
-    // Normalize invoice_ids[] → [{id:..}] OR [12,34] → array of numeric IDs
+    // Normalize invoice_ids[] â†’ [{id:..}] OR [12,34] â†’ array of numeric IDs
     var invoiceIds = (Array.isArray(o.invoice_ids)?o.invoice_ids:(o.invoice_ids?[o.invoice_ids]:[]))
       .map(function(x){ return typeof x==='object'?x.id:x; });
     var pickingIds = (Array.isArray(o.picking_ids)?o.picking_ids:(o.picking_ids?[o.picking_ids]:[]))
@@ -369,19 +370,19 @@ async function viewOrderDetail(oid){
       +'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Status</div><span class="os '+(stateKey==='sale'||stateKey==='done'?'os-ok':stateKey==='cancel'?'os-cancel':'os-draft')+'">'+state+'</span></div>'
       +'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Date</div><div style="font-size:12px">'+(o.date_order||'').slice(0,16)+'</div></div>'
       +'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Total</div><div style="font-weight:900;color:var(--red-d);font-size:16px">AED '+parseFloat(o.amount_total||0).toFixed(2)+'</div></div>'
-      +(carrier?'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Delivery Method</div><div style="font-size:12px">🚚 '+carrier+'</div></div>':'')
+      +(carrier?'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Delivery Method</div><div style="font-size:12px">ðŸšš '+carrier+'</div></div>':'')
       +(partner?'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Customer</div><div style="font-size:12px">'+partner+'</div></div>':'')
       +'</div>'
-      +(o.note?'<div style="font-size:11px;color:#6b7280;margin-bottom:12px;padding:10px;background:#f9fafb;border-radius:8px;line-height:1.5"><strong>📝 Delivery Note:</strong><br>'+o.note+'</div>':'')
+      +(o.note?'<div style="font-size:11px;color:#6b7280;margin-bottom:12px;padding:10px;background:#f9fafb;border-radius:8px;line-height:1.5"><strong>ðŸ“ Delivery Note:</strong><br>'+o.note+'</div>':'')
       +(lines.length?'<div style="border-top:1.5px solid #f3f4f6;padding-top:12px;margin-bottom:12px">'
         +'<div style="font-size:12px;font-weight:800;margin-bottom:8px">Order Items ('+lines.length+')</div>'
         +lines.map(function(l){
-          var pnm=(Array.isArray(l.product_id)?l.product_id[1]:l.name||l.display_name||'–');
-          if(typeof pnm==='object'&&pnm) pnm = pnm.name || pnm.display_name || '–';
+          var pnm=(Array.isArray(l.product_id)?l.product_id[1]:l.name||l.display_name||'â€“');
+          if(typeof pnm==='object'&&pnm) pnm = pnm.name || pnm.display_name || 'â€“';
           pnm = (pnm||'').replace(/^\[.*?\]\s*/,'').trim();
           return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f9fafb;gap:8px">'
             +'<div style="flex:1"><div style="font-size:12px;font-weight:700">'+pnm+'</div>'
-            +'<div style="font-size:10px;color:#9ca3af">Qty: '+(l.product_uom_qty||l.qty||1)+' × AED '+parseFloat(l.price_unit||0).toFixed(2)+'</div></div>'
+            +'<div style="font-size:10px;color:#9ca3af">Qty: '+(l.product_uom_qty||l.qty||1)+' Ã— AED '+parseFloat(l.price_unit||0).toFixed(2)+'</div></div>'
             +'<div style="font-weight:700;color:var(--red-d);font-size:13px">AED '+parseFloat(l.price_subtotal||l.price_total||0).toFixed(2)+'</div>'
             +'</div>';}).join('')
         +'<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:800;padding-top:10px;border-top:2px solid #e5e7eb"><span>Total</span><span style="color:var(--red-d)">AED '+parseFloat(o.amount_total||0).toFixed(2)+'</span></div>'
@@ -390,14 +391,14 @@ async function viewOrderDetail(oid){
       +'<div id="ord-invoice-'+oid+'" style="margin-top:8px"></div>'
       +'<div id="ord-deliv-'+oid+'" style="margin-top:8px"></div>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'
-      +'<a href="track-order.html?oid='+oid+'" style="background:#f3f4f6;color:#374151;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;text-decoration:none">📍 Track Delivery</a>'
+      +'<a href="track-order.html?oid='+oid+'" style="background:#f3f4f6;color:#374151;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;text-decoration:none">ðŸ“ Track Delivery</a>'
       +'</div>';
     cont.innerHTML = summaryHtml;
 
-    // INVOICE block — fetch each invoice by id so we get access_token for the PDF
+    // INVOICE block â€” fetch each invoice by id so we get access_token for the PDF
     var invEl = document.getElementById('ord-invoice-'+oid);
     if(invoiceIds.length){
-      invEl.innerHTML='<div style="background:#fffbea;border:1px solid #f5c518;border-radius:10px;padding:12px"><div style="font-size:12px;font-weight:800;margin-bottom:8px">🧾 Invoice ('+invoiceIds.length+')</div><div style="font-size:11px;color:#9ca3af">Loading invoice details...</div></div>';
+      invEl.innerHTML='<div style="background:#fffbea;border:1px solid #f5c518;border-radius:10px;padding:12px"><div style="font-size:12px;font-weight:800;margin-bottom:8px">ðŸ§¾ Invoice ('+invoiceIds.length+')</div><div style="font-size:11px;color:#9ca3af">Loading invoice details...</div></div>';
       try{
         var invHtml='';
         for(var i=0;i<invoiceIds.length;i++){
@@ -411,21 +412,21 @@ async function viewOrderDetail(oid){
             invHtml += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;flex-wrap:wrap">'
               +'<div><div style="font-size:13px;font-weight:800">'+(inv.name||'Invoice #'+inv.id)+'</div>'
               +'<div style="font-size:10px;color:#6b7280">Invoice ID: <strong>'+inv.id+'</strong></div>'
-              +'<div style="font-size:10px;color:#6b7280">Date: '+(inv.invoice_date||inv.date||'').slice(0,10)+(inv.invoice_date_due?' · Due: '+(inv.invoice_date_due||'').slice(0,10):'')+'</div>'
+              +'<div style="font-size:10px;color:#6b7280">Date: '+(inv.invoice_date||inv.date||'').slice(0,10)+(inv.invoice_date_due?' Â· Due: '+(inv.invoice_date_due||'').slice(0,10):'')+'</div>'
               +'</div>'
               +'<div style="text-align:right">'
               +'<span class="os '+(istate.toLowerCase().includes('post')?'os-ok':istate.toLowerCase().includes('cancel')?'os-cancel':'os-draft')+'" style="display:block;margin-bottom:4px">'+istate+'</span>'
               +'<div style="font-weight:800;color:var(--red-d);font-size:13px">AED '+parseFloat(inv.amount_total||0).toFixed(2)+'</div>'
               +(inv.amount_residual&&parseFloat(inv.amount_residual)>0?'<div style="font-size:10px;color:#9ca3af">Due: AED '+parseFloat(inv.amount_residual).toFixed(2)+'</div>':'')
               +'</div>'
-              +(pdfUrl?'<div style="width:100%;margin-top:6px"><a href="'+pdfUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:var(--red);color:#fff;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;text-decoration:none">📄 Get Invoice PDF</a></div>':'<div style="width:100%;margin-top:6px;font-size:10px;color:#9ca3af">PDF available once invoice is posted</div>')
+              +(pdfUrl?'<div style="width:100%;margin-top:6px"><a href="'+pdfUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:var(--red);color:#fff;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;text-decoration:none">ðŸ“„ Get Invoice PDF</a></div>':'<div style="width:100%;margin-top:6px;font-size:10px;color:#9ca3af">PDF available once invoice is posted</div>')
               +'</div>';
           }catch(_){
-            invHtml += '<div style="padding:6px 0;font-size:11px;color:#9ca3af">Invoice #'+iid+' — could not load details</div>';
+            invHtml += '<div style="padding:6px 0;font-size:11px;color:#9ca3af">Invoice #'+iid+' â€” could not load details</div>';
           }
         }
         invEl.innerHTML = '<div style="background:#fffbea;border:1px solid #f5c518;border-radius:10px;padding:12px">'
-          +'<div style="font-size:12px;font-weight:800;margin-bottom:8px">🧾 Invoice'+(invoiceIds.length>1?'s':'')+' ('+invoiceIds.length+')</div>'
+          +'<div style="font-size:12px;font-weight:800;margin-bottom:8px">ðŸ§¾ Invoice'+(invoiceIds.length>1?'s':'')+' ('+invoiceIds.length+')</div>'
           + (invHtml||'<div style="font-size:11px;color:#9ca3af">No invoice details</div>')
           +'</div>';
       }catch(e){
@@ -433,10 +434,10 @@ async function viewOrderDetail(oid){
       }
     }
 
-    // DELIVERY block — picking_ids → /api/delivery-order/{id}
+    // DELIVERY block â€” picking_ids â†’ /api/delivery-order/{id}
     var delEl = document.getElementById('ord-deliv-'+oid);
     if(pickingIds.length){
-      delEl.innerHTML='<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:10px;padding:12px"><div style="font-size:12px;font-weight:800;margin-bottom:8px">🚚 Delivery</div><div style="font-size:11px;color:#9ca3af">Loading delivery details...</div></div>';
+      delEl.innerHTML='<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:10px;padding:12px"><div style="font-size:12px;font-weight:800;margin-bottom:8px">ðŸšš Delivery</div><div style="font-size:11px;color:#9ca3af">Loading delivery details...</div></div>';
       try{
         var delHtml='';
         for(var j=0;j<pickingIds.length;j++){
@@ -463,22 +464,22 @@ async function viewOrderDetail(oid){
               +(del.scheduled_date?'<div style="font-size:11px;color:#6b7280">Scheduled: '+(del.scheduled_date||'').slice(0,16)+'</div>':'')
               +(del.date_done?'<div style="font-size:11px;color:#6b7280">Delivered: '+(del.date_done||'').slice(0,16)+'</div>':'')
               +(del.origin?'<div style="font-size:11px;color:#6b7280">Source: '+del.origin+'</div>':'')
-              +(mapUrl?'<a href="'+mapUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:6px;background:#fff;border:1px solid #93c5fd;color:#1e40af;padding:5px 10px;border-radius:6px;font-weight:700;font-size:10px;text-decoration:none;margin-right:6px">📍 Map Directions</a>':'')
-              +(trackUrl?'<a href="'+trackUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:6px;background:#1e40af;border:1px solid #1e40af;color:#fff;padding:5px 10px;border-radius:6px;font-weight:700;font-size:10px;text-decoration:none">🚚 Track Shipment</a>':'')
+              +(mapUrl?'<a href="'+mapUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:6px;background:#fff;border:1px solid #93c5fd;color:#1e40af;padding:5px 10px;border-radius:6px;font-weight:700;font-size:10px;text-decoration:none;margin-right:6px">ðŸ“ Map Directions</a>':'')
+              +(trackUrl?'<a href="'+trackUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:6px;background:#1e40af;border:1px solid #1e40af;color:#fff;padding:5px 10px;border-radius:6px;font-weight:700;font-size:10px;text-decoration:none">ðŸšš Track Shipment</a>':'')
               +'</div>';
           }catch(_){
-            delHtml += '<div style="padding:6px 0;font-size:11px;color:#9ca3af">Picking #'+pid2+' — could not load</div>';
+            delHtml += '<div style="padding:6px 0;font-size:11px;color:#9ca3af">Picking #'+pid2+' â€” could not load</div>';
           }
         }
         delEl.innerHTML = '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:10px;padding:12px">'
-          +'<div style="font-size:12px;font-weight:800;margin-bottom:8px">🚚 Delivery'+(pickingIds.length>1?' Shipments':'')+' ('+pickingIds.length+')</div>'
+          +'<div style="font-size:12px;font-weight:800;margin-bottom:8px">ðŸšš Delivery'+(pickingIds.length>1?' Shipments':'')+' ('+pickingIds.length+')</div>'
           + (delHtml||'<div style="font-size:11px;color:#9ca3af">No delivery details</div>')
           +'</div>';
       }catch(e){
         delEl.innerHTML='<div style="font-size:11px;color:var(--red)">Delivery load failed: '+e.message+'</div>';
       }
     }
-  }catch(e){ cont.innerHTML='<div style="color:var(--red);font-size:13px">❌ '+e.message+'</div>'; }
+  }catch(e){ cont.innerHTML='<div style="color:var(--red);font-size:13px">âŒ '+e.message+'</div>'; }
 }
 
 // Open the most relevant invoice PDF for an order (used by the Invoice quick-button on the order card)
@@ -494,18 +495,18 @@ async function loadOrderInvoice(oid){
     if(!inv){ toast('Invoice details unavailable','warn'); return; }
     var pdfUrl = inv.access_token?API.invPdfUrl(inv.id, inv.access_token):(inv.access_url?API.PX+inv.access_url:'');
     if(pdfUrl){ window.open(pdfUrl, '_blank'); }
-    else{ toast('Invoice PDF not available yet — invoice must be posted','warn'); }
-  }catch(e){ toast('❌ '+e.message,'err'); }
+    else{ toast('Invoice PDF not available yet â€” invoice must be posted','warn'); }
+  }catch(e){ toast('âŒ '+e.message,'err'); }
 }
 
 async function loadInvoices(){
   var el = document.getElementById('invoicesTable');
-  el.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div>';
+  el.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af">â³ Loading...</div>';
   try{
     var r = await API.myInvoices();
     var invoices = r.data||[];
     if(!invoices.length){
-      el.innerHTML='<div style="text-align:center;padding:52px 20px"><div style="font-size:52px;margin-bottom:14px">🧾</div><h3 style="font-weight:800;color:#374151">No invoices yet</h3></div>';
+      el.innerHTML='<div style="text-align:center;padding:52px 20px"><div style="font-size:52px;margin-bottom:14px">ðŸ§¾</div><h3 style="font-weight:800;color:#374151">No invoices yet</h3></div>';
       return;
     }
     el.innerHTML = invoices.map(function(inv){
@@ -526,15 +527,15 @@ async function loadInvoices(){
         +(inv.amount_residual&&parseFloat(inv.amount_residual)>0?'<div style="font-size:11px;color:#9ca3af">Due: AED '+parseFloat(inv.amount_residual).toFixed(2)+'</div>':'')
         +'</div></div>'
         // PDF DOWNLOAD BUTTON
-        +(pdfUrl?'<div style="margin-top:12px"><a href="'+pdfUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;padding:9px 18px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">📄 Download PDF Invoice</a></div>':'<div style="margin-top:10px;font-size:11px;color:#9ca3af">PDF will be available once invoice is confirmed</div>')
+        +(pdfUrl?'<div style="margin-top:12px"><a href="'+pdfUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;padding:9px 18px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">ðŸ“„ Download PDF Invoice</a></div>':'<div style="margin-top:10px;font-size:11px;color:#9ca3af">PDF will be available once invoice is confirmed</div>')
         +'</div>';
     }).join('');
-  }catch(e){ el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">❌ '+e.message+'</div>'; }
+  }catch(e){ el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">âŒ '+e.message+'</div>'; }
 }
 
 async function loadLoyalty(){
   var el = document.getElementById('loyaltyContent');
-  el.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div>';
+  el.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af">â³ Loading...</div>';
   try{
     var bal = await API.getLoyaltyBalance();
     var coupons = bal.coupons||[];
@@ -550,7 +551,7 @@ async function loadLoyalty(){
     }
 
     if(coupons.length){
-      html+='<div style="font-size:14px;font-weight:800;margin:16px 0 10px">🎁 Your Loyalty Coupons</div>';
+      html+='<div style="font-size:14px;font-weight:800;margin:16px 0 10px">ðŸŽ Your Loyalty Coupons</div>';
       for(var i=0;i<coupons.length;i++){
         var c = coupons[i];
         var progName = c.program_id&&c.program_id.length?c.program_id[0].name:'Loyalty Program';
@@ -564,8 +565,8 @@ async function loadLoyalty(){
               var desc = rw.description||'Loyalty reward';
               var disc = parseFloat(rw.discount||0);
               var mode = Array.isArray(rw.discount_mode)?rw.discount_mode[0]:rw.discount_mode;
-              if(disc>0 && mode==='per_point') rewardLabel = desc+' — '+disc+' AED per point redeemed';
-              else if(disc>0) rewardLabel = desc+' — discount available';
+              if(disc>0 && mode==='per_point') rewardLabel = desc+' â€” '+disc+' AED per point redeemed';
+              else if(disc>0) rewardLabel = desc+' â€” discount available';
               else rewardLabel = desc;
             }
           }catch(_){}
@@ -582,35 +583,35 @@ async function loadLoyalty(){
           +'</div>'
           +'<span style="background:var(--red-l);color:var(--red);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:800;flex-shrink:0">ACTIVE</span>'
           +'</div>'
-          +(code?'<a href="javascript:void(0)" onclick="if(Cart.count()===0){ toast(\'Your cart is empty\', \'warn\'); return; } location.href=\'checkout.html?coupon='+encodeURIComponent(code)+'\';" style="display:inline-block;margin-top:10px;background:var(--red);color:#fff;padding:8px 16px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">Use at Checkout →</a>':'')
+          +(code?'<a href="javascript:void(0)" onclick="if(Cart.count()===0){ toast(\'Your cart is empty\', \'warn\'); return; } location.href=\'checkout.html?coupon='+encodeURIComponent(code)+'\';" style="display:inline-block;margin-top:10px;background:var(--red);color:#fff;padding:8px 16px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">Use at Checkout â†’</a>':'')
           +'</div>';
       }
     }
 
     if(!cards.length&&!coupons.length){
-      html='<div style="text-align:center;padding:52px 20px"><div style="font-size:52px;margin-bottom:14px">⭐</div><h3 style="font-weight:800;color:#374151;margin-bottom:8px">No rewards yet</h3><p style="font-size:13px;color:#9ca3af;margin-bottom:16px">Shop more to earn loyalty points and unlock rewards!</p><a href="shop.html" style="color:var(--red);font-weight:700;text-decoration:none;font-size:13px">Shop Now →</a></div>';
+      html='<div style="text-align:center;padding:52px 20px"><div style="font-size:52px;margin-bottom:14px">â­</div><h3 style="font-weight:800;color:#374151;margin-bottom:8px">No rewards yet</h3><p style="font-size:13px;color:#9ca3af;margin-bottom:16px">Shop more to earn loyalty points and unlock rewards!</p><a href="shop.html" style="color:var(--red);font-weight:700;text-decoration:none;font-size:13px">Shop Now â†’</a></div>';
     }
     el.innerHTML = html;
-  }catch(e){ el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">❌ '+e.message+'</div>'; }
+  }catch(e){ el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">âŒ '+e.message+'</div>'; }
 }
 
 async function loadAddress(){
-  document.getElementById('addressList').innerHTML='<div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">⏳ Loading addresses...</div>';
+  document.getElementById('addressList').innerHTML='<div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">â³ Loading addresses...</div>';
   var pid = API.myPid(); if(!pid)return;
   try{
     var r = await API.getChildContacts(pid);
     var addrs = r.data||[];
     var html = addrs.length ? addrs.map(a => {
       return '<div style="border:1px solid #e5e7eb;border-radius:12px;padding:16px;background:#f9fafb">' +
-        '<div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;margin-bottom:8px">' + (a.type==='delivery'?'🚚 Delivery':a.type==='invoice'?'🧾 Invoice':'Contact') + '</div>' +
+        '<div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;margin-bottom:8px">' + (a.type==='delivery'?'ðŸšš Delivery':a.type==='invoice'?'ðŸ§¾ Invoice':'Contact') + '</div>' +
         '<div style="font-weight:700;margin-bottom:4px">' + (a.name||'') + '</div>' +
         '<div style="font-size:12px;color:#6b7280">' + [a.street,a.street2,a.city,a.zip].filter(Boolean).join(', ') + '</div>' +
-        '<div style="font-size:12px;color:#6b7280;margin-top:4px">' + (a.phone?'📞 '+a.phone:'') + '</div>' +
+        '<div style="font-size:12px;color:#6b7280;margin-top:4px">' + (a.phone?'ðŸ“ž '+a.phone:'') + '</div>' +
       '</div>';
     }).join('') : '<div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">No addresses found. Add a new delivery or invoice address!</div>';
     document.getElementById('addressList').innerHTML = html;
   }catch(e){
-    document.getElementById('addressList').innerHTML='<div style="color:var(--red);padding:20px;text-align:center;grid-column:1/-1">❌ Failed to load addresses: '+e.message+'</div>';
+    document.getElementById('addressList').innerHTML='<div style="color:var(--red);padding:20px;text-align:center;grid-column:1/-1">âŒ Failed to load addresses: '+e.message+'</div>';
   }
 }
 
@@ -645,9 +646,9 @@ async function saveNewAddress(){
   var msg = document.getElementById('addrMsg');
   var name = document.getElementById('aName').value.trim();
   var street = document.getElementById('aStreet').value.trim();
-  if(!name || !street){ msg.textContent='❌ Name and Street are required'; msg.style.color='var(--red)'; return; }
+  if(!name || !street){ msg.textContent='âŒ Name and Street are required'; msg.style.color='var(--red)'; return; }
   
-  msg.textContent='⏳ Saving...'; msg.style.color='#9ca3af';
+  msg.textContent='â³ Saving...'; msg.style.color='#9ca3af';
   try {
     var payload = {
       parent_id: pid,
@@ -662,13 +663,13 @@ async function saveNewAddress(){
       state_id: document.getElementById('aState').value
     };
     await API.addAddress(payload);
-    msg.textContent='✅ Address created successfully!'; msg.style.color='#065f46';
+    msg.textContent='âœ… Address created successfully!'; msg.style.color='#065f46';
     setTimeout(() => {
       document.getElementById('newAddressFormSec').style.display='none';
       loadAddress();
     }, 1000);
   }catch(e){
-    msg.textContent='❌ '+e.message; msg.style.color='var(--red)';
+    msg.textContent='âŒ '+e.message; msg.style.color='var(--red)';
   }
 }
 

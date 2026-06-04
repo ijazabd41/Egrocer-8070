@@ -2,8 +2,8 @@
 <html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Shop – Coop Discounts Hyper Market</title>
-<link rel="stylesheet" href="css/style.css?v=12.0">
+<title>Shop â€“ Coop Discounts Hyper Market</title>
+<link rel="stylesheet" href="css/style.css?v=13.0">
 <style>
 @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .skel{background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:sk 1.5s infinite;border-radius:10px}
@@ -34,7 +34,7 @@
 
 <div class="ctr" style="padding-top:8px">
   <div class="bcnav">
-    <a href="index.html">Home</a><span>›</span><span id="shopBc">All Products</span>
+    <a href="index.html">Home</a><span>â€º</span><span id="shopBc">All Products</span>
   </div>
 </div>
 
@@ -46,13 +46,13 @@
       <p style="font-size:11px;color:#9ca3af" id="shopCount">Loading products...</p>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <button class="mob-filter-btn" onclick="toggleSidebar()" id="filterBtn">⚙️ Categories</button>
+      <button class="mob-filter-btn" onclick="toggleSidebar()" id="filterBtn">âš™ï¸ Categories</button>
       <select id="sortSel" onchange="loadProds()" style="border:1.5px solid #e5e7eb;border-radius:8px;padding:8px 11px;font-size:12px;font-family:inherit;outline:none;background:#fff">
         <option value="">Default Sort</option>
-        <option value="list_price asc">Price: Low → High</option>
-        <option value="list_price desc">Price: High → Low</option>
-        <option value="name asc">Name A–Z</option>
-        <option value="name desc">Name Z–A</option>
+        <option value="list_price asc">Price: Low â†’ High</option>
+        <option value="list_price desc">Price: High â†’ Low</option>
+        <option value="name asc">Name Aâ€“Z</option>
+        <option value="name desc">Name Zâ€“A</option>
       </select>
     </div>
   </div>
@@ -60,10 +60,10 @@
   <div class="shop-layout">
     <!-- LEFT: Categories -->
     <aside class="sidebar" id="mobSidebar">
-      <div class="sb-header">🏷️ Categories</div>
+      <div class="sb-header">ðŸ·ï¸ Categories</div>
       <div class="sb-body">
         <div class="sb-item on" id="sbc-all" onclick="filterCat(null,'All Products')">
-          <div class="sb-img" style="font-size:16px;text-align:center">🏠</div>
+          <div class="sb-img" style="font-size:16px;text-align:center">ðŸ </div>
           <span style="flex:1">All Products</span>
         </div>
         <div id="shopCatList">
@@ -73,12 +73,12 @@
           <div class="skel" style="height:40px;margin:4px 0"></div>
         </div>
       </div>
-      <div class="sb-header" style="border-top:1px solid rgba(255,255,255,.2)">💰 Price</div>
+      <div class="sb-header" style="border-top:1px solid rgba(255,255,255,.2)">ðŸ’° Price</div>
       <div class="sb-body" style="flex:0;padding:6px 8px">
         <div class="sb-item on" id="pf-all" onclick="setPrice(0,999999,'all')"><span>All Prices</span></div>
         <div class="sb-item" id="pf-u10" onclick="setPrice(0,10,'u10')"><span>Under AED 10</span></div>
-        <div class="sb-item" id="pf-1050" onclick="setPrice(10,50,'1050')"><span>AED 10 – 50</span></div>
-        <div class="sb-item" id="pf-50100" onclick="setPrice(50,100,'50100')"><span>AED 50 – 100</span></div>
+        <div class="sb-item" id="pf-1050" onclick="setPrice(10,50,'1050')"><span>AED 10 â€“ 50</span></div>
+        <div class="sb-item" id="pf-50100" onclick="setPrice(50,100,'50100')"><span>AED 50 â€“ 100</span></div>
         <div class="sb-item" id="pf-100+" onclick="setPrice(100,999999,'100+')"><span>AED 100+</span></div>
       </div>
     </aside>
@@ -102,7 +102,8 @@
 </section>
 
 <div id="site-footer"></div>
-<script src="js/api.js?v=8.5"></script><script src="js/app.js?v=8.5"></script><script src="js/layout.js?v=12.0"></script>
+<script src="js/error-logger.js?v=1.0"></script>
+<script src="js/api.js?v=8.5"></script><script src="js/app.js?v=8.5"></script><script src="js/layout.js?v=13.0"></script>
 <script>
 var PAGE_SIZE = 16;
 var currentPage = 0;
@@ -117,7 +118,7 @@ function toggleSidebar() {
   var sb = document.getElementById('mobSidebar');
   var btn = document.getElementById('filterBtn');
   sb.classList.toggle('mob-open');
-  btn.textContent = sb.classList.contains('mob-open') ? '✕ Close' : '⚙️ Categories';
+  btn.textContent = sb.classList.contains('mob-open') ? 'âœ• Close' : 'âš™ï¸ Categories';
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -169,7 +170,7 @@ function buildSidebar(cats) {
     var cnt = c.product_tmpl_ids ? c.product_tmpl_ids.length : 0;
     return '<div class="sb-item" id="sbc-' + c.id + '" onclick="filterCat(' + c.id + ',\'' + c.name.replace(/'/g,"\\'") + '\')">' +
       '<div class="sb-img"><img src="' + imgSrc + '" alt="' + c.name + '"' +
-           ' onerror="this.style.display=\'none\';this.parentElement.textContent=\'🏷️\'"></div>' +
+           ' onerror="this.style.display=\'none\';this.parentElement.textContent=\'ðŸ·ï¸\'"></div>' +
       '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + c.name + '</span>' +
       (cnt ? '<span style="background:#f3f4f6;font-size:9px;font-weight:700;padding:2px 5px;border-radius:6px;color:#6b7280;flex-shrink:0">' + cnt + '</span>' : '') +
     '</div>';
@@ -187,7 +188,7 @@ async function filterCat(catId, catName) {
   document.getElementById('shopBc').textContent = catName || 'All Products';
   // Close mobile sidebar
   document.getElementById('mobSidebar').classList.remove('mob-open');
-  document.getElementById('filterBtn').textContent = '⚙️ Categories';
+  document.getElementById('filterBtn').textContent = 'âš™ï¸ Categories';
 
   if (catId) {
     try {
@@ -234,10 +235,10 @@ async function loadProds() {
     var total = currentCatPids ? currentCatPids.length : (r.total || prods.length);
     document.getElementById('shopCount').textContent = 'Showing ' + prods.length + ' products' + (total > PAGE_SIZE ? ' of ' + total : '');
     el.innerHTML = prods.length ? prods.map(buildCard).join('') :
-      '<div style="grid-column:1/-1;text-align:center;padding:52px;color:#9ca3af"><div style="font-size:40px;margin-bottom:12px">🔍</div><h3 style="font-size:14px;font-weight:700">No products found</h3><a href="shop.html" style="color:#ED1C24;font-weight:700;font-size:12px;display:block;margin-top:8px">Clear Filters →</a></div>';
+      '<div style="grid-column:1/-1;text-align:center;padding:52px;color:#9ca3af"><div style="font-size:40px;margin-bottom:12px">ðŸ”</div><h3 style="font-size:14px;font-weight:700">No products found</h3><a href="shop.html" style="color:#ED1C24;font-weight:700;font-size:12px;display:block;margin-top:8px">Clear Filters â†’</a></div>';
     buildPagination(total);
   } catch(e) {
-    el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:52px;color:#ED1C24"><div style="font-size:36px;margin-bottom:10px">😕</div><div style="font-size:13px">'+e.message+'</div><button onclick="loadProds()" style="margin-top:14px;background:#ED1C24;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit">Retry</button></div>';
+    el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:52px;color:#ED1C24"><div style="font-size:36px;margin-bottom:10px">ðŸ˜•</div><div style="font-size:13px">'+e.message+'</div><button onclick="loadProds()" style="margin-top:14px;background:#ED1C24;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit">Retry</button></div>';
   }
 }
 
@@ -247,11 +248,11 @@ function buildPagination(total) {
   if (pages <= 1) { el.innerHTML = ''; return; }
   var h = '';
   var btnStyle = function(active){ return 'padding:7px 12px;border:' + (active?'2px solid #ED1C24':'1.5px solid #e5e7eb') + ';border-radius:8px;font-size:12px;font-weight:'+(active?'800':'600')+';cursor:pointer;background:'+(active?'#ED1C24':'#fff')+';color:'+(active?'#fff':'inherit')+';font-family:inherit'; };
-  if (currentPage > 0) h += '<button onclick="goPage('+(currentPage-1)+')" style="'+btnStyle(false)+'">← Prev</button>';
+  if (currentPage > 0) h += '<button onclick="goPage('+(currentPage-1)+')" style="'+btnStyle(false)+'">â† Prev</button>';
   for (var i = Math.max(0, currentPage-2); i <= Math.min(pages-1, currentPage+2); i++) {
     (function(pi){ h += '<button onclick="goPage('+pi+')" style="'+btnStyle(pi===currentPage)+'">'+(pi+1)+'</button>'; })(i);
   }
-  if (currentPage < pages-1) h += '<button onclick="goPage('+(currentPage+1)+')" style="'+btnStyle(false)+'">Next →</button>';
+  if (currentPage < pages-1) h += '<button onclick="goPage('+(currentPage+1)+')" style="'+btnStyle(false)+'">Next â†’</button>';
   el.innerHTML = h;
 }
 

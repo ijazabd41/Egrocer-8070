@@ -2,13 +2,13 @@
 <html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Product – Coop Discounts</title>
-<link rel="stylesheet" href="css/style.css?v=12.0">
+<title>Product â€“ Coop Discounts</title>
+<link rel="stylesheet" href="css/style.css?v=13.0">
 </head>
 <body>
 <div id="site-header"></div>
 <div class="ctr" style="padding-top:8px">
-  <div class="bcnav"><a href="index.html">Home</a><span>›</span><a href="shop.html">Shop</a><span>›</span><span id="pdBcName">Product</span></div>
+  <div class="bcnav"><a href="index.html">Home</a><span>â€º</span><a href="shop.html">Shop</a><span>â€º</span><span id="pdBcName">Product</span></div>
 </div>
 
 <section class="sec">
@@ -33,14 +33,14 @@
         <div style="position:relative;border-radius:12px;overflow:hidden;background:#f9fafb;border:1.5px solid #e5e7eb;display:flex;align-items:center;justify-content:center;min-height:300px">
           <img id="pdImg" src="" alt="" style="max-height:320px;object-fit:contain;width:100%;display:block"
             onerror="this.style.display='none';document.getElementById('pdImgFb').style.display='flex'">
-          <div id="pdImgFb" style="display:none;font-size:80px;position:absolute;align-items:center;justify-content:center;width:100%;height:100%">📦</div>
+          <div id="pdImgFb" style="display:none;font-size:80px;position:absolute;align-items:center;justify-content:center;width:100%;height:100%">ðŸ“¦</div>
           <!-- Ribbon badge -->
           <div id="pdRibbon" style="display:none;position:absolute;top:12px;left:0;background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:4px 10px 4px 8px;border-radius:0 20px 20px 0"></div>
         </div>
         <!-- Wishlist -->
         <button id="pdWishBtn" style="margin-top:12px;width:100%;background:#fff;color:var(--red);border:2px solid var(--red);padding:10px;border-radius:var(--r);font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px"
           onmouseover="this.style.background='var(--red-l)'" onmouseout="this.style.background='#fff'">
-          ♡ Save to Wishlist
+          â™¡ Save to Wishlist
         </button>
       </div>
 
@@ -68,7 +68,7 @@
           <div id="pdCartState"></div>
         </div>
         <div id="pdOosMsg" style="display:none;background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;padding:12px;border-radius:8px;font-weight:700;font-size:13px;text-align:center;margin-top:10px">
-          ❌ Out of Stock — Check back soon
+          âŒ Out of Stock â€” Check back soon
         </div>
 
         <!-- CART LINE QTY FEEDBACK -->
@@ -77,9 +77,9 @@
         <!-- DELIVERY INFO -->
         <div style="margin-top:18px;border-top:1.5px solid #f3f4f6;padding-top:16px">
           <div style="display:flex;flex-direction:column;gap:8px">
-            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#374151"><span>🚀</span><span>Free delivery on orders above AED 50</span></div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#374151"><span>🔄</span><span>Easy 7-day returns</span></div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#374151"><span>🔒</span><span>100% secure checkout</span></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#374151"><span>ðŸš€</span><span>Free delivery on orders above AED 50</span></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#374151"><span>ðŸ”„</span><span>Easy 7-day returns</span></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#374151"><span>ðŸ”’</span><span>100% secure checkout</span></div>
           </div>
         </div>
       </div>
@@ -87,7 +87,7 @@
 
     <!-- RELATED PRODUCTS -->
     <div style="margin-top:32px">
-      <div class="sec-hd"><h2 class="sec-ttl">You May Also Like</h2><a href="shop.html" class="see-all">View All →</a></div>
+      <div class="sec-hd"><h2 class="sec-ttl">You May Also Like</h2><a href="shop.html" class="see-all">View All â†’</a></div>
       <div class="pgrid" id="relatedGrid"></div>
     </div>
   </div>
@@ -95,7 +95,8 @@
 </div>
 </section>
 <div id="site-footer"></div>
-<script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.10"></script><script src="js/layout.js?v=12.0"></script>
+<script src="js/error-logger.js?v=1.0"></script>
+<script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.10"></script><script src="js/layout.js?v=13.0"></script>
 <script>
 var pdId = parseInt(new URLSearchParams(location.search).get('id'));
 var pdData = null, pdQty = 1, pdLineId = null;
@@ -111,13 +112,13 @@ document.addEventListener('DOMContentLoaded', async function(){
     document.getElementById('pdSkel').style.display='none';
     document.getElementById('pdContent').style.display='block';
 
-    // Name — strip [SKU] prefix
+    // Name â€” strip [SKU] prefix
     var name = (pdData.name||pdData.display_name||'').replace(/^\[.*?\]\s*/,'').trim();
-    document.title = name + ' – Coop Discounts';
+    document.title = name + ' â€“ Coop Discounts';
     document.getElementById('pdName').textContent = name;
-    document.getElementById('pdBcName').textContent = name.length > 40 ? name.substring(0,40)+'…' : name;
+    document.getElementById('pdBcName').textContent = name.length > 40 ? name.substring(0,40)+'â€¦' : name;
 
-    // CRITICAL: image_1024 is a PATH — must use API.img() to proxy
+    // CRITICAL: image_1024 is a PATH â€” must use API.img() to proxy
     var imgSrc = pdData.image_1024 ? API.img(pdData.image_1024) : API.prodImg(pdId);
     document.getElementById('pdImg').src = imgSrc;
     document.getElementById('pdImg').alt = name;
@@ -150,9 +151,9 @@ document.addEventListener('DOMContentLoaded', async function(){
       document.getElementById('pdAddSec').style.display='none';
       document.getElementById('pdOosMsg').style.display='block';
     } else if(qtyAvail > 0){
-      stockEl.innerHTML='<span class="os os-ok">✅ In Stock ('+(qtyAvail>99?'99+':qtyAvail)+' available)</span>';
+      stockEl.innerHTML='<span class="os os-ok">âœ… In Stock ('+(qtyAvail>99?'99+':qtyAvail)+' available)</span>';
     } else {
-      stockEl.innerHTML='<span class="os os-ok">✅ In Stock</span>';
+      stockEl.innerHTML='<span class="os os-ok">âœ… In Stock</span>';
     }
     updatePdCartState();
 
@@ -181,7 +182,7 @@ document.addEventListener('DOMContentLoaded', async function(){
 
     Bar.done();
   }catch(e){
-    document.getElementById('pdSkel').innerHTML='<div style="color:#ED1C24;padding:40px;text-align:center">❌ '+e.message+'</div>';
+    document.getElementById('pdSkel').innerHTML='<div style="color:#ED1C24;padding:40px;text-align:center">âŒ '+e.message+'</div>';
     Bar.done();
   }
 });
@@ -207,9 +208,9 @@ function updatePdCartState(){
     sec.innerHTML = '';
   } else if (cQty > 0) {
     sec.innerHTML = '<div style="display:flex;flex-direction:column;gap:12px">' +
-      '<div style="font-size:13px;font-weight:700;color:var(--red)">✅ This item is in your cart</div>' +
+      '<div style="font-size:13px;font-weight:700;color:var(--red)">âœ… This item is in your cart</div>' +
       '<div style="display:flex;border:2px solid var(--red);border-radius:12px;overflow:hidden;width:100%;height:52px">' +
-        '<button onclick="Cart.setQty('+pdId+',-1)" style="width:52px;background:#fef2f2;color:var(--red);font-size:24px;font-weight:700;border:none;cursor:pointer">−</button>' +
+        '<button onclick="Cart.setQty('+pdId+',-1)" style="width:52px;background:#fef2f2;color:var(--red);font-size:24px;font-weight:700;border:none;cursor:pointer">âˆ’</button>' +
         '<span style="flex:1;text-align:center;font-size:18px;font-weight:900;line-height:48px;color:var(--red)">'+cQty+'</span>' +
         '<button onclick="Cart.setQty('+pdId+',1)" style="width:52px;background:#fef2f2;color:var(--red);font-size:24px;font-weight:700;border:none;cursor:pointer">+</button>' +
       '</div></div>';
@@ -217,11 +218,11 @@ function updatePdCartState(){
     var availTxt = (qtyAvail > 0 && qtyAvail < 10) ? 'Only '+qtyAvail+' left!' : '';
     sec.innerHTML = '<div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">' +
       '<div class="qty-ctrl">' +
-        '<button class="qty-btn" onclick="chQty(-1)">−</button>' +
+        '<button class="qty-btn" onclick="chQty(-1)">âˆ’</button>' +
         '<span class="qty-n" id="pdQtyN">'+pdQty+'</span>' +
         '<button class="qty-btn" onclick="chQty(1)">+</button>' +
       '</div><span style="font-size:12px;color:#9ca3af" id="pdAvailTxt">'+availTxt+'</span></div>' +
-      '<button id="pdAtcBtn" class="det-atc" onclick="addPdToCart()" style="width:100%">🛒 Add to Cart</button>';
+      '<button id="pdAtcBtn" class="det-atc" onclick="addPdToCart()" style="width:100%">ðŸ›’ Add to Cart</button>';
   }
 }
 
@@ -235,7 +236,7 @@ window.tick = function(){
 async function addPdToCart(){
   if(!pdData)return;
   var btn = document.getElementById('pdAtcBtn');
-  btn.disabled = true; btn.textContent = '⏳ Adding...';
+  btn.disabled = true; btn.textContent = 'â³ Adding...';
 
   var varId = Array.isArray(pdData.product_variant_id) && pdData.product_variant_id.length
     ? pdData.product_variant_id[0].id : pdId;
@@ -258,12 +259,12 @@ async function addPdToCart(){
       var backendQty = qtyR.data?.product_uom_qty || qtyR.data?.qty || pdQty;
       // Show feedback
       document.getElementById('pdLineFeedback').style.display='block';
-      document.getElementById('pdLineFeedback').textContent='✅ '+ backendQty + (backendQty==1?' item':' items') +' in cart (confirmed with server)';
+      document.getElementById('pdLineFeedback').textContent='âœ… '+ backendQty + (backendQty==1?' item':' items') +' in cart (confirmed with server)';
       setTimeout(function(){ document.getElementById('pdLineFeedback').style.display='none'; }, 4000);
     }catch(_){}
   }
 
-  btn.disabled = false; btn.textContent = '🛒 Add to Cart';
+  btn.disabled = false; btn.textContent = 'ðŸ›’ Add to Cart';
   openDrw();
 }
 
