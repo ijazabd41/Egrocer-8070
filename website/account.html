@@ -91,7 +91,10 @@
         </div>
         <div class="fs" id="pwdSec" style="display:none">
           <h3>🔑 Change Password</h3>
-          <div class="fg" style="max-width:320px"><label class="fl">New Password</label><input class="fi" id="newPwd" type="password" placeholder="Min 6 characters"></div>
+          <div class="fgrid" style="max-width:320px">
+            <div class="fg full"><label class="fl">New Password</label><input class="fi" id="newPwd" type="password" placeholder="Min 6 characters"></div>
+            <div class="fg full"><label class="fl">Confirm Password</label><input class="fi" id="confirmPwd" type="password" placeholder="Re-enter password"></div>
+          </div>
           <div id="pwdMsg" style="margin-top:8px;font-size:12px;font-weight:600"></div>
           <button onclick="changePwd()" class="sbtn" style="margin-top:12px;max-width:180px">Update</button>
         </div>
@@ -280,9 +283,18 @@ async function saveProfile(){
 
 async function changePwd(){
   var pw = document.getElementById('newPwd').value.trim();
+  var cpw = document.getElementById('confirmPwd').value.trim();
   var msg = document.getElementById('pwdMsg');
   if(!pw||pw.length<6){ msg.textContent='Minimum 6 characters'; msg.style.color='var(--red)'; return; }
-  try{ await API.updatePassword(API.myUserId(), pw); msg.textContent='✅ Password updated!'; msg.style.color='#065f46'; document.getElementById('newPwd').value=''; }
+  if(pw !== cpw){ msg.textContent='Passwords do not match'; msg.style.color='var(--red)'; return; }
+  try{ 
+    await API.updatePassword(API.myUserId(), pw); 
+    msg.textContent='✅ Password updated!'; 
+    msg.style.color='#065f46'; 
+    document.getElementById('newPwd').value=''; 
+    document.getElementById('confirmPwd').value=''; 
+    setTimeout(() => { document.getElementById('pwdSec').style.display='none'; msg.textContent=''; }, 2500);
+  }
   catch(e){ msg.textContent='❌ '+e.message; msg.style.color='var(--red)'; }
 }
 
