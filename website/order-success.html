@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Order Confirmed – Coop Discounts</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=12.0">
 </head>
 <body style="background:#f9fafb">
 <div id="site-header"></div>
@@ -60,14 +60,14 @@
 </div>
 </section>
 <div id="site-footer"></div>
-<script src="js/api-cache.js?v=1"></script><script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.9"></script><script src="js/layout.js"></script>
+<script src="js/api-cache.js?v=1"></script><script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.9"></script><script src="js/layout.js?v=12.0"></script>
 <script>
 var orderId = new URLSearchParams(location.search).get('oid');
 var orderName = new URLSearchParams(location.search).get('name') || '';
 var accessWarn = new URLSearchParams(location.search).get('access_warn') === '1';
 
 document.addEventListener('DOMContentLoaded', async function(){
-  if(!orderId){ document.getElementById('orderLoading').innerHTML='<div style="text-align:center;padding:20px;color:#EA262A">No order ID provided</div>'; return; }
+  if(!orderId){ document.getElementById('orderLoading').innerHTML='<div style="text-align:center;padding:20px;color:#ED1C24">No order ID provided</div>'; return; }
   API.log.info('OrderSuccess','load → start',{orderId:orderId,orderName:orderName});
   if(accessWarn) document.getElementById('accessWarn').style.display='block';
   document.getElementById('orderNameDisplay').textContent = orderName ? 'Order ' + orderName : 'Order #' + orderId;
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async function(){
     // Load full order detail
     var r = await API.getOrder(parseInt(orderId));
     var o = Array.isArray(r.data) ? r.data[0] : r.data;
-    if(!o){ document.getElementById('orderLoading').innerHTML='<div style="text-align:center;padding:20px;color:#EA262A">Order not found</div>'; return; }
+    if(!o){ document.getElementById('orderLoading').innerHTML='<div style="text-align:center;padding:20px;color:#ED1C24">Order not found</div>'; return; }
 
     document.getElementById('orderLoading').style.display='none';
     document.getElementById('orderDetail').style.display='block';
@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', async function(){
       document.getElementById('accessWarn').style.display='block';
       document.getElementById('orderLoading').innerHTML='<div style="text-align:center;padding:20px;color:#6b7280;font-size:13px;line-height:1.5">Order <strong>#'+orderId+'</strong> was placed. Full details are not visible until your account has Portal order access in Odoo.</div>';
     } else {
-      document.getElementById('orderLoading').innerHTML='<div style="text-align:center;padding:20px;color:#EA262A">❌ '+(e.message||'Could not load order')+'</div>';
+      document.getElementById('orderLoading').innerHTML='<div style="text-align:center;padding:20px;color:#ED1C24">❌ '+(e.message||'Could not load order')+'</div>';
     }
   }
 });

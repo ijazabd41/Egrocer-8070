@@ -4,7 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Admin Panel – Coop Discounts</title>
 <style>
-:root{--r:#EA262A;--rd:#a01820;--y:#f5c518;--dk:#0f172a;--dk2:#1e293b;--dk3:#334155;--g:#86efac}
+:root{--r:#ED1C24;--rd:#a01820;--y:#f5c518;--dk:#0f172a;--dk2:#1e293b;--dk3:#334155;--g:#86efac}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--dk);color:#e2e8f0;font-size:13px}
 /* AUTH OVERLAY */
@@ -351,7 +351,7 @@ tr:hover td{background:#1e293b}
 
 <script src="../js/api.js?v=2"></script>
 <script>
-function toast(m,t){let e=document.getElementById('cd-toast');if(!e){e=document.createElement('div');e.id='cd-toast';e.style.cssText='position:fixed;bottom:16px;right:16px;padding:10px 14px;border-radius:8px;font-size:11px;font-weight:600;z-index:9999;transition:all .3s;transform:translateY(60px);opacity:0;font-family:inherit';document.body.appendChild(e);}e.style.background=t==='err'?'#EA262A':t==='warn'?'#d4a800':'#1c1c2e';e.style.color='#fff';e.textContent=m;requestAnimationFrame(()=>{e.style.transform='translateY(0)';e.style.opacity='1';});setTimeout(()=>{e.style.transform='translateY(60px)';e.style.opacity='0';},2800);}
+function toast(m,t){let e=document.getElementById('cd-toast');if(!e){e=document.createElement('div');e.id='cd-toast';e.style.cssText='position:fixed;bottom:16px;right:16px;padding:10px 14px;border-radius:8px;font-size:11px;font-weight:600;z-index:9999;transition:all .3s;transform:translateY(60px);opacity:0;font-family:inherit';document.body.appendChild(e);}e.style.background=t==='err'?'#ED1C24':t==='warn'?'#d4a800':'#1c1c2e';e.style.color='#fff';e.textContent=m;requestAnimationFrame(()=>{e.style.transform='translateY(0)';e.style.opacity='1';});setTimeout(()=>{e.style.transform='translateY(60px)';e.style.opacity='0';},2800);}
 
 // ADMIN AUTH — password dds@1234, OTP to eicoopit@gmail.com
 const ADMIN_PW='dds@1234',ADMIN_EMAIL='eicoopit@gmail.com';

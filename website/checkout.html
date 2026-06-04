@@ -4,7 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>Checkout – Coop Discounts</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=12.0">
 </head>
 <body>
 <div id="site-header"></div>
@@ -187,7 +187,7 @@
 </div><!-- /grid -->
 </div></section>
 
-<div id="site-footer"></div><script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.10"></script><script src="js/layout.js"></script><script>
+<div id="site-footer"></div><script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.10"></script><script src="js/layout.js?v=12.0"></script><script>
 var selProvider=22, selProviderName='Cash on Delivery', selCarrierId=1, selCarrierName='Standard delivery', selDeliveryKind='home', selDeliveryMethod=null, discountPromo=0, discountLoyalty=0, appliedPromoCoupon=null, appliedLoyaltyCoupon=null;
 var currentStep=1;
 var checkoutAddressesCache=[];
@@ -407,7 +407,7 @@ document.addEventListener('DOMContentLoaded', async function(){
     }).catch(function(){});
     loadCheckoutAddresses();
   } else {
-    document.getElementById('coAddrList').innerHTML = '<div style="color:#EA262A;font-size:12px;text-align:center;padding:10px">Sign in to load your address book.</div>';
+    document.getElementById('coAddrList').innerHTML = '<div style="color:#ED1C24;font-size:12px;text-align:center;padding:10px">Sign in to load your address book.</div>';
   }
   updateStepUi();
   checkPlaceOrderBtnState();
@@ -610,7 +610,7 @@ async function pushCarrierToOrder(){
     await API.updDelivery(parseInt(oid), selCarrierId);
     msg.textContent='✅ '+selCarrierName+' applied to your order';
     msg.style.color='#065f46';
-  }catch(e){ msg.textContent='❌ Failed to apply carrier: '+e.message; msg.style.color='#EA262A'; }
+  }catch(e){ msg.textContent='❌ Failed to apply carrier: '+e.message; msg.style.color='#ED1C24'; }
 }
 
 async function saveCheckoutAddress(){
@@ -640,7 +640,7 @@ async function saveCheckoutAddress(){
       document.getElementById('coNewAddr').style.display='none';
       loadCheckoutAddresses();
     }, 1500);
-  }catch(e){ msg.textContent='❌ '+e.message; msg.style.color='#EA262A'; }
+  }catch(e){ msg.textContent='❌ '+e.message; msg.style.color='#ED1C24'; }
 }
 
 async function loadPayProviders(){
@@ -680,8 +680,8 @@ function selPay(id,name){
 async function applyPromoCoupon(){
   var code=document.getElementById('promoInput').value.trim();
   var msg=document.getElementById('promoMsg');
-  if(!code){msg.textContent='Please enter a promo code';msg.style.color='#EA262A';return;}
-  if(!API.loggedIn()){msg.textContent='⚠️ Please sign in to use promo codes';msg.style.color='#EA262A';return;}
+  if(!code){msg.textContent='Please enter a promo code';msg.style.color='#ED1C24';return;}
+  if(!API.loggedIn()){msg.textContent='⚠️ Please sign in to use promo codes';msg.style.color='#ED1C24';return;}
   msg.textContent='⏳ Looking up promo code "'+code+'"...';msg.style.color='#9ca3af';
   try{
     var oid=Cart.oid()||await Cart.ensureOrder();
@@ -719,7 +719,7 @@ async function applyPromoCoupon(){
     renderSummary();
   }catch(e){
     msg.textContent='❌ '+(e.message||'Invalid promo code');
-    msg.style.color='#EA262A';
+    msg.style.color='#ED1C24';
     appliedPromoCoupon = null;
     discountPromo = 0;
     renderSummary();
@@ -729,8 +729,8 @@ async function applyPromoCoupon(){
 async function applyLoyaltyPoints(){
   var code=document.getElementById('loyaltyCodeInput').value.trim();
   var msg=document.getElementById('loyaltyMsg');
-  if(!code){msg.textContent='No loyalty points available';msg.style.color='#EA262A';return;}
-  if(!API.loggedIn()){msg.textContent='⚠️ Please sign in to use loyalty points';msg.style.color='#EA262A';return;}
+  if(!code){msg.textContent='No loyalty points available';msg.style.color='#ED1C24';return;}
+  if(!API.loggedIn()){msg.textContent='⚠️ Please sign in to use loyalty points';msg.style.color='#ED1C24';return;}
   msg.textContent='⏳ Applying points...';msg.style.color='#9ca3af';
   try{
     var oid=Cart.oid()||await Cart.ensureOrder();
@@ -778,7 +778,7 @@ async function applyLoyaltyPoints(){
     renderSummary();
   }catch(e){
     msg.textContent='❌ '+(e.message||'Could not apply points');
-    msg.style.color='#EA262A';
+    msg.style.color='#ED1C24';
     appliedLoyaltyCoupon = null;
     discountLoyalty = 0;
     renderSummary();

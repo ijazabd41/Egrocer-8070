@@ -1,7 +1,7 @@
 /* Coop Discounts App v6 — Session, Cart, OTP, Images all fixed */
 
 /* ── PROGRESS BAR ─────────────────────────────────────── */
-const Bar={_el:null,_v:0,_t:null,init(){if(this._el)return;this._el=document.createElement('div');this._el.style.cssText='position:fixed;top:0;left:0;height:3px;background:#EA262A;z-index:99999;width:0;transition:width .25s;pointer-events:none';document.body.prepend(this._el);},start(){this.init();this._v=0;this._el.style.opacity='1';this._set(10);clearInterval(this._t);this._t=setInterval(()=>{if(this._v<85){this._v+=Math.random()*5;this._set(this._v);}},400);},done(){clearInterval(this._t);this._set(100);setTimeout(()=>{this._el.style.opacity='0';setTimeout(()=>{this._el.style.width='0';this._el.style.opacity='1';},400);},250);},_set(v){this._v=v;if(this._el)this._el.style.width=v+'%';}};
+const Bar={_el:null,_v:0,_t:null,init(){if(this._el)return;this._el=document.createElement('div');this._el.style.cssText='position:fixed;top:0;left:0;height:3px;background:#ED1C24;z-index:99999;width:0;transition:width .25s;pointer-events:none';document.body.prepend(this._el);},start(){this.init();this._v=0;this._el.style.opacity='1';this._set(10);clearInterval(this._t);this._t=setInterval(()=>{if(this._v<85){this._v+=Math.random()*5;this._set(this._v);}},400);},done(){clearInterval(this._t);this._set(100);setTimeout(()=>{this._el.style.opacity='0';setTimeout(()=>{this._el.style.width='0';this._el.style.opacity='1';},400);},250);},_set(v){this._v=v;if(this._el)this._el.style.width=v+'%';}};
 
 /* ── SKELETONS ────────────────────────────────────────── */
 function skelRow(n=6,h=190){return Array(n).fill(0).map(()=>`<div style="min-width:140px;height:${h}px;border-radius:12px;flex-shrink:0" class="skel"></div>`).join('');}
@@ -290,7 +290,7 @@ function renderDrawer(){
   if(!body)return;
   const items=Cart.raw();
   if(!items.length){
-    body.innerHTML=`<div style="text-align:center;padding:52px 20px"><div style="font-size:60px;margin-bottom:14px">🛒</div><h3 style="font-size:15px;font-weight:800;color:#374151;margin-bottom:8px">Your cart is empty</h3><a href="shop.html" onclick="closeDrw()" style="color:#EA262A;font-weight:700;font-size:13px">Start Shopping →</a></div>`;
+    body.innerHTML=`<div style="text-align:center;padding:52px 20px"><div style="font-size:60px;margin-bottom:14px">🛒</div><h3 style="font-size:15px;font-weight:800;color:#374151;margin-bottom:8px">Your cart is empty</h3><a href="shop.html" onclick="closeDrw()" style="color:#ED1C24;font-weight:700;font-size:13px">Start Shopping →</a></div>`;
     if(ftr)ftr.innerHTML='';return;
   }
   body.innerHTML=items.map(it=>`
@@ -301,27 +301,27 @@ function renderDrawer(){
       <div style="flex:1;min-width:0">
         <div style="font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#111">${it.name}</div>
         <div style="font-size:14px;font-weight:800;color:#a01820;margin:3px 0">AED ${(it.price||0).toFixed(2)}</div>
-        <div style="display:flex;border:1.5px solid #EA262A;border-radius:8px;overflow:hidden;width:86px;margin-top:5px">
+        <div style="display:flex;border:1.5px solid #ED1C24;border-radius:8px;overflow:hidden;width:86px;margin-top:5px">
           <button onclick="Cart.setQty(${it.product_id},-1)" style="width:28px;height:26px;background:#fef2f2;color:#a01820;font-size:15px;font-weight:700;border:none;cursor:pointer">−</button>
           <span style="flex:1;text-align:center;font-size:12px;font-weight:700;line-height:26px;color:#a01820">${it.qty}</span>
           <button onclick="Cart.setQty(${it.product_id},1)" style="width:28px;height:26px;background:#fef2f2;color:#a01820;font-size:15px;font-weight:700;border:none;cursor:pointer">+</button>
         </div>
       </div>
-      <button onclick="Cart.remove(${it.product_id})" style="color:#EA262A;font-size:17px;background:none;border:none;cursor:pointer;padding:4px;flex-shrink:0">🗑️</button>
+      <button onclick="Cart.remove(${it.product_id})" style="color:#ED1C24;font-size:17px;background:none;border:none;cursor:pointer;padding:4px;flex-shrink:0">🗑️</button>
     </div>`).join('');
   const t=Cart.total();
   if(ftr)ftr.innerHTML=`
     <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;margin-bottom:12px"><span>Total</span><span style="color:#a01820">AED ${t.toFixed(2)}</span></div>
     <a href="cart.html" onclick="closeDrw()" style="display:block;text-align:center;background:#f3f4f6;color:#374151;padding:10px;border-radius:8px;font-weight:700;font-size:13px;margin-bottom:8px;text-decoration:none">View Cart</a>
-    <a href="javascript:void(0)" onclick="if(Cart.count()===0){ toast('Your cart is empty', 'warn'); return; } closeDrw(); location.href='checkout.html';" style="display:block;text-align:center;background:#EA262A;color:#fff;padding:12px;border-radius:8px;font-weight:800;font-size:14px;text-decoration:none">Checkout →</a>`;
+    <a href="javascript:void(0)" onclick="if(Cart.count()===0){ toast('Your cart is empty', 'warn'); return; } closeDrw(); location.href='checkout.html';" style="display:block;text-align:center;background:#ED1C24;color:#fff;padding:12px;border-radius:8px;font-weight:800;font-size:14px;text-decoration:none">Checkout →</a>`;
 }
 
 /* ── TOAST ────────────────────────────────────────────── */
 let _tt;
 function toast(msg,type='ok'){
   let el=document.getElementById('cd-toast');
-  if(!el){el=document.createElement('div');el.id='cd-toast';el.style.cssText='position:fixed;bottom:72px;right:16px;padding:12px 18px;border-radius:12px;font-size:12px;font-weight:600;z-index:99998;box-shadow:0 8px 32px rgba(0,0,0,.18);transition:all .3s;transform:translateY(80px);opacity:0;max-width:280px;pointer-events:none;font-family:Poppins,Cairo,sans-serif';document.body.appendChild(el);}
-  el.style.background=type==='err'?'#EA262A':type==='warn'?'#d4a800':'#1c1c2e';
+  if(!el){el=document.createElement('div');el.id='cd-toast';el.style.cssText='position:fixed;bottom:72px;right:16px;padding:12px 18px;border-radius:12px;font-size:12px;font-weight:600;z-index:99998;box-shadow:0 8px 32px rgba(0,0,0,.18);transition:all .3s;transform:translateY(80px);opacity:0;max-width:280px;pointer-events:none;font-family:Nunito,"Almarai",sans-serif';document.body.appendChild(el);}
+  el.style.background=type==='err'?'#ED1C24':type==='warn'?'#d4a800':'#1c1c2e';
   el.style.color='#fff';el.textContent=msg;
   requestAnimationFrame(()=>{el.style.transform='translateY(0)';el.style.opacity='1';});
   clearTimeout(_tt);_tt=setTimeout(()=>{el.style.transform='translateY(80px)';el.style.opacity='0';},3200);
@@ -708,7 +708,7 @@ function updateHeaderUser(){
     document.querySelectorAll('.user-menu-fullname').forEach(el=>el.textContent=full);
     document.querySelectorAll('.u-avatar').forEach(el=>{
       el.textContent=nm.charAt(0).toUpperCase();
-      el.style.cssText='background:#EA262A;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800';
+    el.style.cssText='background:#ED1C24;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800';
     });
     document.querySelectorAll('.signin-only').forEach(el=>el.style.display='none');
     document.querySelectorAll('.signedin-only').forEach(el=>el.style.display='flex');

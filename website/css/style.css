@@ -1,23 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Nunito:wght@300;400;500;600;700;800;900&display=swap');
 
 /* ════════════════════════════════════════════════════════════
    COOP DISCOUNTS — Design System
-   Logo colors: Red #EA262A (primary), Yellow #F5C800 (secondary)
+   Logo colors: Red #ED1C24 (primary), Yellow #FFF200 (secondary)
    Approach: Medium-dark red + soft red light — like Sharjah Coop
    ════════════════════════════════════════════════════════════ */
 :root {
   /* Brand Reds */
-  --red:        #EA262A;   /* medium-dark red — primary */
-  --red-dark:   #A8151B;   /* deep red — hovers, nav bg */
-  --red-mid:    #d63a40;   /* mid red — section headers */
+  --red:        #ED1C24;   /* medium-dark red — primary */
+  --red-dark:   #BE161D;   /* deep red — hovers, nav bg */
+  --red-mid:    #F04E53;   /* mid red — section headers */
   --red-light:  #fef2f2;   /* very soft red — hover bg, tag bg */
   --red-100:    #fee2e2;   /* light red backgrounds */
   --red-soft:   #ef4444;   /* brighter accent */
 
   /* Brand Yellow */
-  --yellow:     #F5C800;
-  --yellow-dark:#C9A200;
-  --yellow-light:#fffbea;
+  --yellow:     #FFF200;
+  --yellow-dark:#D6CC00;
+  --yellow-light:#fffee6;
 
   /* Neutrals */
   --white:      #ffffff;
@@ -55,8 +55,8 @@
 /* ── RESET ─────────────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{font-family:'Poppins','Cairo',sans-serif;color:var(--gray-900);background:var(--off-white);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
-[dir="rtl"]{font-family:'Cairo','Tajawal',sans-serif}
+body{font-family:'Nunito','Almarai',sans-serif;color:var(--gray-900);background:var(--off-white);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+[dir="rtl"]{font-family:'Almarai',sans-serif}
 a{text-decoration:none;color:inherit}
 ul,ol{list-style:none}
 img{max-width:100%;display:block}
@@ -370,7 +370,7 @@ footer{background:#141414;color:rgba(255,255,255,.7);padding-top:44px}
 /* ── RTL SUPPORT ───────────────────────────────────────────── */
 [dir="rtl"] .sec-ttl::before{margin-left:0;margin-right:0;order:-1}
 [dir="rtl"] .cat-row,[dir="rtl"] .dscroll,[dir="rtl"] .b-scroll{direction:rtl}
-[dir="rtl"] .hbtn .lbl{font-family:'Cairo','Tajawal',sans-serif}
+[dir="rtl"] .hbtn .lbl{font-family:'Almarai',sans-serif}
 
 /* ── RESPONSIVE ────────────────────────────────────────────── */
 @media(max-width:1200px){.pgrid{grid-template-columns:repeat(4,1fr)}}
@@ -398,9 +398,9 @@ footer{background:#141414;color:rgba(255,255,255,.7);padding-top:44px}
 .mnav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1.5px solid #e5e7eb;z-index:800;padding:4px 0;box-shadow:0 -4px 16px rgba(0,0,0,.08)}
 .mnav-in{display:flex;justify-content:space-around;align-items:stretch}
 .mna{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 8px;font-size:9px;font-weight:600;color:#9ca3af;text-decoration:none;transition:color .2s;position:relative;min-width:44px;flex:1}
-.mna.on,.mna:hover{color:#EA262A}
+.mna.on,.mna:hover{color:#ED1C24}
 .mna .ic{font-size:22px;line-height:1}
-.mna-badge{position:absolute;top:1px;right:8px;background:#EA262A;color:#fff;font-size:8px;font-weight:800;min-width:15px;height:15px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 2px}
+.mna-badge{position:absolute;top:1px;right:8px;background:#ED1C24;color:#fff;font-size:8px;font-weight:800;min-width:15px;height:15px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 2px}
 .mna-badge.show{display:flex}
 @media(max-width:768px){
   .mnav{display:block}
@@ -410,7 +410,7 @@ footer{background:#141414;color:rgba(255,255,255,.7);padding-top:44px}
 /* OTP INPUTS */
 .otp-wrap{display:flex;gap:8px;justify-content:center;margin:16px 0}
 .otp-inp{width:48px;height:52px;border:2px solid #e5e7eb;border-radius:8px;text-align:center;font-size:22px;font-weight:800;outline:none;transition:border-color .2s;font-family:inherit}
-.otp-inp:focus{border-color:#EA262A;box-shadow:0 0 0 3px rgba(234, 38, 42,.1)}
+.otp-inp:focus{border-color:#ED1C24;box-shadow:0 0 0 3px rgba(234, 38, 42,.1)}
 /* HERO fix for mobile */
 @media(max-width:600px){.hero-slide img,.hero-fb{height:200px}}
 @media(max-width:400px){.hero-slide img,.hero-fb{height:180px}}

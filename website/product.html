@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Product – Coop Discounts</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=12.0">
 </head>
 <body>
 <div id="site-header"></div>
@@ -95,18 +95,18 @@
 </div>
 </section>
 <div id="site-footer"></div>
-<script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.10"></script><script src="js/layout.js"></script>
+<script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.10"></script><script src="js/layout.js?v=12.0"></script>
 <script>
 var pdId = parseInt(new URLSearchParams(location.search).get('id'));
 var pdData = null, pdQty = 1, pdLineId = null;
 
 document.addEventListener('DOMContentLoaded', async function(){
-  if(!pdId){ document.getElementById('pdSkel').innerHTML='<div style="color:#EA262A;padding:40px;text-align:center">Product not found</div>'; return; }
+  if(!pdId){ document.getElementById('pdSkel').innerHTML='<div style="color:#ED1C24;padding:40px;text-align:center">Product not found</div>'; return; }
   Bar.start();
   try{
     var r = await API.getProdById(pdId);
     pdData = Array.isArray(r.data) ? r.data[0] : r.data;
-    if(!pdData){ document.getElementById('pdSkel').innerHTML='<div style="color:#EA262A;padding:40px;text-align:center">Product not found</div>'; return; }
+    if(!pdData){ document.getElementById('pdSkel').innerHTML='<div style="color:#ED1C24;padding:40px;text-align:center">Product not found</div>'; return; }
 
     document.getElementById('pdSkel').style.display='none';
     document.getElementById('pdContent').style.display='block';
@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', async function(){
 
     Bar.done();
   }catch(e){
-    document.getElementById('pdSkel').innerHTML='<div style="color:#EA262A;padding:40px;text-align:center">❌ '+e.message+'</div>';
+    document.getElementById('pdSkel').innerHTML='<div style="color:#ED1C24;padding:40px;text-align:center">❌ '+e.message+'</div>';
     Bar.done();
   }
 });
