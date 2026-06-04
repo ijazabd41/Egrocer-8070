@@ -72,6 +72,9 @@ const CdApi = (() => {
     } catch (e) { return { error: e.message }; }
   };
 
+  const updatePassword = (uid, pw) => _get(`/api/user/${uid}/update`, { password:pw });
+  const forgotPassword = (emailOrPhone) => _get('/api/contacts/forgot_password_by_mail', { login: emailOrPhone });
+
   const logout = () => {
     ['cd_session_id','cd_user_id','cd_user_name','cd_role_code','cd_role_name']
       .forEach(k => localStorage.removeItem(k));
@@ -168,7 +171,7 @@ const CdApi = (() => {
 
   return {
     // auth
-    login, logout, isLoggedIn, requireLogin, session, userId, roleCode, userName,
+    login, logout, register: () => {}, updatePassword, forgotPassword, isLoggedIn, requireLogin, session, userId, roleCode, userName,
     fmtK, fmtDate,
     // owner analytics
     dashboardFull, dailyTrend, hourlySales, orderStatus, categorySales,

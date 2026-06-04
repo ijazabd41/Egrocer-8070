@@ -58,7 +58,7 @@ async function loadNavCats(){
         a.href=`shop.html?cat_id=${c.id}&cat_name=${encodeURIComponent(c.name)}`;
         a.onclick=()=>closeModal('catMo');
         a.style.cssText='display:flex;align-items:center;gap:10px;padding:11px;background:#f9fafb;border-radius:12px;border:1.5px solid #e5e7eb;text-decoration:none;color:#111;transition:all .2s';
-        a.onmouseover=function(){this.style.background='#fef2f2';this.style.borderColor='#e41e26';};
+        a.onmouseover=function(){this.style.background='#fef2f2';this.style.borderColor='#EA262A';};
         a.onmouseout=function(){this.style.background='#f9fafb';this.style.borderColor='#e5e7eb';};
         a.innerHTML=`<div style="width:36px;height:36px;border-radius:8px;overflow:hidden;background:#fee2e2;flex-shrink:0;display:flex;align-items:center;justify-content:center">
           <img src="${imgSrc}" alt="${c.name}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.innerHTML='🏷️'">
@@ -199,7 +199,7 @@ function buildFooter(){
 <footer><div class="ctr"><div class="ft-grid">
   <div>
     <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px">
-      <div style="width:42px;height:42px;background:#e41e26;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+      <div style="width:42px;height:42px;background:#EA262A;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
         <img class="co-logo" src="" style="width:100%;height:100%;object-fit:contain;display:none" alt="">
         <span class="logo-fb" style="font-size:20px;background:transparent;width:auto;height:auto;border-radius:0">🛒</span>
       </div>

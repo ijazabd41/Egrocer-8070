@@ -20,7 +20,7 @@
   <div id="panel-login" class="fs" style="border-radius:0 0 16px 16px;border-top:none;margin-bottom:0">
     <div style="text-align:center;margin-bottom:20px">
       <div style="font-size:46px;margin-bottom:8px">👤</div>
-      <h1 style="font-size:20px;font-weight:900;color:#e41e26;margin-bottom:4px">Welcome Back</h1>
+      <h1 style="font-size:20px;font-weight:900;color:#EA262A;margin-bottom:4px">Welcome Back</h1>
       <p style="font-size:12px;color:#9ca3af">Sign in to your Coop Discounts account</p>
     </div>
 
@@ -29,7 +29,7 @@
     <div id="login-step1">
       <div class="fg" style="margin-bottom:12px"><label class="fl">Email or Mobile Number *</label><input class="fi" type="text" id="lg-em" placeholder="email@example.com or 971501234567" autocomplete="username"></div>
       <div class="fg" style="margin-bottom:12px"><label class="fl">Password *</label><input class="fi" type="password" id="lg-pw" placeholder="••••••••" autocomplete="current-password"></div>
-      <div style="text-align:right;margin-bottom:12px"><button onclick="switchTab('forgot')" style="background:none;border:none;color:#e41e26;font-size:12px;font-weight:700;cursor:pointer">Forgot Password?</button></div>
+      <div style="text-align:right;margin-bottom:12px"><button onclick="switchTab('forgot')" style="background:none;border:none;color:#EA262A;font-size:12px;font-weight:700;cursor:pointer">Forgot Password?</button></div>
       <div id="lg-err" style="display:none;margin-bottom:10px" class="alert alert-err"></div>
       <button id="lg-btn" onclick="doLogin()" class="sbtn">Sign In →</button>
       <p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:10px">🔒 Your data is encrypted and secure</p>
@@ -41,7 +41,7 @@
     <div class="fs" style="border-radius:0 0 16px 16px;border-top:none;margin-bottom:0">
       <div style="text-align:center;margin-bottom:20px">
         <div style="font-size:46px;margin-bottom:8px">🔐</div>
-        <h1 style="font-size:20px;font-weight:900;color:#e41e26;margin-bottom:4px">Reset Password</h1>
+        <h1 style="font-size:20px;font-weight:900;color:#EA262A;margin-bottom:4px">Reset Password</h1>
         <p style="font-size:12px;color:#9ca3af">Enter your email or phone number to reset your password</p>
       </div>
 
@@ -57,7 +57,7 @@
     <div class="fs" style="border-radius:0 0 16px 16px;border-top:none;margin-bottom:0">
       <div style="text-align:center;margin-bottom:20px">
         <div style="font-size:46px;margin-bottom:8px">🎉</div>
-        <h1 style="font-size:20px;font-weight:900;color:#e41e26;margin-bottom:4px">Create Account</h1>
+        <h1 style="font-size:20px;font-weight:900;color:#EA262A;margin-bottom:4px">Create Account</h1>
         <p style="font-size:12px;color:#9ca3af">Join for exclusive deals & loyalty rewards</p>
       </div>
 
@@ -79,7 +79,7 @@
         <div style="font-size:48px;margin-bottom:12px">📧</div>
         <h2 style="font-size:17px;font-weight:800;margin-bottom:6px">Check Your Email</h2>
         <p style="font-size:12px;color:#6b7280;margin-bottom:4px">We sent a 6-digit code to</p>
-        <div id="otp-email-display" style="font-size:13px;font-weight:700;color:#e41e26;margin-bottom:18px"></div>
+        <div id="otp-email-display" style="font-size:13px;font-weight:700;color:#EA262A;margin-bottom:18px"></div>
         <div class="otp-wrap" id="otpWrap">
           <input class="otp-inp" type="number" maxlength="1" inputmode="numeric">
           <input class="otp-inp" type="number" maxlength="1" inputmode="numeric">
@@ -90,7 +90,7 @@
         </div>
         <div id="otp-err" style="display:none;margin:8px 0" class="alert alert-err"></div>
         <button id="otp-btn" onclick="verifyRegOtp()" class="sbtn" style="max-width:240px;margin:0 auto 12px">Verify & Create Account</button>
-        <button onclick="resendOtp()" style="background:none;border:none;color:#e41e26;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit">Resend code</button>
+        <button onclick="resendOtp()" style="background:none;border:none;color:#EA262A;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit">Resend code</button>
       </div>
 
       <!-- Step 3: Success -->
@@ -163,7 +163,7 @@ async function doForgotPassword() {
   btn.disabled = true; btn.textContent = '⏳ Sending...';
   try {
     const r = await API.forgotPassword(em);
-    if (r.success === 1 || r.response?.success) {
+    if (r.success === 1 || r.success === true || r.response?.success || r.message?.includes('success') || r.result) {
       toast('✅ Password reset link sent to your email!');
       setTimeout(() => switchTab('login'), 2000);
     } else {

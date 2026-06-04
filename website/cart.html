@@ -78,7 +78,7 @@ function renderCart(){
   el.innerHTML = '<div style="background:#fff;border-radius:16px;border:1.5px solid #e5e7eb;overflow:hidden">'
     +'<div style="padding:16px 20px;border-bottom:1.5px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center">'
     +'<span style="font-size:14px;font-weight:800">'+items.length+' Item'+(items.length>1?'s':'')+'</span>'
-    +'<button onclick="clearCart()" style="background:none;border:none;color:#9ca3af;font-size:12px;font-weight:600;cursor:pointer;transition:color .2s" onmouseover="this.style.color=\'#e41e26\'" onmouseout="this.style.color=\'#9ca3af\'">🗑️ Clear All</button>'
+    +'<button onclick="clearCart()" style="background:none;border:none;color:#9ca3af;font-size:12px;font-weight:600;cursor:pointer;transition:color .2s" onmouseover="this.style.color=\'#EA262A\'" onmouseout="this.style.color=\'#9ca3af\'">🗑️ Clear All</button>'
     +'</div>'
     + items.map(function(it, idx){
       var disc = it.standard_price && it.standard_price > it.price ? Math.round((1-it.price/it.standard_price)*100) : 0;
@@ -152,8 +152,8 @@ function clearCart(){
 async function applyPromo(){
   var code = document.getElementById('promoInp').value.trim();
   var msg = document.getElementById('promoMsg');
-  if(!code){ msg.textContent='Enter a loyalty / coupon code'; msg.style.color='#e41e26'; return; }
-  if(!API.loggedIn()){ msg.textContent='Please sign in to use loyalty codes'; msg.style.color='#e41e26'; return; }
+  if(!code){ msg.textContent='Enter a loyalty / coupon code'; msg.style.color='#EA262A'; return; }
+  if(!API.loggedIn()){ msg.textContent='Please sign in to use loyalty codes'; msg.style.color='#EA262A'; return; }
   msg.textContent='⏳ Validating "'+code+'"...'; msg.style.color='#9ca3af';
   try{
     var oid = await Cart.ensureOrder();
@@ -163,7 +163,7 @@ async function applyPromo(){
     msg.textContent='✅ "'+code+'" applied'+discTxt+'. Continue to checkout to complete your order.';
     msg.style.color='#065f46';
     renderCart();
-  }catch(e){ msg.textContent='❌ '+e.message; msg.style.color='#e41e26'; }
+  }catch(e){ msg.textContent='❌ '+e.message; msg.style.color='#EA262A'; }
 }
 </script>
 </body></html>

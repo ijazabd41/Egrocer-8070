@@ -225,15 +225,29 @@ function validateStep(step){
     return true;
   }
   if(step===2){
-    if(selDeliveryKind!=='store' && !selDeliveryContact){ toast('Select a delivery address','warn'); return false; }
-    if(!selInvoiceContact && !API.myPid()){ toast('Select an invoice address','warn'); return false; }
+    if(selDeliveryKind==='store'){
+      var fn = document.getElementById('fnPk') ? document.getElementById('fnPk').value.trim() : '';
+      var ph = document.getElementById('phPk') ? document.getElementById('phPk').value.trim() : '';
+      if(!fn || !ph){
+        toast('Please enter your name and phone for pickup', 'warn');
+        focusPickupContactMissing({fn: fn, ph: ph});
+        return false;
+      }
+    } else {
+      if(!selDeliveryContact){ toast('Select a delivery address','warn'); return false; }
+      if(!selInvoiceContact && !API.myPid()){ toast('Select an invoice address','warn'); return false; }
+    }
     return true;
   }
   return true;
 }
 function goStep(step){
   if(step<1||step>3) return;
-  if(step>currentStep && !validateStep(currentStep)) return;
+  if(step > currentStep) {
+    for (var i = currentStep; i < step; i++) {
+      if (!validateStep(i)) return;
+    }
+  }
   currentStep=step;
   updateStepUi();
   checkPlaceOrderBtnState();
@@ -393,7 +407,7 @@ document.addEventListener('DOMContentLoaded', async function(){
     }).catch(function(){});
     loadCheckoutAddresses();
   } else {
-    document.getElementById('coAddrList').innerHTML = '<div style="color:#e41e26;font-size:12px;text-align:center;padding:10px">Sign in to load your address book.</div>';
+    document.getElementById('coAddrList').innerHTML = '<div style="color:#EA262A;font-size:12px;text-align:center;padding:10px">Sign in to load your address book.</div>';
   }
   updateStepUi();
   checkPlaceOrderBtnState();
@@ -569,6 +583,7 @@ function selDelivery(id,name,kind,method){
 function toggleAddressSection(){
   var isStore=(selDeliveryKind==='store');
   document.getElementById('homeAddrSection').style.display=isStore?'none':'block';
+  document.getElementById('invoiceAddrSection').style.display=isStore?'none':'block';
   document.getElementById('storePickupSection').style.display=isStore?'block':'none';
   if(isStore && selDeliveryMethod){
     var nm=selDeliveryMethod.name||'Coop Discounts Store';
@@ -595,7 +610,7 @@ async function pushCarrierToOrder(){
     await API.updDelivery(parseInt(oid), selCarrierId);
     msg.textContent='✅ '+selCarrierName+' applied to your order';
     msg.style.color='#065f46';
-  }catch(e){ msg.textContent='❌ Failed to apply carrier: '+e.message; msg.style.color='#e41e26'; }
+  }catch(e){ msg.textContent='❌ Failed to apply carrier: '+e.message; msg.style.color='#EA262A'; }
 }
 
 async function saveCheckoutAddress(){
@@ -625,7 +640,7 @@ async function saveCheckoutAddress(){
       document.getElementById('coNewAddr').style.display='none';
       loadCheckoutAddresses();
     }, 1500);
-  }catch(e){ msg.textContent='❌ '+e.message; msg.style.color='#e41e26'; }
+  }catch(e){ msg.textContent='❌ '+e.message; msg.style.color='#EA262A'; }
 }
 
 async function loadPayProviders(){
@@ -665,8 +680,8 @@ function selPay(id,name){
 async function applyPromoCoupon(){
   var code=document.getElementById('promoInput').value.trim();
   var msg=document.getElementById('promoMsg');
-  if(!code){msg.textContent='Please enter a promo code';msg.style.color='#e41e26';return;}
-  if(!API.loggedIn()){msg.textContent='⚠️ Please sign in to use promo codes';msg.style.color='#e41e26';return;}
+  if(!code){msg.textContent='Please enter a promo code';msg.style.color='#EA262A';return;}
+  if(!API.loggedIn()){msg.textContent='⚠️ Please sign in to use promo codes';msg.style.color='#EA262A';return;}
   msg.textContent='⏳ Looking up promo code "'+code+'"...';msg.style.color='#9ca3af';
   try{
     var oid=Cart.oid()||await Cart.ensureOrder();
@@ -704,7 +719,7 @@ async function applyPromoCoupon(){
     renderSummary();
   }catch(e){
     msg.textContent='❌ '+(e.message||'Invalid promo code');
-    msg.style.color='#e41e26';
+    msg.style.color='#EA262A';
     appliedPromoCoupon = null;
     discountPromo = 0;
     renderSummary();
@@ -714,8 +729,8 @@ async function applyPromoCoupon(){
 async function applyLoyaltyPoints(){
   var code=document.getElementById('loyaltyCodeInput').value.trim();
   var msg=document.getElementById('loyaltyMsg');
-  if(!code){msg.textContent='No loyalty points available';msg.style.color='#e41e26';return;}
-  if(!API.loggedIn()){msg.textContent='⚠️ Please sign in to use loyalty points';msg.style.color='#e41e26';return;}
+  if(!code){msg.textContent='No loyalty points available';msg.style.color='#EA262A';return;}
+  if(!API.loggedIn()){msg.textContent='⚠️ Please sign in to use loyalty points';msg.style.color='#EA262A';return;}
   msg.textContent='⏳ Applying points...';msg.style.color='#9ca3af';
   try{
     var oid=Cart.oid()||await Cart.ensureOrder();
@@ -763,7 +778,7 @@ async function applyLoyaltyPoints(){
     renderSummary();
   }catch(e){
     msg.textContent='❌ '+(e.message||'Could not apply points');
-    msg.style.color='#e41e26';
+    msg.style.color='#EA262A';
     appliedLoyaltyCoupon = null;
     discountLoyalty = 0;
     renderSummary();
