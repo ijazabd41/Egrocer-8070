@@ -9,7 +9,7 @@
 <script src="js/error-logger.js?v=1.0"></script>
 <script src="cd_web_api.js"></script>
 <style>
-:root{--bg:#F7F8FA;--sidebar:#fff;--card:#fff;--border:#E8ECF2;--primary:#B45309;
+:root{--bg:#F7F8FA;--sidebar:#fff;--card:#fff;--border:#E8ECF2;--primary:#E62C31;
 --text:#0F172A;--text-mid:#64748B;--text-soft:#94A3B8;--nav-active:#FEF3C7;--font:'Inter',sans-serif;}
 </style>
 </head>
@@ -18,7 +18,7 @@
 <aside class="dash-sidebar">
   <div class="sb-logo">CD<span>.COM</span></div>
   <div class="sb-user">
-    <div class="sb-avatar" id="sbav" style="background:#B45309">S</div>
+    <div class="sb-avatar" id="sbav" style="background:#E62C31">S</div>
     <div><div class="sb-name" id="sbname">—</div><div class="sb-role">Stock Manager</div></div>
   </div>
   <nav class="sb-nav">
@@ -56,7 +56,7 @@
     <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-mid);margin-bottom:6px">
       <span>Count progress</span><span id="prog-text">0 / 0 products counted</span>
     </div>
-    <div class="prog-wrap"><div class="prog-fill" id="prog-bar" style="width:0%;background:#B45309"></div></div>
+    <div class="prog-wrap"><div class="prog-fill" id="prog-bar" style="width:0%;background:#E62C31"></div></div>
   </div>
 
   <div class="dash-content">
@@ -152,7 +152,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('sbav').textContent=n?n[0].toUpperCase():'S';
   valChart=new Chart(document.getElementById('c-val'),{
     type:'doughnut',
-    data:{labels:[],datasets:[{data:[],backgroundColor:['#B45309','#3B82F6','#F59E0B','#10B981','#8B5CF6'],borderWidth:0}]},
+    data:{labels:[],datasets:[{data:[],backgroundColor:['#E62C31','#3B82F6','#F59E0B','#10B981','#8B5CF6'],borderWidth:0}]},
     options:{cutout:'55%',plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:6}}}}
   });
   loadAll();
@@ -339,7 +339,7 @@ async function loadValuation(){
     valChart.data.labels=cats.map(c=>c.category_name||'');
     valChart.data.datasets[0].data=cats.map(c=>c.total_value||0);
     valChart.update();
-    const C=['#B45309','#3B82F6','#F59E0B','#10B981','#8B5CF6','#EC4899'];
+    const C=['#E62C31','#3B82F6','#F59E0B','#10B981','#8B5CF6','#EC4899'];
     document.getElementById('val-cat-list').innerHTML=cats.map((c,i)=>`
       <div style="margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">

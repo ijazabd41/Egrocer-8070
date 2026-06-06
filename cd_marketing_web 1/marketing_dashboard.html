@@ -6,12 +6,11 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="cd_dashboard.css">
-<script src="js/error-logger.js?v=1.0"></script>
 <script src="cd_web_api.js"></script>
 <style>
 :root{--bg:#F7F8FA;--sidebar:#fff;--card:#fff;--border:#E8ECF2;
---primary:#E62C31;--text:#0F172A;--text-mid:#64748B;--text-soft:#94A3B8;
---nav-active:rgba(230,44,49,.08);--font:'Inter',sans-serif;}
+--primary:#7C3AED;--text:#0F172A;--text-mid:#64748B;--text-soft:#94A3B8;
+--nav-active:rgba(124,58,237,.08);--font:'Inter',sans-serif;}
 .growth-pos{color:#10B981;font-weight:700}
 .growth-neg{color:#DC2626;font-weight:700}
 .growth-zero{color:#94A3B8}
@@ -39,7 +38,7 @@
 <aside class="dash-sidebar">
   <div class="sb-logo">CD<span>.COM</span></div>
   <div class="sb-user">
-    <div class="sb-avatar" id="sbav" style="background:#E62C31">M</div>
+    <div class="sb-avatar" id="sbav" style="background:#7C3AED">M</div>
     <div><div class="sb-name" id="sbname">—</div><div class="sb-role">Marketing Manager</div></div>
   </div>
   <nav class="sb-nav">
@@ -84,7 +83,7 @@
       <!-- Hero KPIs -->
       <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
         <div class="kpi-card">
-          <div class="kpi-icon" style="background:rgba(230,44,49,.1)">💰</div>
+          <div class="kpi-icon" style="background:rgba(124,58,237,.1)">💰</div>
           <div class="kpi-val" id="ov-rev">—</div><div class="kpi-label">Total Revenue</div>
           <div class="kpi-growth" id="ov-rev-g">—</div>
         </div>
@@ -107,11 +106,11 @@
 
       <!-- Mini metrics -->
       <div class="mini-stats">
-        <div class="mini-stat"><div class="val" id="ov-paid" style="color:#E62C31">—</div><div class="lbl">Paid Amount</div></div>
-        <div class="mini-stat"><div class="val" id="ov-items" style="color:#E62C31">—</div><div class="lbl">Items Sold</div></div>
+        <div class="mini-stat"><div class="val" id="ov-paid" style="color:#7C3AED">—</div><div class="lbl">Paid Amount</div></div>
+        <div class="mini-stat"><div class="val" id="ov-items" style="color:#0369A1">—</div><div class="lbl">Items Sold</div></div>
         <div class="mini-stat"><div class="val" id="ov-stock-val" style="color:#16A34A">—</div><div class="lbl">Stock Value</div></div>
         <div class="mini-stat"><div class="val" id="ov-low-stock" style="color:#DC2626">—</div><div class="lbl">Low Stock SKUs</div></div>
-        <div class="mini-stat"><div class="val" id="ov-campaigns" style="color:#E62C31">—</div><div class="lbl">Campaigns</div></div>
+        <div class="mini-stat"><div class="val" id="ov-campaigns" style="color:#7C3AED">—</div><div class="lbl">Campaigns</div></div>
         <div class="mini-stat"><div class="val" id="ov-budget" style="color:#F59E0B">—</div><div class="lbl">Marketing Budget</div></div>
       </div>
 
@@ -143,7 +142,7 @@
     <div id="tab-sales" class="tab-content">
       <div class="kpi-grid">
         <div class="kpi-card">
-          <div class="kpi-icon" style="background:rgba(230,44,49,.1)">💰</div>
+          <div class="kpi-icon" style="background:rgba(124,58,237,.1)">💰</div>
           <div class="kpi-val" id="s-rev">—</div><div class="kpi-label">Total Revenue</div>
           <div class="kpi-growth" id="s-rev-g"></div>
         </div>
@@ -245,7 +244,7 @@
         </div>
         <div id="budget-tracker"></div>
         <div style="display:flex;gap:14px;margin-top:16px">
-          <div class="metric-box" style="flex:1"><div class="val" id="bud-total" style="color:#E62C31">—</div><div class="lbl">Total Budget</div></div>
+          <div class="metric-box" style="flex:1"><div class="val" id="bud-total" style="color:#7C3AED">—</div><div class="lbl">Total Budget</div></div>
           <div class="metric-box" style="flex:1"><div class="val" id="bud-rev" style="color:#10B981">—</div><div class="lbl">Revenue from Campaigns</div></div>
           <div class="metric-box" style="flex:1"><div class="val" id="bud-roi" style="color:#F59E0B">—</div><div class="lbl">Avg ROI</div></div>
         </div>
@@ -288,7 +287,7 @@
 </div><!-- end dash-shell -->
 
 <script>
-const C=['#E62C31','#3B82F6','#10B981','#F59E0B','#EC4899','#06B6D4','#F97316','#8B5CF6'];
+const C=['#7C3AED','#3B82F6','#10B981','#F59E0B','#EC4899','#06B6D4','#F97316','#8B5CF6'];
 let period='this_month', charts={};
 
 window.addEventListener('DOMContentLoaded',()=>{
@@ -426,7 +425,7 @@ async function loadInventory(){
     document.getElementById('inv-fast').innerHTML=fast.map((p,i)=>`<tr>
       <td>${i+1}</td>
       <td style="font-weight:600">${p.name||''}</td>
-      <td style="font-weight:700;color:#E62C31">${p.qty_sold||0}</td>
+      <td style="font-weight:700;color:#7C3AED">${p.qty_sold||0}</td>
       <td>${p.qty_on_hand||0}</td>
       <td style="color:${(p.days_of_stock||0)<7?'#DC2626':(p.days_of_stock||0)<30?'#F59E0B':'#10B981'}">
         ${p.days_of_stock===999?'∞':(p.days_of_stock||0).toFixed(0)+' days'}
@@ -514,7 +513,7 @@ async function loadCampaigns(){
             <span>Budget: <b>AED ${CdApi.fmtK(b.budget||0)}</b> · Revenue: <b style="color:${over?'#10B981':'#F59E0B'}">AED ${CdApi.fmtK(b.revenue_driven||0)}</b> · ROI: <b style="color:${b.roi>=0?'#10B981':'#DC2626'}">${b.roi||0}%</b></span>
           </div>
           <div class="budget-bar-wrap" style="height:12px">
-            <div class="budget-bar" style="width:${Math.min(pct,100).toFixed(0)}%;background:${over?'#10B981':'#E62C31'}"></div>
+            <div class="budget-bar" style="width:${Math.min(pct,100).toFixed(0)}%;background:${over?'#10B981':'#7C3AED'}"></div>
           </div>
         </div>`;
       }).join('')
@@ -531,9 +530,9 @@ async function loadPnL(){
 
     // P&L summary
     document.getElementById('pnl-summary').innerHTML=`
-      <div class="pnl-row"><span class="pnl-label">💰 Revenue</span><span class="pnl-val" style="color:#E62C31">AED ${CdApi.fmtK(cur.revenue||0)}</span><span class="pnl-prev">Prev: AED ${CdApi.fmtK(prev.revenue||0)}</span></div>
+      <div class="pnl-row"><span class="pnl-label">💰 Revenue</span><span class="pnl-val" style="color:#7C3AED">AED ${CdApi.fmtK(cur.revenue||0)}</span><span class="pnl-prev">Prev: AED ${CdApi.fmtK(prev.revenue||0)}</span></div>
       <div class="pnl-row"><span class="pnl-label">📦 Cost of Goods (COGS)</span><span class="pnl-val" style="color:#DC2626">− AED ${CdApi.fmtK(cur.cogs||0)}</span></div>
-      <div class="pnl-row" style="background:rgba(230,44,49,.03);padding:10px;border-radius:8px"><span class="pnl-label" style="font-weight:700">📊 Gross Profit</span><span class="pnl-val" style="color:#10B981;font-size:16px">AED ${CdApi.fmtK(cur.gross_profit||0)} <span style="font-size:12px">(${cur.gross_margin||0}%)</span></span></div>
+      <div class="pnl-row" style="background:rgba(124,58,237,.03);padding:10px;border-radius:8px"><span class="pnl-label" style="font-weight:700">📊 Gross Profit</span><span class="pnl-val" style="color:#10B981;font-size:16px">AED ${CdApi.fmtK(cur.gross_profit||0)} <span style="font-size:12px">(${cur.gross_margin||0}%)</span></span></div>
       <div class="pnl-row"><span class="pnl-label">🧾 Total Expenses</span><span class="pnl-val" style="color:#F59E0B">− AED ${CdApi.fmtK(cur.total_expenses||0)}</span></div>
       <div class="pnl-row" style="background:rgba(16,185,129,.04);padding:10px;border-radius:8px"><span class="pnl-label" style="font-weight:700">✅ Net Profit</span><span class="pnl-val" style="color:${(cur.net_profit||0)>=0?'#10B981':'#DC2626'};font-size:16px">AED ${CdApi.fmtK(cur.net_profit||0)} <span style="font-size:12px">(${cur.net_margin||0}%)</span></span></div>
       <div class="pnl-row"><span class="pnl-label">🧾 Invoiced</span><span class="pnl-val">AED ${CdApi.fmtK(cur.invoiced||0)}</span></div>
@@ -563,7 +562,7 @@ async function loadPnL(){
       const gm=m.revenue>0?((m.gross_profit/m.revenue)*100).toFixed(1):0;
       return `<tr>
         <td style="font-weight:600">${m.month_label||m.month||''}</td>
-        <td style="color:#E62C31;font-weight:700">AED ${CdApi.fmtK(m.revenue||0)}</td>
+        <td style="color:#7C3AED;font-weight:700">AED ${CdApi.fmtK(m.revenue||0)}</td>
         <td style="color:#DC2626">AED ${CdApi.fmtK(m.cogs||0)}</td>
         <td style="color:#10B981;font-weight:700">AED ${CdApi.fmtK(m.gross_profit||0)}</td>
         <td><span class="pill ${gm>=30?'pill-green':gm>=15?'pill-amber':'pill-red'}">${gm}%</span></td>
@@ -587,13 +586,13 @@ function switchTab(tab){
 function initCharts(){
   const g=()=>({plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:'#94A3B8',font:{size:10}}},y:{grid:{color:'#E8ECF2'},ticks:{color:'#94A3B8',font:{size:10}}}}});
   charts.ovRev=new Chart(document.getElementById('c-ov-rev'),{type:'line',
-    data:{labels:[],datasets:[{data:[],borderColor:'#E62C31',backgroundColor:'rgba(230,44,49,.08)',fill:true,tension:.4,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#E62C31'}]},options:g()});
+    data:{labels:[],datasets:[{data:[],borderColor:'#7C3AED',backgroundColor:'rgba(124,58,237,.08)',fill:true,tension:.4,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#7C3AED'}]},options:g()});
   charts.ovCat=new Chart(document.getElementById('c-ov-cat'),{type:'doughnut',
     data:{labels:[],datasets:[{data:[],backgroundColor:C,borderWidth:0}]},
     options:{cutout:'55%',plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:6}}}}});
   charts.sTrend=new Chart(document.getElementById('c-s-trend'),{type:'line',
     data:{labels:[],datasets:[
-      {label:'Revenue',data:[],borderColor:'#E62C31',backgroundColor:'rgba(230,44,49,.06)',fill:true,tension:.4,borderWidth:2,yAxisID:'y'},
+      {label:'Revenue',data:[],borderColor:'#7C3AED',backgroundColor:'rgba(124,58,237,.06)',fill:true,tension:.4,borderWidth:2,yAxisID:'y'},
       {label:'Orders', data:[],borderColor:'#3B82F6',tension:.4,borderWidth:2,yAxisID:'y1',borderDash:[5,5]},
     ]},
     options:{plugins:{legend:{position:'top',labels:{font:{size:10}}}},scales:{
@@ -611,7 +610,7 @@ function initCharts(){
     data:{labels:[],datasets:[{data:[],backgroundColor:C,borderRadius:5}]},options:g()});
   charts.pnl=new Chart(document.getElementById('c-pnl'),{type:'bar',
     data:{labels:[],datasets:[
-      {label:'Revenue',    data:[],backgroundColor:'rgba(230,44,49,.6)',borderRadius:4},
+      {label:'Revenue',    data:[],backgroundColor:'rgba(124,58,237,.6)',borderRadius:4},
       {label:'Gross Profit',data:[],backgroundColor:'rgba(16,185,129,.6)',borderRadius:4},
     ]},
     options:{plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{
@@ -622,31 +621,15 @@ function initCharts(){
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 async function _api(path, params={}){
-  const PROXY_PORT = '3001';
-  const BASE_URL = (() => {
-    if (typeof location === 'undefined') return '/proxy';
-    if (location.protocol === 'file:') return `http://localhost:${PROXY_PORT}/proxy`;
-    if (location.port === PROXY_PORT) return '/proxy';
-    return `http://localhost:${PROXY_PORT}/proxy`;
-  })();
-  const url = new URL(BASE_URL + path, window.location.href);
+  const url=new URL('http://cooperp.freeddns.org:8076'+path);
   url.searchParams.set('by_AJR','1');
   Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));
   try{
-    const headers = { 'Content-Type': 'application/json' };
-    const s = CdApi.session();
-    if (s) headers['X-Session-Token'] = s;
-    const res=await fetch(url,{headers,credentials:'include'});
+    const res=await fetch(url,{headers:{'Content-Type':'application/json','Cookie':'session_id='+CdApi.session()},credentials:'include'});
     const text=await res.text();
-    if(text.trim().startsWith('<')) {
-      if (typeof ErrorLogger !== 'undefined') ErrorLogger.captureApiError('GET', path, res.status || 404, new Error('Module not installed'));
-      return{error:'not_available',message:'Module not installed or session expired'};
-    }
+    if(text.trim().startsWith('<')) return{error:'not_available',message:'Module not installed or session expired'};
     return JSON.parse(text);
-  }catch(e){
-    if (typeof ErrorLogger !== 'undefined') ErrorLogger.captureApiError('GET', path, 500, e);
-    return{error:e.message};
-  }
+  }catch(e){return{error:e.message};}
 }
 function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
 function showErr(msg){const e=document.getElementById('err');e.textContent='⚠️ '+msg;e.style.display='block';}

@@ -10,8 +10,8 @@
 <script src="js/error-logger.js?v=1.0"></script>
 <script src="cd_web_api.js"></script>
 <style>
-:root{--bg:#060D1A;--sidebar:#0D1B2A;--card:#0F1E30;--border:rgba(255,255,255,.08);--primary:#00D4FF;
---text:#F0F4F8;--text-mid:#94A3B8;--text-soft:#4A5568;--nav-active:rgba(0,212,255,.1);--font:'Inter',sans-serif;}
+:root{--bg:#060D1A;--sidebar:#0D1B2A;--card:#0F1E30;--border:rgba(255,255,255,.08);--primary:#E62C31;
+--text:#F0F4F8;--text-mid:#94A3B8;--text-soft:#4A5568;--nav-active:rgba(230,44,49,.1);--font:'Inter',sans-serif;}
 /* Web6 dark overrides */
 .data-table th,.data-table td{border-bottom-color:rgba(255,255,255,.06);}
 .del-row{border-bottom-color:rgba(255,255,255,.06);}
@@ -26,7 +26,7 @@ input::placeholder{color:var(--text-soft)!important;}
 <aside class="dash-sidebar">
   <div class="sb-logo">CD<span>.COM</span></div>
   <div class="sb-user">
-    <div class="sb-avatar" id="sbav" style="background:#00D4FF">S</div>
+    <div class="sb-avatar" id="sbav" style="background:#E62C31">S</div>
     <div><div class="sb-name" id="sbname">—</div><div class="sb-role">Stock Manager</div></div>
   </div>
   <nav class="sb-nav">
@@ -64,7 +64,7 @@ input::placeholder{color:var(--text-soft)!important;}
     <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-mid);margin-bottom:6px">
       <span>Count progress</span><span id="prog-text">0 / 0 products counted</span>
     </div>
-    <div class="prog-wrap"><div class="prog-fill" id="prog-bar" style="width:0%;background:#00D4FF"></div></div>
+    <div class="prog-wrap"><div class="prog-fill" id="prog-bar" style="width:0%;background:#E62C31"></div></div>
   </div>
 
   <div class="dash-content">
@@ -75,7 +75,7 @@ input::placeholder{color:var(--text-soft)!important;}
       <div class="kpi-grid">
         <div class="kpi-card"><div class="kpi-icon" style="background:rgba(245,158,11,.1)">💰</div><div class="kpi-val" id="k-val">—</div><div class="kpi-label">Stock Value</div><div class="kpi-sub" id="k-val-s">—</div></div>
         <div class="kpi-card"><div class="kpi-icon" style="background:rgba(255,77,109,.1)">⚠️</div><div class="kpi-val" id="k-low" style="color:#DC2626">—</div><div class="kpi-label">Low Stock</div><div class="kpi-sub" id="k-low-s">—</div></div>
-        <div class="kpi-card"><div class="kpi-icon" style="background:rgba(0,212,255,.1)">📥</div><div class="kpi-val" id="k-pen" style="color:#3B82F6">—</div><div class="kpi-label">Pending Receipts</div><div class="kpi-sub">Awaiting arrival</div></div>
+        <div class="kpi-card"><div class="kpi-icon" style="background:rgba(230,44,49,.1)">📥</div><div class="kpi-val" id="k-pen" style="color:#3B82F6">—</div><div class="kpi-label">Pending Receipts</div><div class="kpi-sub">Awaiting arrival</div></div>
         <div class="kpi-card"><div class="kpi-icon" style="background:rgba(0,230,118,.1)">🔢</div><div class="kpi-val" id="k-cnt" style="color:#16A34A">—</div><div class="kpi-label">Count Progress</div><div class="kpi-sub">items today</div></div>
       </div>
       <div class="chart-row chart-row-2">
@@ -160,7 +160,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('sbav').textContent=n?n[0].toUpperCase():'S';
   valChart=new Chart(document.getElementById('c-val'),{
     type:'doughnut',
-    data:{labels:[],datasets:[{data:[],backgroundColor:['#00D4FF','#3B82F6','#F59E0B','#10B981','#8B5CF6'],borderWidth:0}]},
+    data:{labels:[],datasets:[{data:[],backgroundColor:['#E62C31','#3B82F6','#F59E0B','#10B981','#8B5CF6'],borderWidth:0}]},
     options:{cutout:'55%',plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:6}}}}
   });
   loadAll();
@@ -347,7 +347,7 @@ async function loadValuation(){
     valChart.data.labels=cats.map(c=>c.category_name||'');
     valChart.data.datasets[0].data=cats.map(c=>c.total_value||0);
     valChart.update();
-    const C=['#00D4FF','#3B82F6','#F59E0B','#10B981','#8B5CF6','#EC4899'];
+    const C=['#E62C31','#3B82F6','#F59E0B','#10B981','#8B5CF6','#EC4899'];
     document.getElementById('val-cat-list').innerHTML=cats.map((c,i)=>`
       <div style="margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
