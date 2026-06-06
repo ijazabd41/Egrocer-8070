@@ -13,9 +13,6 @@
 
 const ErrorLogger = (() => {
   // ── CONFIGURATION ────────────────────────────────────────────────
-  // API key generated in Odoo: Settings → Technical → API Keys → New
-  const ERROR_LOG_API_KEY = 'YOUR_API_KEY';
-
   // Route through the CORS proxy (same as the rest of the app).
   // The proxy allowlist already covers /api/ which matches /api/v1/error-log/*.
   const PROXY_PORT = '3001';
@@ -51,6 +48,14 @@ const ErrorLogger = (() => {
   }
 
   // ── CONTEXT HELPERS ──────────────────────────────────────────────
+  function _sessionId() {
+    try {
+      const id = localStorage.getItem('cd_session_id');
+      if (id) return id;
+      const sess = JSON.parse(localStorage.getItem('cd_session') || 'null');
+      return sess?.session_id || '';
+    } catch (_) { return ''; }
+  }
   function _userName() {
     try { return localStorage.getItem('cd_user_name') || ''; } catch (_) { return ''; }
   }
@@ -99,11 +104,13 @@ const ErrorLogger = (() => {
    */
   async function pushErrorLog(params) {
     if (!params?.error_title || !params?.error_detail) return null;
-    if (ERROR_LOG_API_KEY === 'YOUR_API_KEY') {
-      // API key not configured — log locally only
-      console.warn('[ErrorLogger] API key not configured. Error not pushed:', params.error_title);
+    
+    const sid = _sessionId();
+    if (!sid) {
+      console.warn('[ErrorLogger] No session ID available. Error not pushed:', params.error_title);
       return null;
     }
+
     if (_isDuplicate(params.error_title)) return null;
     if (_queueCount >= MAX_QUEUE_SIZE) return null;
 
@@ -134,8 +141,9 @@ const ErrorLogger = (() => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${ERROR_LOG_API_KEY}`,
+          'X-Session-Token': sid,
         },
+        credentials: 'include',
         body: JSON.stringify(body),
       });
 
