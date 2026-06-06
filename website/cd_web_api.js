@@ -34,16 +34,21 @@ const CdApi = (() => {
   const _get = async (path, params = {}) => {
     const url = new URL(BASE + path);
     url.searchParams.set('by_AJR', '1');
+    url.searchParams.set('_t', Date.now());
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
     try {
       const res  = await fetch(url, { headers: headers(), credentials: 'include' });
       const text = await res.text();
       if (text.trim().startsWith('<')) {
-        return { error: 'not_available',
-                 message: 'Module not installed or session expired. Run login first.' };
+        const errObj = { error: 'not_available', message: 'Module not installed or session expired. Run login first.' };
+        if (typeof ErrorLogger !== 'undefined') ErrorLogger.captureApiError('GET', path, res.status || 404, new Error(errObj.message));
+        return errObj;
       }
       return JSON.parse(text);
-    } catch (e) { return { error: e.message }; }
+    } catch (e) { 
+      if (typeof ErrorLogger !== 'undefined') ErrorLogger.captureApiError('GET', path, 500, e);
+      return { error: e.message }; 
+    }
   };
 
   // ── LOGIN ─────────────────────────────────────────────────

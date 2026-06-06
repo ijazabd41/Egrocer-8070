@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sign In â€“ Coop Discounts</title>
+<title>Sign In – Coop Discounts</title>
 <link rel="stylesheet" href="css/style.css?v=13.0">
 <style>body{background:#f3f4f6}</style>
 </head>
@@ -19,7 +19,7 @@
   <!-- SIGN IN -->
   <div id="panel-login" class="fs" style="border-radius:0 0 16px 16px;border-top:none;margin-bottom:0">
     <div style="text-align:center;margin-bottom:20px">
-      <div style="font-size:46px;margin-bottom:8px">ðŸ‘¤</div>
+      <div style="font-size:46px;margin-bottom:8px">👤</div>
       <h1 style="font-size:20px;font-weight:900;color:#ED1C24;margin-bottom:4px">Welcome Back</h1>
       <p style="font-size:12px;color:#9ca3af">Sign in to your Coop Discounts account</p>
     </div>
@@ -28,11 +28,11 @@
 
     <div id="login-step1">
       <div class="fg" style="margin-bottom:12px"><label class="fl">Email or Mobile Number *</label><input class="fi" type="text" id="lg-em" placeholder="email@example.com or 971501234567" autocomplete="username"></div>
-      <div class="fg" style="margin-bottom:12px"><label class="fl">Password *</label><input class="fi" type="password" id="lg-pw" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="current-password"></div>
+      <div class="fg" style="margin-bottom:12px"><label class="fl">Password *</label><input class="fi" type="password" id="lg-pw" placeholder="••••••••" autocomplete="current-password"></div>
       <div style="text-align:right;margin-bottom:12px"><button onclick="switchTab('forgot')" style="background:none;border:none;color:#ED1C24;font-size:12px;font-weight:700;cursor:pointer">Forgot Password?</button></div>
       <div id="lg-err" style="display:none;margin-bottom:10px" class="alert alert-err"></div>
-      <button id="lg-btn" onclick="doLogin()" class="sbtn">Sign In â†’</button>
-      <p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:10px">ðŸ”’ Your data is encrypted and secure</p>
+      <button id="lg-btn" onclick="doLogin()" class="sbtn">Sign In →</button>
+      <p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:10px">🔒 Your data is encrypted and secure</p>
     </div>
   </div>
 
@@ -40,15 +40,15 @@
   <div id="panel-forgot" style="display:none">
     <div class="fs" style="border-radius:0 0 16px 16px;border-top:none;margin-bottom:0">
       <div style="text-align:center;margin-bottom:20px">
-        <div style="font-size:46px;margin-bottom:8px">ðŸ”</div>
+        <div style="font-size:46px;margin-bottom:8px">🔐</div>
         <h1 style="font-size:20px;font-weight:900;color:#ED1C24;margin-bottom:4px">Reset Password</h1>
         <p style="font-size:12px;color:#9ca3af">Enter your email or phone number to reset your password</p>
       </div>
 
       <div class="fg" style="margin-bottom:12px"><label class="fl">Email or Mobile Number *</label><input class="fi" type="text" id="fg-em" placeholder="email@example.com or 971501234567"></div>
       <div id="fg-err" style="display:none;margin-bottom:10px" class="alert alert-err"></div>
-      <button id="fg-btn" onclick="doForgotPassword()" class="sbtn">Send Reset Link â†’</button>
-      <div style="text-align:center;margin-top:14px"><button onclick="switchTab('login')" style="background:none;border:none;color:#6b7280;font-size:12px;font-weight:700;cursor:pointer">â† Back to Sign In</button></div>
+      <button id="fg-btn" onclick="doForgotPassword()" class="sbtn">Send Reset Link →</button>
+      <div style="text-align:center;margin-top:14px"><button onclick="switchTab('login')" style="background:none;border:none;color:#6b7280;font-size:12px;font-weight:700;cursor:pointer">← Back to Sign In</button></div>
     </div>
   </div>
 
@@ -56,7 +56,7 @@
   <div id="panel-register" style="display:none">
     <div class="fs" style="border-radius:0 0 16px 16px;border-top:none;margin-bottom:0">
       <div style="text-align:center;margin-bottom:20px">
-        <div style="font-size:46px;margin-bottom:8px">ðŸŽ‰</div>
+        <div style="font-size:46px;margin-bottom:8px">🎉</div>
         <h1 style="font-size:20px;font-weight:900;color:#ED1C24;margin-bottom:4px">Create Account</h1>
         <p style="font-size:12px;color:#9ca3af">Join for exclusive deals & loyalty rewards</p>
       </div>
@@ -71,12 +71,12 @@
           <div class="fg"><label class="fl">Confirm Password *</label><input class="fi" type="password" id="rg-pw2" placeholder="Repeat password"></div>
         </div>
         <div id="rg-err" style="display:none;margin-top:10px" class="alert alert-err"></div>
-        <button id="rg-btn" onclick="doRegister()" class="sbtn" style="margin-top:14px">Verify with OTP â†’</button>
+        <button id="rg-btn" onclick="doRegister()" class="sbtn" style="margin-top:14px">Verify with OTP →</button>
       </div>
 
       <!-- Step 2: OTP Verification -->
       <div id="reg-step2" style="display:none;text-align:center">
-        <div style="font-size:48px;margin-bottom:12px">ðŸ“§</div>
+        <div style="font-size:48px;margin-bottom:12px">📧</div>
         <h2 style="font-size:17px;font-weight:800;margin-bottom:6px">Check Your Email</h2>
         <p style="font-size:12px;color:#6b7280;margin-bottom:4px">We sent a 6-digit code to</p>
         <div id="otp-email-display" style="font-size:13px;font-weight:700;color:#ED1C24;margin-bottom:18px"></div>
@@ -95,10 +95,10 @@
 
       <!-- Step 3: Success -->
       <div id="reg-step3" style="display:none;text-align:center">
-        <div style="font-size:60px;margin-bottom:14px">âœ…</div>
+        <div style="font-size:60px;margin-bottom:14px">✅</div>
         <h2 style="font-size:18px;font-weight:800;color:#065f46;margin-bottom:8px">Account Created!</h2>
         <p style="font-size:13px;color:#374151;margin-bottom:18px">Welcome to Coop Discounts! You can now sign in.</p>
-        <button onclick="switchTab('login')" class="sbtn" style="max-width:220px;margin:0 auto">Sign In Now â†’</button>
+        <button onclick="switchTab('login')" class="sbtn" style="max-width:220px;margin:0 auto">Sign In Now →</button>
       </div>
     </div>
   </div>
@@ -129,21 +129,22 @@ async function doLogin(){
   const em=document.getElementById('lg-em').value.trim(),pw=document.getElementById('lg-pw').value;
   const err=document.getElementById('lg-err'),btn=document.getElementById('lg-btn');
   err.style.display='none';
-  if(!em||!pw){err.textContent='âŒ Please enter email/phone and password';err.style.display='flex';return;}
-  btn.disabled=true;btn.textContent='â³ Signing in...';
+  if(!em||!pw){err.textContent='❌ Please enter email/phone and password';err.style.display='flex';return;}
+  btn.disabled=true;btn.textContent='⏳ Signing in...';
   try{
     const r=await API.login(em,pw);
     if(r.ok){
-      toast(`âœ… Welcome, ${r.data.name}!`);
+      toast(`✅ Welcome, ${r.data.name}!`);
       setTimeout(()=>{
         const role = r.data.role_code || localStorage.getItem('cd_role_code');
         const theme = localStorage.getItem('cd_theme') || 'web1';
         const map = {
           'company_owner':    theme + '_owner_dashboard.html',
-          'store_manager':    theme + '_owner_dashboard.html',
+          'store_manager':    'web_store_manager_delivery.html',
           'delivery_manager': theme + '_delivery_dashboard.html',
           'delivery_boy':     theme + '_delivery_dashboard.html',
-          'stock_manager':    theme + '_stock_dashboard.html',
+          'stock_manager':    'web_store_manager_delivery.html',
+          'store_keeper':     theme + '_stock_dashboard.html',
         };
         if (role && map[role]) {
           location.href = map[role];
@@ -151,29 +152,29 @@ async function doLogin(){
           location.href = nextPage;
         }
       },500);
-    }else{err.textContent='âŒ '+(r.err||'Invalid credentials');err.style.display='flex';btn.disabled=false;btn.textContent='Sign In â†’';}
-  }catch(e){err.textContent=`âŒ ${e.message}`;err.style.display='flex';btn.disabled=false;btn.textContent='Sign In â†’';}
+    }else{err.textContent='❌ '+(r.err||'Invalid credentials');err.style.display='flex';btn.disabled=false;btn.textContent='Sign In →';}
+  }catch(e){err.textContent=`❌ ${e.message}`;err.style.display='flex';btn.disabled=false;btn.textContent='Sign In →';}
 }
 
 async function doForgotPassword() {
   const em = document.getElementById('fg-em').value.trim();
   const err = document.getElementById('fg-err'), btn = document.getElementById('fg-btn');
   err.style.display = 'none';
-  if (!em) { err.textContent = 'âŒ Please enter your email or phone number'; err.style.display = 'flex'; return; }
+  if (!em) { err.textContent = '❌ Please enter your email or phone number'; err.style.display = 'flex'; return; }
   
-  btn.disabled = true; btn.textContent = 'â³ Sending...';
+  btn.disabled = true; btn.textContent = '⏳ Sending...';
   try {
     const r = await API.forgotPassword(em);
     if (r.success === 1 || r.success === true || r.response?.success || r.message?.includes('success') || r.result) {
-      toast('âœ… Password reset link sent to your email!');
+      toast('✅ Password reset link sent to your email!');
       setTimeout(() => switchTab('login'), 2000);
     } else {
       throw new Error(r.message || r.error || 'Failed to send reset link');
     }
   } catch(e) {
-    err.textContent = `âŒ ${e.message}`; err.style.display = 'flex';
+    err.textContent = `❌ ${e.message}`; err.style.display = 'flex';
   } finally {
-    btn.disabled = false; btn.textContent = 'Send Reset Link â†’';
+    btn.disabled = false; btn.textContent = 'Send Reset Link →';
   }
 }
 
@@ -183,10 +184,10 @@ async function doRegister(){
   const em=document.getElementById('rg-em').value.trim(),pw=document.getElementById('rg-pw').value,pw2=document.getElementById('rg-pw2').value;
   const err=document.getElementById('rg-err'),btn=document.getElementById('rg-btn');
   err.style.display='none';
-  if(!nm||!ph||!em||!pw){err.textContent='âŒ Please fill in all fields';err.style.display='flex';return;}
-  if(pw.length<6){err.textContent='âŒ Password must be at least 6 characters';err.style.display='flex';return;}
-  if(pw!==pw2){err.textContent='âŒ Passwords do not match';err.style.display='flex';return;}
-  btn.disabled=true;btn.textContent='â³ Sending OTP...';
+  if(!nm||!ph||!em||!pw){err.textContent='❌ Please fill in all fields';err.style.display='flex';return;}
+  if(pw.length<6){err.textContent='❌ Password must be at least 6 characters';err.style.display='flex';return;}
+  if(pw!==pw2){err.textContent='❌ Passwords do not match';err.style.display='flex';return;}
+  btn.disabled=true;btn.textContent='⏳ Sending OTP...';
   try{
     _regData={nm,ph,em,pw};
     const otp=await sendOtp(em);
@@ -195,7 +196,7 @@ async function doRegister(){
     document.getElementById('reg-step1').style.display='none';
     document.getElementById('reg-step2').style.display='block';
     toast(`OTP sent to ${em} (check console for demo)`,'warn');
-  }catch(e){err.textContent=`âŒ ${e.message}`;err.style.display='flex';btn.disabled=false;btn.textContent='Verify with OTP â†’';}
+  }catch(e){err.textContent=`❌ ${e.message}`;err.style.display='flex';btn.disabled=false;btn.textContent='Verify with OTP →';}
 }
 
 async function verifyRegOtp(){
@@ -203,17 +204,17 @@ async function verifyRegOtp(){
   const otp=getOtp('#otpWrap');
   const err=document.getElementById('otp-err'),btn=document.getElementById('otp-btn');
   err.style.display='none';
-  if(otp.length<6){err.textContent='âŒ Enter the 6-digit code';err.style.display='flex';return;}
-  if(!verifyOtp(_regData.em,otp)){err.textContent='âŒ Invalid code. Try again.';err.style.display='flex';return;}
-  btn.disabled=true;btn.textContent='â³ Creating account...';
+  if(otp.length<6){err.textContent='❌ Enter the 6-digit code';err.style.display='flex';return;}
+  if(!verifyOtp(_regData.em,otp)){err.textContent='❌ Invalid code. Try again.';err.style.display='flex';return;}
+  btn.disabled=true;btn.textContent='⏳ Creating account...';
   try{
     const r=await API.register(_regData.nm,_regData.em,_regData.ph,_regData.pw,'web-'+Date.now());
     if(r.success===1||r.response?.success){
       document.getElementById('reg-step2').style.display='none';
       document.getElementById('reg-step3').style.display='block';
-      toast('âœ… Account created! Please sign in.');
+      toast('✅ Account created! Please sign in.');
     }else{throw new Error(r.message||'Registration failed');}
-  }catch(e){err.textContent=`âŒ ${e.message}`;err.style.display='flex';btn.disabled=false;btn.textContent='Verify & Create Account';}
+  }catch(e){err.textContent=`❌ ${e.message}`;err.style.display='flex';btn.disabled=false;btn.textContent='Verify & Create Account';}
 }
 
 async function resendOtp(){
