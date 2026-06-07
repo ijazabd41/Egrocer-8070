@@ -505,6 +505,7 @@ async function addToCart(json) {
   if (!payload?.product_id) { toast('Could not add to cart', 'err'); return; }
 
   if (!API.loggedIn()) {
+    localStorage.setItem('pending_cart_add', JSON.stringify(payload));
     toast('Please sign in to add to cart', 'warn');
     setTimeout(() => { location.href = 'login.html?next=' + encodeURIComponent(location.pathname.split('/').pop() || 'index.html'); }, 800);
     return;
@@ -794,4 +795,15 @@ document.addEventListener('DOMContentLoaded',()=>{
   // Mark active nav link
   const path=location.pathname.split('/').pop()||'index.html';
   document.querySelectorAll('.nav-a,.mna').forEach(a=>{const href=a.getAttribute('href')||'';if(href===path||href.includes(path.split('.')[0]))a.classList.add('on');});
+
+  // Check for pending cart additions
+  if (API.loggedIn()) {
+    const pending = localStorage.getItem('pending_cart_add');
+    if (pending) {
+      localStorage.removeItem('pending_cart_add');
+      setTimeout(() => {
+        addToCart(pending).catch(console.error);
+      }, 500);
+    }
+  }
 });

@@ -226,7 +226,7 @@ input,select,textarea{font-family:inherit}
 .b-card img{max-width:100%;max-height:100%;object-fit:contain}
 
 /* ── CART DRAWER ───────────────────────────────────────────── */
-.cart-drw{position:fixed;top:0;right:-400px;width:390px;height:100%;background:var(--white);z-index:9500;box-shadow:-10px 0 50px rgba(0,0,0,.15);transition:right .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.cart-drw{position:fixed;top:0;right:-400px;width:390px;height:100%;height:100dvh;background:var(--white);z-index:9500;box-shadow:-10px 0 50px rgba(0,0,0,.15);transition:right .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
 .cart-drw.open{right:0}
 .drw-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:2px solid var(--gray-100);background:var(--gray-50)}
 .drw-hdr h3{font-size:17px;font-weight:800;color:var(--gray-900)}
@@ -382,7 +382,7 @@ footer{background:#141414;color:rgba(255,255,255,.7);padding-top:44px}
   .ft-grid{grid-template-columns:1fr 1fr}
   .hero-slide img,.hero-fb{height:260px}
   .mnav{display:block}
-  body{padding-bottom:66px}
+  body{padding-bottom:calc(66px + env(safe-area-inset-bottom))}
   .hdr-in{flex-wrap:wrap;gap:10px}
   .srch-wrap{order:3;flex-basis:100%}
   .topbar .ctr{justify-content:center}
@@ -395,7 +395,7 @@ footer{background:#141414;color:rgba(255,255,255,.7);padding-top:44px}
 }
 
 /* MOBILE NAV BOTTOM BAR */
-.mnav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1.5px solid #e5e7eb;z-index:800;padding:4px 0;box-shadow:0 -4px 16px rgba(0,0,0,.08)}
+.mnav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1.5px solid #e5e7eb;z-index:800;padding:4px 0;padding-bottom:calc(4px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,.08)}
 .mnav-in{display:flex;justify-content:space-around;align-items:stretch}
 .mna{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 8px;font-size:9px;font-weight:600;color:#9ca3af;text-decoration:none;transition:color .2s;position:relative;min-width:44px;flex:1}
 .mna.on,.mna:hover{color:#ED1C24}
@@ -404,8 +404,8 @@ footer{background:#141414;color:rgba(255,255,255,.7);padding-top:44px}
 .mna-badge.show{display:flex}
 @media(max-width:768px){
   .mnav{display:block}
-  body{padding-bottom:62px}
-  #cd-toast{bottom:72px}
+  body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
+  #cd-toast{bottom:calc(72px + env(safe-area-inset-bottom))}
 }
 /* OTP INPUTS */
 .otp-wrap{display:flex;gap:8px;justify-content:center;margin:16px 0}
