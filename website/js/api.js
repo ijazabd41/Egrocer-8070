@@ -1484,7 +1484,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   // updContact: all address fields + image_1920 (for profile photo)
   const getContact  = pid  => GET(`/api/contacts/${pid}`);
   const getContacts = ()   => GET('/api/contacts');
-  const getChildContacts = (pid, opts={}) => GET('/api/contacts', { domain:`['|',('id','=',${pid}),('parent_id','=',${pid})]`, limit: opts.limit !== undefined ? opts.limit : 3, offset: opts.offset || 0, Offset: opts.offset || 0 });
+  const getChildContacts = (pid, opts={}) => GET('/api/contacts', { domain:`[('id','child_of',${pid})]`, limit: opts.limit !== undefined ? opts.limit : 3, offset: opts.offset || 0, Offset: opts.offset || 0 });
   const addAddress  = data => GET('/api/contacts/new_address', data);
   const updContact  = (pid,f) => GET(`/api/contacts/${pid}/update`, f);
 
