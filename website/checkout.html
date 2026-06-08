@@ -767,14 +767,9 @@ async function applyLoyaltyPoints(){
        // We can fall back to 0.
     }
 
-    var extra = result.rewardLabel ? ' - '+result.rewardLabel : '';
-    var ptsInfo = '';
-    if(typeof result.pointsAfter === 'number'){
-      ptsInfo = ' | points left: '+result.pointsAfter.toFixed(2);
-    }
     msg.textContent = discountLoyalty > 0
-      ? '✅ Points applied - discount AED '+discountLoyalty.toFixed(2)+extra+ptsInfo
-      : '✅ Points applied to your order'+extra+ptsInfo;
+      ? '✨ Points applied - discount AED '+discountLoyalty.toFixed(2)
+      : '✨ Points applied to your order';
     msg.style.color='#065f46';
     renderSummary();
   }catch(e){
