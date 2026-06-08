@@ -242,13 +242,47 @@ function validateStep(step){
   }
   return true;
 }
-function goStep(step){
+async function goStep(step){
   if(step<1||step>3) return;
   if(step > currentStep) {
     for (var i = currentStep; i < step; i++) {
       if (!validateStep(i)) return;
     }
   }
+
+  // --- Send API request when proceeding from Step 2 to Step 3 ---
+  if(currentStep === 2 && step === 3) {
+    var btnList = document.querySelectorAll('button[onclick="goStep(3)"]');
+    var origTxts = [];
+    btnList.forEach(function(b, idx) { origTxts[idx] = b.textContent; b.textContent = '⏳ Saving...'; b.disabled = true; });
+    try {
+      var contact = await resolveCheckoutContact();
+      var oid = Cart.oid();
+      if(!oid) {
+         try { oid = await Cart.ensureOrder(); } catch(_) {}
+      }
+      if(oid && !contact.isStore && contact.partnerShippingId) {
+         await API.updDelivery(parseInt(oid), selCarrierId, {
+           partner_shipping_id: contact.partnerShippingId,
+           partner_invoice_id: contact.partnerInvoiceId || contact.partnerShippingId
+         });
+         await Cart.syncToOrder(parseInt(oid), true);
+         renderSummary();
+      } else if (oid && contact.isStore && contact.partnerInvoiceId) {
+         await API.updDelivery(parseInt(oid), selCarrierId, {
+           partner_invoice_id: contact.partnerInvoiceId
+         });
+         await Cart.syncToOrder(parseInt(oid), true);
+         renderSummary();
+      }
+    } catch(e) {
+      if(typeof toast === 'function') toast('Failed to save details: ' + e.message, 'warn');
+      btnList.forEach(function(b, idx) { b.textContent = origTxts[idx]; b.disabled = false; });
+      return;
+    }
+    btnList.forEach(function(b, idx) { b.textContent = origTxts[idx]; b.disabled = false; });
+  }
+
   currentStep=step;
   updateStepUi();
   checkPlaceOrderBtnState();
