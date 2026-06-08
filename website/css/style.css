@@ -159,7 +159,7 @@ input,select,textarea{font-family:inherit}
 
 /* ── CATEGORY CHIPS ────────────────────────────────────────── */
 .cat-row{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}.cat-row::-webkit-scrollbar{display:none}
-.cat-chip{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:96px;padding:15px 10px;background:var(--white);border-radius:var(--r-lg);border:2px solid var(--gray-200);cursor:pointer;transition:all var(--t);box-shadow:var(--sh-xs);text-align:center;flex-shrink:0;text-decoration:none;color:inherit}
+.cat-chip{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:96px;padding:24px 10px;background:var(--white);border-radius:var(--r-lg);border:2px solid var(--gray-200);cursor:pointer;transition:all var(--t);box-shadow:var(--sh-xs);text-align:center;flex-shrink:0;text-decoration:none;color:inherit}
 .cat-chip:hover,.cat-chip.on{border-color:var(--red);transform:translateY(-3px);box-shadow:var(--sh-red)}
 .cat-chip-img{width:60px;height:60px;border-radius:50%;overflow:hidden;background:var(--red-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid var(--red-100)}
 .cat-chip-img img{width:100%;height:100%;object-fit:cover}
