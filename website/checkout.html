@@ -418,25 +418,34 @@ document.addEventListener('DOMContentLoaded', async function(){
   if(document.getElementById('phPk')) document.getElementById('phPk').addEventListener('input', checkPlaceOrderBtnState);
 });
 
-async function loadCheckoutAddresses(){
+var checkoutAddrOffset = 0;
+var checkoutAddrLimit = 3;
+async function loadCheckoutAddresses(isLoadMore = false){
   var pid = API.myPid(); if(!pid) return;
   var delEl = document.getElementById('coAddrList');
   var invEl = document.getElementById('coInvoiceAddrList');
+  if(!isLoadMore) {
+    checkoutAddrOffset = 0;
+    checkoutAddressesCache = [];
+  } else {
+    var lb1 = document.getElementById('coDelLoadBtn'); if(lb1) lb1.textContent = '⏳ Loading...';
+    var lb2 = document.getElementById('coInvLoadBtn'); if(lb2) lb2.textContent = '⏳ Loading...';
+  }
   try{
-    var r = await API.getChildContacts(pid);
+    var r = await API.getChildContacts(pid, {limit: checkoutAddrLimit, offset: checkoutAddrOffset});
     var addrs = r.data || [];
-    checkoutAddressesCache = addrs;
-    if(addrs.length===0){
+    checkoutAddressesCache = checkoutAddressesCache.concat(addrs);
+    if(checkoutAddressesCache.length===0){
       delEl.innerHTML = '<div style="color:#6b7280;font-size:12px;text-align:center;padding:10px">No saved addresses. Please add a new delivery address.</div>';
       invEl.innerHTML = '<div style="color:#6b7280;font-size:12px;text-align:center;padding:10px">No invoice address found. You can still continue and we will use your account profile.</div>';
       document.getElementById('coNewAddr').style.display = 'block';
     } else {
       if(!selDeliveryContact){
-        var defaultDel = addrs.find(a => a.type==='delivery') || addrs[0];
+        var defaultDel = checkoutAddressesCache.find(a => a.type==='delivery') || checkoutAddressesCache[0];
         selDeliveryContact = defaultDel || null;
       }
       if(!selInvoiceContact){
-        var defaultInv = addrs.find(a => a.type==='invoice') || selDeliveryContact || addrs[0];
+        var defaultInv = checkoutAddressesCache.find(a => a.type==='invoice') || selDeliveryContact || checkoutAddressesCache[0];
         selInvoiceContact = defaultInv || null;
       }
       function addrDetails(a){
@@ -464,16 +473,31 @@ async function loadCheckoutAddresses(){
           addrDetails(a) +
         '</div>';
       }
-      var deliveryCandidates = addrs.filter(function(a){ return a.type==='delivery'; });
-      if(!deliveryCandidates.length) deliveryCandidates = addrs;
-      var invoiceCandidates = addrs.filter(function(a){ return a.type==='invoice'; });
-      if(!invoiceCandidates.length) invoiceCandidates = addrs;
-      delEl.innerHTML = deliveryCandidates.map(function(a){ return card(a,'delivery'); }).join('');
-      invEl.innerHTML = invoiceCandidates.map(function(a){ return card(a,'invoice'); }).join('');
+      var deliveryCandidates = checkoutAddressesCache.filter(function(a){ return a.type==='delivery'; });
+      if(!deliveryCandidates.length) deliveryCandidates = checkoutAddressesCache;
+      var invoiceCandidates = checkoutAddressesCache.filter(function(a){ return a.type==='invoice'; });
+      if(!invoiceCandidates.length) invoiceCandidates = checkoutAddressesCache;
+      
+      var delHtml = deliveryCandidates.map(function(a){ return card(a,'delivery'); }).join('');
+      var invHtml = invoiceCandidates.map(function(a){ return card(a,'invoice'); }).join('');
+      
+      if(addrs.length === checkoutAddrLimit) {
+        checkoutAddrOffset += checkoutAddrLimit;
+        var btnHtml = '<div style="text-align:center;padding:10px;"><button id="coDelLoadBtn" onclick="loadCheckoutAddresses(true)" style="background:#fff;border:1px solid var(--red);color:var(--red);padding:6px 12px;border-radius:50px;font-weight:700;font-size:11px;cursor:pointer">Load More Addresses</button></div>';
+        delHtml += btnHtml;
+        invHtml += btnHtml.replace('coDelLoadBtn','coInvLoadBtn');
+      }
+      delEl.innerHTML = delHtml;
+      invEl.innerHTML = invHtml;
     }
   }catch(e){
-    delEl.innerHTML = '<div style="color:var(--red);font-size:12px">❌ Failed to load addresses</div>';
-    invEl.innerHTML = '<div style="color:var(--red);font-size:12px">❌ Failed to load invoice addresses</div>';
+    if(!isLoadMore) {
+      delEl.innerHTML = '<div style="color:var(--red);font-size:12px">❌ Failed to load addresses</div>';
+      invEl.innerHTML = '<div style="color:var(--red);font-size:12px">❌ Failed to load invoice addresses</div>';
+    } else {
+      var lb1 = document.getElementById('coDelLoadBtn'); if(lb1) lb1.textContent = 'Failed';
+      var lb2 = document.getElementById('coInvLoadBtn'); if(lb2) lb2.textContent = 'Failed';
+    }
   }
   checkPlaceOrderBtnState();
 }

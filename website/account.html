@@ -595,11 +595,20 @@ async function loadLoyalty(){
   }catch(e){ el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">❌ '+e.message+'</div>'; }
 }
 
-async function loadAddress(){
-  document.getElementById('addressList').innerHTML='<div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">⏳ Loading addresses...</div>';
+var addrOffset = 0;
+var addrLimit = 3;
+async function loadAddress(isLoadMore = false){
+  var container = document.getElementById('addressList');
+  if(!isLoadMore) {
+    addrOffset = 0;
+    container.innerHTML='<div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">⏳ Loading addresses...</div>';
+  } else {
+    var lmBtn = document.getElementById('addrLoadMoreBtn');
+    if(lmBtn) lmBtn.innerHTML = '⏳ Loading...';
+  }
   var pid = API.myPid(); if(!pid)return;
   try{
-    var r = await API.getChildContacts(pid);
+    var r = await API.getChildContacts(pid, {limit: addrLimit, offset: addrOffset});
     var addrs = r.data||[];
     var html = addrs.length ? addrs.map(a => {
       return '<div style="border:1px solid #e5e7eb;border-radius:12px;padding:16px;background:#f9fafb">' +
@@ -608,10 +617,27 @@ async function loadAddress(){
         '<div style="font-size:12px;color:#6b7280">' + [a.street,a.street2,a.city,a.zip].filter(Boolean).join(', ') + '</div>' +
         '<div style="font-size:12px;color:#6b7280;margin-top:4px">' + (a.phone?'📞 '+a.phone:'') + '</div>' +
       '</div>';
-    }).join('') : '<div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">No addresses found. Add a new delivery or invoice address!</div>';
-    document.getElementById('addressList').innerHTML = html;
+    }).join('') : (!isLoadMore ? '<div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">No addresses found. Add a new delivery or invoice address!</div>' : '');
+    
+    if(!isLoadMore) {
+      container.innerHTML = html;
+    } else {
+      var lmWrapper = document.getElementById('addrLoadMoreWrapper');
+      if(lmWrapper) lmWrapper.remove();
+      container.innerHTML += html;
+    }
+    
+    if(addrs.length === addrLimit) {
+      addrOffset += addrLimit;
+      container.innerHTML += '<div id="addrLoadMoreWrapper" style="grid-column:1/-1;text-align:center;padding:10px;"><button id="addrLoadMoreBtn" onclick="loadAddress(true)" style="background:#fff;border:1px solid var(--red);color:var(--red);padding:8px 16px;border-radius:50px;font-weight:700;cursor:pointer">Load More</button></div>';
+    }
   }catch(e){
-    document.getElementById('addressList').innerHTML='<div style="color:var(--red);padding:20px;text-align:center;grid-column:1/-1">❌ Failed to load addresses: '+e.message+'</div>';
+    if(!isLoadMore) {
+      container.innerHTML='<div style="color:var(--red);padding:20px;text-align:center;grid-column:1/-1">❌ Failed to load addresses: '+e.message+'</div>';
+    } else {
+      var lmBtn = document.getElementById('addrLoadMoreBtn');
+      if(lmBtn) lmBtn.innerHTML = 'Load More (Failed)';
+    }
   }
 }
 
