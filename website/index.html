@@ -56,12 +56,6 @@
   <div class="promo-item"><span class="promo-ic">🎧</span><div><span class="promo-ttl">24/7 Support</span><span class="promo-sub">055 594 4719</span></div></div>
 </div></div></div>
 
-<!-- MOBILE APP PHOTOS -->
-<section class="sec" id="mobileAppSec" style="display:none; padding-top: 20px; padding-bottom: 0;"><div class="ctr">
-  <div class="sec-hd"><h2 class="sec-ttl" style="font-size: 22px;">📱 Our Mobile App</h2></div>
-  <div class="b-scroll" id="mobileAppRow" style="gap: 16px;"></div>
-</div></section>
-
 <!-- ② SHOP BY CATEGORY -->
 <section class="sec sec-w"><div class="ctr">
   <div class="sec-hd"><h2 class="sec-ttl">Shop by Category</h2><a href="shop.html" class="see-all">All Categories →</a></div>
@@ -319,8 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
     API.getFeatured(),      // 5 - slider 4
     API.getFreshPick(),     // 6 - slider 5
     API.getBrands(),        // 7 - slider 8
-    API.getProds({limit:10}), // 8 - all products
-    API.GET('/api/bcd-deal-day-slider/12') // 9 - mobile app photos
+    API.getProds({limit:10}) // 8 - all products
   ]).then(function(results) {
 
     // ① HOME SLIDER — slider 9 → image_ids[].image_url
@@ -408,28 +401,6 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('allGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#9ca3af">Could not load products. Check proxy connection.</div>';
     }
 
-    // ⑩ MOBILE APP PHOTOS
-    if (results[9] && results[9].status === 'fulfilled') {
-      var slMobile = results[9].value.data && results[9].value.data[0];
-      var mobileItems = slMobile && slMobile.image_ids && slMobile.image_ids.length > 0 ? slMobile.image_ids : [];
-      if (!mobileItems.length && slMobile && slMobile.banner_image) {
-        mobileItems = [{ id: 12, image_url: slMobile.banner_image, name: 'Our Mobile App' }];
-      }
-      var maRow = document.getElementById('mobileAppRow');
-      if (maRow) {
-        if (mobileItems.length) {
-          document.getElementById('mobileAppSec').style.display = 'block';
-          maRow.innerHTML = mobileItems.map(function(it) {
-            var imgSrc = it.image_url ? API.img(it.image_url) : API.sliderImg(it.id);
-            var isSingle = mobileItems.length === 1;
-            return '<div style="flex-shrink:0; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05); ' + (isSingle ? 'width:100%;text-align:center;' : '') + '">' +
-              '<img src="' + imgSrc + '" style="' + (isSingle ? 'max-width:100%;height:auto;margin:0 auto;' : 'height:160px;width:auto;') + ' object-fit:contain; display:block;"' +
-                   ' onerror="this.style.display=\'none\'">' +
-            '</div>';
-          }).join('');
-        }
-      }
-    }
 
     Bar.done();
   });
