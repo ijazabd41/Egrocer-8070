@@ -513,7 +513,7 @@ async function loadInvoices(){
       var state = Array.isArray(inv.state)?inv.state[1]:inv.state||'Draft';
       var cls = state.toLowerCase().includes('post')?'os-ok':state.toLowerCase().includes('cancel')?'os-cancel':'os-draft';
       // PDF URL from access_token OR access_url
-      var pdfUrl = inv.access_token ? API.invPdfUrl(inv.id, inv.access_token) : (inv.access_url?'/proxy'+inv.access_url:'');
+      var pdfUrl = inv.access_token ? API.invPdfUrl(inv.id, inv.access_token) : (inv.access_url?API.PX+inv.access_url:'');
       return '<div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:12px">'
         +'<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">'
         +'<div><div style="font-size:15px;font-weight:900">'+(inv.name||'Invoice')+'</div>'

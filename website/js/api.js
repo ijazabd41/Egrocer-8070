@@ -195,7 +195,8 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     let url = u.toString();
     for (const [k, v] of listParams) {
       // Use encodeURIComponent to fully encode everything, preventing Node v24 ERR_UNESCAPED_CHARACTERS
-      url += (url.includes('?') ? '&' : '?') + k + '=' + encodeURIComponent(v);
+      const enc = encodeURIComponent(v).replace(/%5B/gi, '[').replace(/%5D/gi, ']').replace(/%2C/gi, ',').replace(/'/g, '%27');
+        url += (url.includes('?') ? '&' : '?') + k + '=' + enc;
     }
     return url;
   }
