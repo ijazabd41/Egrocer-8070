@@ -419,3 +419,34 @@ footer{background:#141414;color:rgba(255,255,255,.7);padding-top:44px}
   .pgrid{grid-template-columns:repeat(2,1fr);gap:8px}
   #shopGrid{grid-template-columns:repeat(2,1fr);gap:8px}
 }
+
+/* Hamburger Menu Adjustments */
+.nav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  padding: 0 15px;
+  cursor: pointer;
+  margin-left: auto;
+}
+@media(max-width: 768px) {
+  .nav-in { flex-wrap: wrap; }
+  .nav-hamburger { display: flex; align-items: center; justify-content: center; }
+  .nav-links {
+    display: none;
+    flex-basis: 100%;
+    flex-direction: column;
+    overflow: visible;
+    background: var(--red-dark);
+    margin: 0;
+    padding: 0;
+  }
+  .nav-links.show { display: flex; }
+  .nav-a {
+    width: 100%;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    justify-content: flex-start;
+  }
+}

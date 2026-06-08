@@ -153,12 +153,15 @@ function buildHeader(){
   <button class="nav-cats-btn" onclick="openModal('catMo')" aria-label="All categories">
     ☰ <span class="en">All Categories</span><span class="ar" style="display:none">جميع الأقسام</span>
   </button>
-  <a href="index.html" class="nav-a">🏠 <span class="en">Home</span><span class="ar" style="display:none">الرئيسية</span></a>
-  <a href="offers.html" class="nav-a">🔥 <span class="en">Hot Deals</span><span class="ar" style="display:none">أحدث العروض</span> <span class="n-badge">SALE</span></a>
-  <a href="shop.html" class="nav-a">🛍️ <span class="en">All Products</span><span class="ar" style="display:none">جميع المنتجات</span></a>
-  <a href="account.html" class="nav-a">👤 <span class="en">My Account</span><span class="ar" style="display:none">حسابي</span></a>
-  <a href="track-order.html" class="nav-a">📦 <span class="en">Track Order</span><span class="ar" style="display:none">تتبع الطلب</span></a>
-  <a href="contact.html" class="nav-a">📞 <span class="en">Contact</span><span class="ar" style="display:none">اتصل بنا</span></a>
+  <button class="nav-hamburger" onclick="document.getElementById('topNavLinks').classList.toggle('show')" aria-label="Menu">☰</button>
+  <div class="nav-links" id="topNavLinks">
+    <a href="index.html" class="nav-a">🏠 <span class="en">Home</span><span class="ar" style="display:none">الرئيسية</span></a>
+    <a href="offers.html" class="nav-a">🔥 <span class="en">Hot Deals</span><span class="ar" style="display:none">أحدث العروض</span> <span class="n-badge">SALE</span></a>
+    <a href="shop.html" class="nav-a">🛍️ <span class="en">All Products</span><span class="ar" style="display:none">جميع المنتجات</span></a>
+    <a href="account.html" class="nav-a">👤 <span class="en">My Account</span><span class="ar" style="display:none">حسابي</span></a>
+    <a href="track-order.html" class="nav-a">📦 <span class="en">Track Order</span><span class="ar" style="display:none">تتبع الطلب</span></a>
+    <a href="contact.html" class="nav-a">📞 <span class="en">Contact</span><span class="ar" style="display:none">اتصل بنا</span></a>
+  </div>
 </div></div></nav>
 
 <!-- Cart Drawer -->
