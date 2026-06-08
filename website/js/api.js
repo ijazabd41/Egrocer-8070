@@ -1519,13 +1519,13 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   // can read (e.g. for staff accounts) which makes the dashboard counts wrong.
   const myOrders   = (opts={}) => {
     const p = myPid();
-    const q = { limit: opts.limit !== undefined ? opts.limit : 10, offset: opts.offset || 0 };
+    const q = { limit: opts.limit !== undefined ? opts.limit : 10, offset: opts.offset || 0, Offset: opts.offset || 0 };
     if (p) q.domain = `[('partner_id','=',${p})]`;
     return GET('/api/order', q);
   };
   const myInvoices = (opts={}) => {
     const p = myPid();
-    const q = { limit: opts.limit !== undefined ? opts.limit : 10, offset: opts.offset || 0 };
+    const q = { limit: opts.limit !== undefined ? opts.limit : 10, offset: opts.offset || 0, Offset: opts.offset || 0 };
     if (p) q.domain = `[('partner_id','=',${p})]`;
     return GET('/api/invoice', q);
   };
