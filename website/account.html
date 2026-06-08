@@ -299,17 +299,28 @@ async function changePwd(){
   catch(e){ msg.textContent='❌ '+e.message; msg.style.color='var(--red)'; }
 }
 
-async function loadOrders(){
+var ordersOffset = 0;
+var ordersLimit = 5;
+var ordersCache = [];
+async function loadOrders(isLoadMore = false){
   var el = document.getElementById('ordersTable');
-  el.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div>';
+  if(!isLoadMore) {
+    ordersOffset = 0;
+    ordersCache = [];
+    el.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div>';
+  } else {
+    var lb = document.getElementById('ordersLoadBtn');
+    if(lb) lb.textContent = '⏳ Loading...';
+  }
   try{
-    var r = await API.myOrders();
+    var r = await API.myOrders({limit: ordersLimit, offset: ordersOffset});
     var orders = r.data||[];
-    if(!orders.length){
+    ordersCache = ordersCache.concat(orders);
+    if(!ordersCache.length){
       el.innerHTML='<div style="text-align:center;padding:52px 20px"><div style="font-size:52px;margin-bottom:14px">📦</div><h3 style="font-weight:800;color:#374151">No orders yet</h3><a href="shop.html" style="color:var(--red);font-weight:700;text-decoration:none;font-size:13px">Start shopping →</a></div>';
       return;
     }
-    el.innerHTML = orders.map(function(o){
+    var html = orders.map(function(o){
       var state = Array.isArray(o.state)?o.state[1]:o.state||'Draft';
       var stateKey = Array.isArray(o.state)?o.state[0]:o.state||'draft';
       var cls = stateKey==='sale'||stateKey==='done'?'os-ok':stateKey==='cancel'?'os-cancel':'os-draft';
@@ -332,7 +343,22 @@ async function loadOrders(){
         +(hasDelivery?'<span style="font-size:10px;background:#e0e7ff;color:#3730a3;padding:3px 8px;border-radius:6px;font-weight:700">🚚 Shipped</span>':'')
         +'</div></div>';
     }).join('');
-  }catch(e){ el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">❌ '+e.message+'</div>'; }
+    
+    if(!isLoadMore) {
+      el.innerHTML = html;
+    } else {
+      var wrapper = document.getElementById('ordersLoadWrapper');
+      if(wrapper) wrapper.remove();
+      el.innerHTML += html;
+    }
+    if(orders.length === ordersLimit) {
+      ordersOffset += ordersLimit;
+      el.innerHTML += '<div id="ordersLoadWrapper" style="text-align:center;padding:10px;"><button id="ordersLoadBtn" onclick="loadOrders(true)" style="background:#fff;border:1px solid var(--red);color:var(--red);padding:8px 16px;border-radius:50px;font-weight:700;cursor:pointer">Load More</button></div>';
+    }
+  }catch(e){
+    if(!isLoadMore) el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">❌ '+e.message+'</div>';
+    else { var lb = document.getElementById('ordersLoadBtn'); if(lb) lb.textContent = 'Failed'; }
+  }
 }
 
 async function viewOrderDetail(oid){
@@ -499,17 +525,28 @@ async function loadOrderInvoice(oid){
   }catch(e){ toast('❌ '+e.message,'err'); }
 }
 
-async function loadInvoices(){
+var invoicesOffset = 0;
+var invoicesLimit = 5;
+var invoicesCache = [];
+async function loadInvoices(isLoadMore = false){
   var el = document.getElementById('invoicesTable');
-  el.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div>';
+  if(!isLoadMore) {
+    invoicesOffset = 0;
+    invoicesCache = [];
+    el.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div>';
+  } else {
+    var lb = document.getElementById('invoicesLoadBtn');
+    if(lb) lb.textContent = '⏳ Loading...';
+  }
   try{
-    var r = await API.myInvoices();
+    var r = await API.myInvoices({limit: invoicesLimit, offset: invoicesOffset});
     var invoices = r.data||[];
-    if(!invoices.length){
+    invoicesCache = invoicesCache.concat(invoices);
+    if(!invoicesCache.length){
       el.innerHTML='<div style="text-align:center;padding:52px 20px"><div style="font-size:52px;margin-bottom:14px">🧾</div><h3 style="font-weight:800;color:#374151">No invoices yet</h3></div>';
       return;
     }
-    el.innerHTML = invoices.map(function(inv){
+    var html = invoices.map(function(inv){
       var state = Array.isArray(inv.state)?inv.state[1]:inv.state||'Draft';
       var cls = state.toLowerCase().includes('post')?'os-ok':state.toLowerCase().includes('cancel')?'os-cancel':'os-draft';
       // PDF URL from access_token OR access_url
@@ -530,7 +567,22 @@ async function loadInvoices(){
         +(pdfUrl?'<div style="margin-top:12px"><a href="'+pdfUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;padding:9px 18px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">📄 Download PDF Invoice</a></div>':'<div style="margin-top:10px;font-size:11px;color:#9ca3af">PDF will be available once invoice is confirmed</div>')
         +'</div>';
     }).join('');
-  }catch(e){ el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">❌ '+e.message+'</div>'; }
+    
+    if(!isLoadMore) {
+      el.innerHTML = html;
+    } else {
+      var wrapper = document.getElementById('invoicesLoadWrapper');
+      if(wrapper) wrapper.remove();
+      el.innerHTML += html;
+    }
+    if(invoices.length === invoicesLimit) {
+      invoicesOffset += invoicesLimit;
+      el.innerHTML += '<div id="invoicesLoadWrapper" style="text-align:center;padding:10px;"><button id="invoicesLoadBtn" onclick="loadInvoices(true)" style="background:#fff;border:1px solid var(--red);color:var(--red);padding:8px 16px;border-radius:50px;font-weight:700;cursor:pointer">Load More</button></div>';
+    }
+  }catch(e){
+    if(!isLoadMore) el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">❌ '+e.message+'</div>';
+    else { var lb = document.getElementById('invoicesLoadBtn'); if(lb) lb.textContent = 'Failed'; }
+  }
 }
 
 async function loadLoyalty(){

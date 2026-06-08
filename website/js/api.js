@@ -1517,15 +1517,17 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   // IMPORTANT: scope orders/invoices to the logged-in customer (partner_id).
   // Without the domain filter the backend can return every record the session
   // can read (e.g. for staff accounts) which makes the dashboard counts wrong.
-  const myOrders   = () => {
+  const myOrders   = (opts={}) => {
     const p = myPid();
-    return p ? GET('/api/order',   { domain:`[('partner_id','=',${p})]` })
-             : GET('/api/order');
+    const q = { limit: opts.limit !== undefined ? opts.limit : 10, offset: opts.offset || 0 };
+    if (p) q.domain = `[('partner_id','=',${p})]`;
+    return GET('/api/order', q);
   };
-  const myInvoices = () => {
+  const myInvoices = (opts={}) => {
     const p = myPid();
-    return p ? GET('/api/invoice', { domain:`[('partner_id','=',${p})]` })
-             : GET('/api/invoice');
+    const q = { limit: opts.limit !== undefined ? opts.limit : 10, offset: opts.offset || 0 };
+    if (p) q.domain = `[('partner_id','=',${p})]`;
+    return GET('/api/invoice', q);
   };
   const myLoyalty  = () => { const p=myPid(); return p?getLoyaltyCoupons(p):Promise.resolve({data:[]}); };
   const myCards    = async () => {
