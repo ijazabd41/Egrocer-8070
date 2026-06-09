@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Processing Payment – Coop Discounts</title>
+<link rel="stylesheet" href="css/style.css?v=13.0">
+<style>
+.telr-wrap{max-width:520px;margin:40px auto;padding:0 16px}
+.telr-card{background:#fff;border-radius:20px;border:1.5px solid #e5e7eb;padding:40px 32px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.06)}
+.telr-ic{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 20px}
+.telr-ic.loading{background:linear-gradient(135deg,#dbeafe,#eff6ff);animation:telrPulse 1.5s ease-in-out infinite}
+.telr-ic.success{background:linear-gradient(135deg,#d1fae5,#ecfdf5)}
+.telr-ic.error{background:linear-gradient(135deg,#fee2e2,#fef2f2)}
+.telr-title{font-size:22px;font-weight:900;color:#111827;margin-bottom:8px}
+.telr-desc{font-size:14px;color:#6b7280;line-height:1.6;margin-bottom:20px}
+.telr-steps{text-align:left;background:#f9fafb;border-radius:12px;padding:16px 20px;margin:20px 0}
+.telr-step{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:13px;color:#6b7280;border-bottom:1px solid #f3f4f6}
+.telr-step:last-child{border-bottom:none}
+.telr-step.active{color:#1e40af;font-weight:700}
+.telr-step.done{color:#065f46;font-weight:700}
+.telr-step.fail{color:#991b1b;font-weight:700}
+.telr-step .si{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.telr-step.active .si{background:#dbeafe}
+.telr-step.done .si{background:#d1fae5}
+.telr-step.fail .si{background:#fee2e2}
+.telr-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:50px;font-weight:700;font-size:14px;text-decoration:none;transition:all .2s;cursor:pointer;border:none;font-family:inherit}
+.telr-btn.primary{background:var(--red);color:#fff}.telr-btn.primary:hover{background:var(--red-dark)}
+.telr-btn.secondary{background:#f3f4f6;color:#374151}.telr-btn.secondary:hover{background:#e5e7eb}
+@keyframes telrPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+</style>
+</head>
+<body style="background:#f9fafb">
+<div id="site-header"></div>
+
+<div class="telr-wrap">
+  <div class="telr-card" id="telrCard">
+    <div class="telr-ic loading" id="telrIcon">⏳</div>
+    <h1 class="telr-title" id="telrTitle">Processing Your Payment</h1>
+    <p class="telr-desc" id="telrDesc">Please wait while we verify your payment with Telr. Do not close this page.</p>
+
+    <div class="telr-steps" id="telrSteps">
+      <div class="telr-step active" id="step1"><span class="si">1</span> Verifying payment with Telr...</div>
+      <div class="telr-step" id="step2"><span class="si">2</span> Completing your order</div>
+      <div class="telr-step" id="step3"><span class="si">3</span> Generating invoice</div>
+    </div>
+
+    <div id="telrActions" style="display:none;margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"></div>
+  </div>
+</div>
+
+<div id="site-footer"></div>
+<script src="js/api-cache.js?v=1"></script><script src="js/error-logger.js?v=1.0"></script>
+<script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.9"></script><script src="js/layout.js?v=13.0"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async function(){
+  var params = new URLSearchParams(location.search);
+  var status = params.get('status') || '';
+  var log = API.log;
+
+  // Read saved checkout state
+  var raw = sessionStorage.getItem('telr_checkout');
+  if(!raw){
+    showError('No payment session found. Please return to checkout and try again.');
+    return;
+  }
+  var checkout;
+  try { checkout = JSON.parse(raw); } catch(_){
+    showError('Invalid payment session data. Please return to checkout and try again.');
+    return;
+  }
+
+  var oid = checkout.oid;
+  var txId = checkout.txId;
+  var provId = checkout.provId;
+  var telrRef = checkout.telrRef;
+  var orderName = checkout.orderName;
+
+  log.info('TelrReturn','start',{status:status,oid:oid,txId:txId,telrRef:telrRef});
+
+  // Handle cancel/decline immediately
+  if(status === 'cancelled'){
+    showCancelled(oid);
+    return;
+  }
+  if(status === 'declined'){
+    showDeclined(oid);
+    return;
+  }
+
+  // Step 1: Verify payment with Telr
+  try {
+    markStep('step1','active');
+    var verification = await API.verifyTelrPayment(telrRef);
+    log.info('TelrReturn','verification result',{code:verification.code,text:verification.text});
+
+    if(verification.code !== 3 && verification.text !== 'Paid'){
+      markStep('step1','fail');
+      showError('Payment was not completed. Status: ' + (verification.text || 'Unknown') + '. Please try again.');
+      return;
+    }
+    markStep('step1','done');
+
+    // Step 2: Call markDone to complete the order
+    markStep('step2','active');
+    try {
+      await API.markDone(parseInt(oid), parseInt(txId), parseInt(provId));
+      log.info('TelrReturn','markDone ✓',{oid:oid,txId:txId});
+    } catch(e) {
+      log.warn('TelrReturn','markDone failed — checking if order already confirmed',{message:e.message});
+      // markDone might fail if order is already confirmed — check
+      try {
+        var confirmed = await API.isOrderConfirmed(parseInt(oid));
+        if(!confirmed){
+          // Try confirmOrderPayment as fallback
+          await API.confirmOrderPayment(parseInt(oid), parseInt(provId));
+        }
+      } catch(_){}
+    }
+    markStep('step2','done');
+
+    // Step 3: Invoice generation (handled by markDone/confirmOrderPayment)
+    markStep('step3','active');
+    await new Promise(function(r){ setTimeout(r, 800); }); // Brief pause for backend processing
+    markStep('step3','done');
+
+    // Clear checkout state
+    sessionStorage.removeItem('telr_checkout');
+    Cart.markPlaced(oid);
+    Cart.clear();
+
+    // Show success and redirect
+    showSuccess(oid, orderName);
+    log.info('TelrReturn','complete — redirecting',{oid:oid,orderName:orderName});
+    setTimeout(function(){
+      location.href = 'order-success.html?oid=' + oid + '&name=' + encodeURIComponent(orderName||'');
+    }, 2000);
+
+  } catch(e) {
+    log.error('TelrReturn','error',{message:e.message,oid:oid});
+    showError('An error occurred while processing your payment: ' + e.message);
+  }
+});
+
+function markStep(id, state){
+  var el = document.getElementById(id);
+  if(!el) return;
+  el.className = 'telr-step ' + state;
+  var si = el.querySelector('.si');
+  if(state === 'done' && si) si.textContent = '✓';
+  if(state === 'fail' && si) si.textContent = '✗';
+}
+
+function showSuccess(oid, orderName){
+  document.getElementById('telrIcon').className = 'telr-ic success';
+  document.getElementById('telrIcon').textContent = '✅';
+  document.getElementById('telrTitle').textContent = 'Payment Successful!';
+  document.getElementById('telrDesc').textContent = 'Your payment has been confirmed. Redirecting to your order details...';
+  var actions = document.getElementById('telrActions');
+  actions.style.display = 'flex';
+  actions.innerHTML = '<a href="order-success.html?oid='+oid+'&name='+encodeURIComponent(orderName||'')+'" class="telr-btn primary">📦 View Order</a>'
+    + '<a href="index.html" class="telr-btn secondary">🏠 Continue Shopping</a>';
+}
+
+function showError(msg){
+  document.getElementById('telrIcon').className = 'telr-ic error';
+  document.getElementById('telrIcon').textContent = '❌';
+  document.getElementById('telrTitle').textContent = 'Payment Issue';
+  document.getElementById('telrDesc').textContent = msg;
+  document.getElementById('telrSteps').style.display = 'none';
+  var actions = document.getElementById('telrActions');
+  actions.style.display = 'flex';
+  actions.innerHTML = '<a href="checkout.html" class="telr-btn primary">🔄 Return to Checkout</a>'
+    + '<a href="index.html" class="telr-btn secondary">🏠 Continue Shopping</a>';
+}
+
+function showCancelled(oid){
+  document.getElementById('telrIcon').className = 'telr-ic error';
+  document.getElementById('telrIcon').textContent = '🚫';
+  document.getElementById('telrTitle').textContent = 'Payment Cancelled';
+  document.getElementById('telrDesc').textContent = 'You cancelled the payment. Your cart has been preserved — you can try again.';
+  document.getElementById('telrSteps').style.display = 'none';
+  var actions = document.getElementById('telrActions');
+  actions.style.display = 'flex';
+  actions.innerHTML = '<a href="checkout.html" class="telr-btn primary">🔄 Try Again</a>'
+    + '<a href="index.html" class="telr-btn secondary">🏠 Continue Shopping</a>';
+}
+
+function showDeclined(oid){
+  document.getElementById('telrIcon').className = 'telr-ic error';
+  document.getElementById('telrIcon').textContent = '⚠️';
+  document.getElementById('telrTitle').textContent = 'Payment Declined';
+  document.getElementById('telrDesc').textContent = 'Your payment was declined by the bank. Please try a different card or payment method.';
+  document.getElementById('telrSteps').style.display = 'none';
+  var actions = document.getElementById('telrActions');
+  actions.style.display = 'flex';
+  actions.innerHTML = '<a href="checkout.html" class="telr-btn primary">🔄 Try Again</a>'
+    + '<a href="index.html" class="telr-btn secondary">🏠 Continue Shopping</a>';
+}
+</script>
+</body></html>

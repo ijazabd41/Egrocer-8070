@@ -1032,6 +1032,97 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     }
     throw lastErr || new Error('Could not confirm payment on the server (mark done failed).');
   }
+
+  // ── TELR PAYMENT GATEWAY ──────────────────────────────────────────
+  const TELR_STORE_ID  = '35269';
+  const TELR_AUTH_KEY  = 'WGLV^NLX7F@ztPFV';
+  const TELR_TEST_MODE = '1'; // '1' = sandbox, '0' = live
+
+  // Telr proxy base: route through our proxy server /telr/ → secure.telr.com
+  const TELR_PX = (() => {
+    if (typeof location === 'undefined') return `http://localhost:${PROXY_PORT}/telr`;
+    if (location.protocol === 'file:') return `http://localhost:${PROXY_PORT}/telr`;
+    if (location.port === PROXY_PORT) return '/telr';
+    return `http://localhost:${PROXY_PORT}/telr`;
+  })();
+
+  /**
+   * Create a Telr hosted payment session.
+   * @param {number} orderId – Odoo order ID (used as cartid)
+   * @param {number|string} amount – Total amount
+   * @param {string} currency – e.g. 'AED'
+   * @param {string} description – e.g. 'Order S00308'
+   * @returns {{ ref: string, url: string }} – Telr order ref and redirect URL
+   */
+  async function createTelrSession(orderId, amount, currency, description) {
+    Log.info('Telr', 'createSession → start', { orderId, amount, currency });
+    const baseUrl = (typeof location !== 'undefined')
+      ? location.origin + location.pathname.replace(/[^/]*$/, '')
+      : '';
+    const body = {
+      method: 'create',
+      store: TELR_STORE_ID,
+      authkey: TELR_AUTH_KEY,
+      order: {
+        cartid: String(orderId),
+        test: TELR_TEST_MODE,
+        amount: String(parseFloat(amount).toFixed(2)),
+        currency: currency || 'AED',
+        description: description || 'Order ' + orderId
+      },
+      return: {
+        authorised: baseUrl + 'telr-return.html?status=authorised',
+        declined:   baseUrl + 'telr-return.html?status=declined',
+        cancelled:  baseUrl + 'telr-return.html?status=cancelled'
+      }
+    };
+    const resp = await fetch(TELR_PX + '/gateway/order.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!resp.ok) throw new Error('Telr session creation failed (HTTP ' + resp.status + ')');
+    const data = await resp.json();
+    if (!data.order?.ref || !data.order?.url) {
+      Log.error('Telr', 'createSession — invalid response', data);
+      throw new Error('Telr did not return a payment session. ' + JSON.stringify(data.error || data));
+    }
+    Log.info('Telr', 'createSession ✓', { ref: data.order.ref, url: data.order.url });
+    return { ref: data.order.ref, url: data.order.url };
+  }
+
+  /**
+   * Verify a Telr payment by its order reference.
+   * @param {string} telrRef – The Telr order ref from createTelrSession
+   * @returns {{ code: number, text: string }} – status.code 3 = Paid
+   */
+  async function verifyTelrPayment(telrRef) {
+    Log.info('Telr', 'verifyPayment → start', { ref: telrRef });
+    const body = {
+      method: 'check',
+      store: TELR_STORE_ID,
+      authkey: TELR_AUTH_KEY,
+      order: { ref: telrRef }
+    };
+    const resp = await fetch(TELR_PX + '/gateway/order.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!resp.ok) throw new Error('Telr verification failed (HTTP ' + resp.status + ')');
+    const data = await resp.json();
+    const status = data.order?.status || data.status || {};
+    Log.info('Telr', 'verifyPayment ✓', { ref: telrRef, code: status.code, text: status.text });
+    return { code: parseInt(status.code, 10), text: status.text || '' };
+  }
+
+  /** Check if a provider is a Telr provider (by name or code) */
+  function isTelrProvider(provider) {
+    if (!provider) return false;
+    const name = String(provider.name || '').toLowerCase();
+    const code = Array.isArray(provider.code) ? String(provider.code[0] || '') : String(provider.code || '');
+    return /telr/i.test(name) || /telr/i.test(code);
+  }
   async function finalizeOrderAfterPayment(orderId, markDoneSucceeded = false) {
     const oid = parseInt(orderId, 10);
     // If markDone already succeeded, the order IS confirmed and the invoice IS created.
@@ -1565,6 +1656,9 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     getPayProviders, getPayProvider, sortPaymentProviders, filterCheckoutProviders,
     pickDefaultPaymentProvider, buildPaymentProviderCandidates, prepareOrderForPayment,
     createTx, markDone, confirmOrderPayment, isOrderConfirmed,
+    // Telr Payment Gateway
+    createTelrSession, verifyTelrPayment, isTelrProvider,
+    TELR_STORE_ID,
     // Invoices
     createInvoice, getInvoices, getInvoice, updInvoice, invPdfUrl,
     // Loyalty

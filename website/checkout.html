@@ -702,37 +702,46 @@ async function saveCheckoutAddress(){
   }catch(e){ msg.textContent='❌ '+e.message; msg.style.color='#ED1C24'; }
 }
 
+var selIsTelr = false;
+
 async function loadPayProviders(){
   var el=document.getElementById('payEl');
   try{
     var r=await API.getPayProviders();
     var providers=API.filterCheckoutProviders(r.data||[]);
+    // Check if a Telr provider already exists from Odoo
+    var hasTelr = providers.some(function(p){ return API.isTelrProvider(p); });
+    // If not, inject a manual Telr option
+    if(!hasTelr){
+      providers.push({ id: 23, name: 'Telr (Card Payment)', code: ['telr'], display_message: 'Pay securely with Visa, Mastercard, AMEX' });
+    }
     var html='';
     providers.forEach(function(p,i){
-      var ic=p.code&&(p.code[0]==='cash_on_delivery'||p.name.toLowerCase().includes('cash'))?'💵':p.code&&p.code[0]==='apple_pay'?'🍎':'💳';
-      html+='<div class="pmeth'+(i===0?' on':'')+'" id="pm-'+p.id+'" onclick="selPay('+p.id+',\''+p.name.replace(/'/g,"\\'")+'\')">'
+      var isTelr = API.isTelrProvider(p);
+      var ic = isTelr ? '💳' : (p.code&&(p.code[0]==='cash_on_delivery'||p.name.toLowerCase().includes('cash'))?'💵':p.code&&p.code[0]==='apple_pay'?'🍎':'💳');
+      html+='<div class="pmeth'+(i===0?' on':'')+'" id="pm-'+p.id+'" onclick="selPay('+p.id+',\''+p.name.replace(/'/g,"\\'")+'\','+isTelr+')">'
         +'<span class="pmeth-ic">'+ic+'</span>'
         +'<div><div class="pmeth-lbl">'+p.name+'</div>'+(p.display_message?'<div class="pmeth-desc">'+p.display_message+'</div>':'')+'</div>'
         +'</div>';
     });
     if(!providers.length){
-      html='<div class="pmeth on" id="pm-22" onclick="selPay(22,\'Cash on Delivery\')">'
+      html='<div class="pmeth on" id="pm-22" onclick="selPay(22,\'Cash on Delivery\',false)">'
         +'<span class="pmeth-ic">💵</span><div><div class="pmeth-lbl">Cash on Delivery</div><div class="pmeth-desc">Pay when your order arrives</div></div></div>';
     }
     el.innerHTML=html;
     var def=API.pickDefaultPaymentProvider(providers);
-    if(def){selProvider=def.id;selProviderName=def.name;}
+    if(def){selProvider=def.id;selProviderName=def.name;selIsTelr=API.isTelrProvider(def);}
     API.log.info('Checkout','payment providers loaded',{selected:selProvider,name:selProviderName,all:providers.map(function(p){return p.id+':'+p.name;})});
   }catch(_){
-    el.innerHTML='<div class="pmeth on" id="pm-22" onclick="selPay(22,\'Cash on Delivery\')">'
+    el.innerHTML='<div class="pmeth on" id="pm-22" onclick="selPay(22,\'Cash on Delivery\',false)">'
       +'<span class="pmeth-ic">💵</span><div><div class="pmeth-lbl">Cash on Delivery</div><div class="pmeth-desc">Pay when your order arrives</div></div></div>';
-    selProvider=22; selProviderName='Cash on Delivery';
+    selProvider=22; selProviderName='Cash on Delivery'; selIsTelr=false;
   }
 }
-function selPay(id,name){
+function selPay(id,name,isTelr){
   document.querySelectorAll('.pmeth').forEach(function(m){m.classList.remove('on');});
   var el=document.getElementById('pm-'+id); if(el)el.classList.add('on');
-  selProvider=id; selProviderName=name;
+  selProvider=id; selProviderName=name; selIsTelr=!!isTelr;
   checkPlaceOrderBtnState();
 }
 
@@ -971,15 +980,52 @@ async function placeOrder(){
     note += ' | Payment Method: ' + selProviderName;
     await API.updOrder(parseInt(oid),{note:note,origin:'COOPDISCOUNT-WEB'}).catch(function(e){});
 
-    // 5–7) Confirm order on server (Postman: createTx → markDone → createInvoice)
-    log.info('Checkout','confirming payment',{orderId:oid,providerId:selProvider});
-    var payResult=await API.confirmOrderPayment(parseInt(oid), selProvider);
-    log.info('Checkout','payment confirmed',{orderId:oid,txId:payResult.txId,providerId:payResult.providerId});
+    // 5–7) Payment — branch for Telr vs existing flow
+    if(selIsTelr){
+      // ── TELR PAYMENT FLOW ──────────────────────────────────────────
+      log.info('Checkout','Telr flow → creating transaction',{orderId:oid,providerId:selProvider});
+      btn.textContent='⏳ Connecting to Telr...';
+      
+      // Step 5a: Create transaction in Odoo
+      var txResult = await API.createTx(parseInt(oid), selProvider);
+      var txId = txResult.txId;
+      log.info('Checkout','Telr → transaction created',{orderId:oid,txId:txId});
 
-    Cart.markPlaced(oid);
-    Cart.clear();
-    log.info('Checkout','placeOrder ✓ redirecting',{orderId:oid,orderName:orderName});
-    location.href='order-success.html?oid='+oid+'&name='+(orderName||'');
+      // Step 5b: Calculate total amount
+      var sub = Cart.total();
+      var totalDiscount = Math.max(0, Math.min((discountPromo||0)+(discountLoyalty||0), sub));
+      var vat = sub * 0.05;
+      var totalAmount = (sub + vat - totalDiscount).toFixed(2);
+
+      // Step 5c: Create Telr session
+      var telrSession = await API.createTelrSession(parseInt(oid), totalAmount, 'AED', 'Order ' + (orderName||oid));
+      log.info('Checkout','Telr → session created',{ref:telrSession.ref,url:telrSession.url});
+
+      // Step 5d: Save state for telr-return.html
+      sessionStorage.setItem('telr_checkout', JSON.stringify({
+        oid: oid,
+        txId: txId,
+        provId: selProvider,
+        telrRef: telrSession.ref,
+        orderName: orderName||''
+      }));
+
+      // Step 5e: Redirect to Telr hosted payment page
+      log.info('Checkout','Telr → redirecting to payment page');
+      location.href = telrSession.url;
+      return; // Stop execution — user is now on Telr's site
+
+    } else {
+      // ── EXISTING FLOW (COD / other) ────────────────────────────────
+      log.info('Checkout','confirming payment',{orderId:oid,providerId:selProvider});
+      var payResult=await API.confirmOrderPayment(parseInt(oid), selProvider);
+      log.info('Checkout','payment confirmed',{orderId:oid,txId:payResult.txId,providerId:payResult.providerId});
+
+      Cart.markPlaced(oid);
+      Cart.clear();
+      log.info('Checkout','placeOrder ✓ redirecting',{orderId:oid,orderName:orderName});
+      location.href='order-success.html?oid='+oid+'&name='+(orderName||'');
+    }
   }catch(e){
     var savedOid=Cart.oid();
     log.error('Checkout','placeOrder ✗',{message:e.message,savedOid:savedOid});

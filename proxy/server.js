@@ -1,6 +1,6 @@
 // Coop Discounts CORS Proxy v2.1 — Handles binary images + session cookies
 // Fixed: CORS origin allowlist, path allowlist, deprecated url.parse → WHATWG URL
-const http = require('http'), https = require('https');
+const http = require('http'), https = require('https'), querystring = require('querystring');
 const ODOO = process.env.ODOO_BASE || 'http://cooperp.freeddns.org:8076';
 const PORT = parseInt(process.env.PORT || '3001');
 
@@ -118,6 +118,47 @@ http.createServer((req, res) => {
   // Use WHATWG URL API instead of deprecated url.parse
   const reqUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const path = reqUrl.pathname;
+
+  // ── TELR PAYMENT GATEWAY PROXY ──────────────────────────────────
+  // Forward POST /telr/* to https://secure.telr.com/*
+  if (path.startsWith('/telr/')) {
+    const telrPath = '/' + path.replace(/^\/telr\//, '');
+    console.log(`[${new Date().toISOString().substr(11,8)}] 💳 TELR ${req.method} ${telrPath}`);
+    if (req.method !== 'POST') {
+      res.statusCode = 405;
+      res.setHeader('Content-Type','application/json');
+      return res.end(JSON.stringify({error:'Only POST allowed for Telr proxy'}));
+    }
+    let body = '';
+    req.on('data', d => body += d);
+    req.on('end', () => {
+      const opts = {
+        hostname: 'secure.telr.com',
+        port: 443,
+        path: telrPath,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+      };
+      const tr = https.request(opts, telrRes => {
+        const chunks = [];
+        telrRes.on('data', c => chunks.push(Buffer.from(c)));
+        telrRes.on('end', () => {
+          res.statusCode = telrRes.statusCode;
+          res.setHeader('Content-Type', telrRes.headers['content-type'] || 'application/json');
+          res.end(Buffer.concat(chunks));
+        });
+      });
+      tr.on('error', e => {
+        console.error('[Proxy] Telr error:', e.message);
+        res.statusCode = 502;
+        res.setHeader('Content-Type','application/json');
+        res.end(JSON.stringify({success:0,error:'Telr unreachable',detail:e.message}));
+      });
+      tr.write(body);
+      tr.end();
+    });
+    return;
+  }
 
   // Health check
   if (path === '/health' || path === '/proxy/health') {
