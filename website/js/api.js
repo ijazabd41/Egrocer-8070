@@ -41,10 +41,9 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   const PX = (() => {
     if (typeof location === 'undefined') return '/proxy';               // Node/SSR
     if (location.protocol === 'file:') return `http://localhost:${PROXY_PORT}/proxy`;  // opened from filesystem
-    // If served from the proxy's own port, use relative path
-    if (location.port === PROXY_PORT) return '/proxy';
-    // Otherwise point to the proxy on localhost
-    return `http://localhost:${PROXY_PORT}/proxy`;
+    if (location.hostname.includes('netlify.app')) return '/proxy';    // Netlify live site
+    if (location.port === PROXY_PORT) return '/proxy';                 // local proxy server
+    return `http://localhost:${PROXY_PORT}/proxy`;                     // local dev fallback
   })();
   const DB = _DB;
   const CACHE_VERSION = 'v1';
@@ -509,6 +508,8 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   const getFeatured    = () => GET('/api/deal-day-slider/4');
   const getFreshPick   = () => GET('/api/deal-day-slider/5');
   const getBrands      = () => GET('/api/deal-day-slider/8');
+  const getMobileAppPromo = () => GET('/api/deal-day-slider/12');
+  const getTrustElements  = () => GET('/api/deal-day-slider/13');
   const getAllDeals     = () => GET('/api/deal-day-slider');
   const getDealById    = id  => GET(`/api/deal-day-slider/${id}`);
 
@@ -1042,6 +1043,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   const TELR_PX = (() => {
     if (typeof location === 'undefined') return `http://localhost:${PROXY_PORT}/telr`;
     if (location.protocol === 'file:') return `http://localhost:${PROXY_PORT}/telr`;
+    if (location.hostname.includes('netlify.app')) return '/telr';  // Netlify – use built-in redirect
     if (location.port === PROXY_PORT) return '/telr';
     return `http://localhost:${PROXY_PORT}/telr`;
   })();
@@ -1070,12 +1072,17 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
         currency: currency || 'AED',
         description: description || 'Order ' + orderId
       },
+      // Return URLs: Telr requires these to redirect the user back.
       return: {
-        authorised: baseUrl + 'telr-return.html?status=authorised',
-        declined:   baseUrl + 'telr-return.html?status=declined',
-        cancelled:  baseUrl + 'telr-return.html?status=cancelled'
+        auth: baseUrl + 'telr-return.html?status=authorised',
+        decl: baseUrl + 'telr-return.html?status=declined',
+        can: baseUrl + 'telr-return.html?status=cancelled'
       }
     };
+
+    // Notification/Webhook URL is now configured directly in the Telr dashboard
+    // to avoid "Invalid webhook URL" errors for non-HTTPS or custom port URLs.
+
     const resp = await fetch(TELR_PX + '/gateway/order.json', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1566,7 +1573,9 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
         getHomeSliders(),
         getDealOfDay(),
         getBestSeller(),
-        getFeatured()
+        getFeatured(),
+        getMobileAppPromo(),
+        getTrustElements()
       ]);
     } catch (_) {}
   }
@@ -1594,9 +1603,13 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   }
 
   // ── COUNTRIES & STATES ────────────────────────────────────────
-  const getCountries = ()  => GET('/api/country');
+  const getCountries = ()  => GET('/api/country').then(r => {
+    const blocked = ['Iran', 'Cuba', 'North Korea', 'Democratic People\'s Republic of Korea', 'Sudan', 'South Sudan', 'Ukraine', 'Syria', 'Syrian Arab Republic', 'Russian Federation', 'Russia', 'Myanmar', 'Yemen'];
+    if(r.data) r.data = r.data.filter(c => !blocked.some(b => (c.name||'').toLowerCase().includes(b.toLowerCase())));
+    return r;
+  });
   const getCountry   = id  => GET(`/api/country/${id}`);
-  const getStates    = ()  => GET('/api/country-state');
+  const getStates    = (opts={})  => GET('/api/country-state', opts);
 
   // ── RIDER/DELIVERY APIs ───────────────────────────────────────
   const getRiderDeliveries = (limit=10, offset=0) => GET('/api/rider-delivery', { limit, Offset:offset });
@@ -1639,7 +1652,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     login, logout, register, updatePassword, forgotPassword,
     // Startup/Sliders
     getLogo, getHomeSliders, getDealOfDay, getBestSeller, getRecommended,
-    getFeatured, getFreshPick, getBrands, getAllDeals, getDealById,
+    getFeatured, getFreshPick, getBrands, getMobileAppPromo, getTrustElements, getAllDeals, getDealById,
     // Settings
     initSettings, getSettings,
     // Catalog (NEW endpoints)

@@ -173,7 +173,7 @@ const Cart=(()=>{
     sv(items);
   }
   async function add(prod){
-    if(prod.qty_available===0){toast('❌ Out of stock','err');return;}
+    if(prod.qty_available<=0 && prod.qty_available!==-1){toast('❌ Out of stock','err');return;}
     const items=raw();const ex=items.find(i=>i.product_id===prod.product_id);
     if(ex){
       ex.qty++;sv(items);
@@ -342,7 +342,7 @@ function buildCard(p){
   const imgSrc=p.image_1024?API.img(p.image_1024):API.prodImg(id);
   const varId=Array.isArray(p.product_variant_id)&&p.product_variant_id.length?p.product_variant_id[0].id:id;
   const qtyAvail=p.qty_available!==undefined?parseFloat(p.qty_available):-1;
-  const oos=qtyAvail===0;
+  const oos=qtyAvail<=0 && qtyAvail!==-1;
   const ribbon=Array.isArray(p.website_ribbon_id)&&p.website_ribbon_id.length?p.website_ribbon_id[0]?.name:null;
   const disc=std>price&&std>0?Math.round((1-price/std)*100):0;
   const pdEnc=encodeURIComponent(JSON.stringify({product_id:id,variant_id:varId,name,price,image:imgSrc,qty_available:qtyAvail}));
@@ -518,7 +518,7 @@ async function addToCart(json) {
       return;
     }
     const resolved = cartPayloadFromProduct(p);
-    if (resolved.qty_available === 0) {
+    if (resolved.qty_available <= 0 && resolved.qty_available !== -1) {
       toast('Out of stock', 'warn');
       return;
     }
@@ -622,7 +622,7 @@ async function enrichDealCards(items) {
     const price = parseFloat(p.list_price || 0);
     const std = parseFloat(p.standard_price || 0);
     const qty = p.qty_available !== undefined ? parseFloat(p.qty_available) : -1;
-    const oos = qty === 0;
+    const oos = qty <= 0 && qty !== -1;
     const payload = cartPayloadFromProduct(p);
     const pdEnc = encodeURIComponent(JSON.stringify(payload));
     const imgSrc = payload.image;

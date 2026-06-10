@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async function(){
   log.info('TelrReturn','start',{status:status,oid:oid,txId:txId,telrRef:telrRef});
 
   // Handle cancel/decline immediately
-  if(status === 'cancelled'){
+  if(status === 'cancelled' || status === 'cacelled'){
     showCancelled(oid);
     return;
   }
@@ -103,16 +103,18 @@ document.addEventListener('DOMContentLoaded', async function(){
     // Step 2: Call markDone to complete the order
     markStep('step2','active');
     try {
-      await API.markDone(parseInt(oid), parseInt(txId), parseInt(provId));
-      log.info('TelrReturn','markDone ✓',{oid:oid,txId:txId});
+      // Use Demo Gateway ID (6) as requested to ensure Odoo backend confirmation logic succeeds
+      var demoGatewayId = 6;
+      await API.markDone(parseInt(oid), parseInt(txId), demoGatewayId);
+      log.info('TelrReturn','markDone ✓',{oid:oid,txId:txId,usedDemoId:demoGatewayId});
     } catch(e) {
       log.warn('TelrReturn','markDone failed — checking if order already confirmed',{message:e.message});
       // markDone might fail if order is already confirmed — check
       try {
         var confirmed = await API.isOrderConfirmed(parseInt(oid));
         if(!confirmed){
-          // Try confirmOrderPayment as fallback
-          await API.confirmOrderPayment(parseInt(oid), parseInt(provId));
+          // Try confirmOrderPayment as fallback using Demo Gateway ID
+          await API.confirmOrderPayment(parseInt(oid), 6);
         }
       } catch(_){}
     }

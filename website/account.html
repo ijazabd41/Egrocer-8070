@@ -155,7 +155,7 @@
             <div class="fg"><label class="fl">ZIP / Postal Code</label><input class="fi" id="aZip" placeholder="00000"></div>
             <div class="fg">
               <label class="fl">Country</label>
-              <select class="fsel" id="aCountry"></select>
+              <select class="fsel" id="aCountry" onchange="if(window.loadStatesForCountry) loadStatesForCountry(this.value, 'aState')"></select>
             </div>
             <div class="fg">
               <label class="fl">State / Emirate</label>
@@ -261,6 +261,15 @@ async function saveProfile(){
   var msg = document.getElementById('profMsg');
   msg.style.display='none';
   var pid = API.myPid(); if(!pid) return;
+  var phone = document.getElementById('pPhone').value.trim();
+  var mobile = document.getElementById('pMobile').value.trim();
+  var rx = /^(?:\+971|00971|0)?(?:5[0124568]|[234679])\d{7}$/;
+  if(phone && !rx.test(phone.replace(/\s+/g,''))) {
+    msg.className='alert alert-err'; msg.textContent='❌ Please enter a valid UAE phone number'; msg.style.display='flex'; return;
+  }
+  if(mobile && !rx.test(mobile.replace(/\s+/g,''))) {
+    msg.className='alert alert-err'; msg.textContent='❌ Please enter a valid UAE mobile number'; msg.style.display='flex'; return;
+  }
   try{
     await API.updContact(pid, {
       name: document.getElementById('pName').value,
@@ -705,33 +714,49 @@ async function showNewAddressForm(){
   
   if(document.getElementById('aCountry').options.length === 0){
     try{
-      var [cr, sr] = await Promise.all([API.getCountries(), API.getStates()]);
+      var cr = await API.getCountries();
       var cSel = document.getElementById('aCountry');
       var countries = cr.data||[];
       var uae = countries.find(function(c){ return c.code==='AE'||c.name.includes('United Arab Emirates'); });
       cSel.innerHTML='<option value="">Select Country</option>'+countries.map(function(c){ return '<option value="'+c.id+'">'+c.name+'</option>'; }).join('');
       if(uae) cSel.value = uae.id;
       
-      var states = sr.data||[];
-      var sSel = document.getElementById('aState');
-      sSel.innerHTML='<option value="">Select State/Emirate</option>'+states.filter(function(s){ return !uae||(Array.isArray(s.country_id)?s.country_id[0]===uae.id:s.country_id===uae.id); }).map(function(s){ return '<option value="'+s.id+'">'+s.name+'</option>'; }).join('');
+      var ccId = cSel.value || uae?.id || 228;
+      await loadStatesForCountry(ccId, 'aState');
     }catch(_){}
   }
 }
+
+window.loadStatesForCountry = async function(countryId, targetId) {
+  var sSel = document.getElementById(targetId);
+  if(!sSel) return;
+  sSel.innerHTML = '<option value="">Loading...</option>';
+  try {
+    var sR = await API.getStates({ domain: `[('country_id','=',${parseInt(countryId)||0})]`, limit: 200 });
+    var states = sR.data || [];
+    sSel.innerHTML = '<option value="">Select State/Emirate</option>' + states.map(function(s){return '<option value="'+s.id+'">'+s.name+'</option>';}).join('');
+  } catch(_) {
+    sSel.innerHTML = '<option value="">Select State/Emirate</option>';
+  }
+};
 
 async function saveNewAddress(){
   var pid = API.myPid(); if(!pid)return;
   var msg = document.getElementById('addrMsg');
   var name = document.getElementById('aName').value.trim();
   var street = document.getElementById('aStreet').value.trim();
+  var phone = document.getElementById('aPhone').value.trim();
   if(!name || !street){ msg.textContent='❌ Name and Street are required'; msg.style.color='var(--red)'; return; }
+  if(phone && !/^(?:\+971|00971|0)?(?:5[0124568]|[234679])\d{7}$/.test(phone.replace(/\s+/g,''))) {
+    msg.textContent='❌ Please enter a valid UAE phone number'; msg.style.color='var(--red)'; return;
+  }
   
   msg.textContent='⏳ Saving...'; msg.style.color='#9ca3af';
   try {
     var payload = {
       parent_id: pid,
       name: name,
-      phone: document.getElementById('aPhone').value.trim(),
+      phone: phone,
       street: street,
       street2: document.getElementById('aStreet2').value.trim(),
       city: document.getElementById('aCity').value.trim(),

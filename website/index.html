@@ -66,6 +66,7 @@
     <div class="skel" style="min-width:88px;height:112px;flex-shrink:0"></div>
     <div class="skel" style="min-width:88px;height:112px;flex-shrink:0"></div>
     <div class="skel" style="min-width:88px;height:112px;flex-shrink:0"></div>
+    <div class="skel" style="min-width:88px;height:112px;flex-shrink:0"></div>
   </div>
 </div></section>
 
@@ -115,6 +116,15 @@
   </div>
 </div></section>
 
+<!-- NEW: MOBILE APP PROMOTION (Hardcoded Banner) -->
+<section class="sec" id="appPromoSec" style="padding:10px 0">
+  <div class="ctr">
+    <div style="max-width:800px;margin:0 auto;border-radius:16px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
+      <img src="img/mobile-promo.png" alt="Shop on the App or WhatsApp" style="width:100%;height:auto;display:block">
+    </div>
+  </div>
+</section>
+
 <!-- ⑤ RECOMMENDED — from /api/deal-day-slider/3 -->
 <section class="sec"><div class="ctr">
   <div class="deal-box">
@@ -131,6 +141,38 @@
     </div>
   </div>
 </div></section>
+
+<!-- NEW: COOP MEMBERSHIP BENEFITS (Hardcoded) -->
+<section class="sec" style="background:linear-gradient(135deg,#fdfbfb 0%,#ebedee 100%);padding:40px 0;margin:20px 0">
+  <div class="ctr">
+    <div style="text-align:center;margin-bottom:24px">
+      <h2 style="font-size:24px;font-weight:900;color:#111">💎 Coop Membership Benefits</h2>
+      <p style="color:#6b7280;margin-top:6px;font-size:14px">Most cooperative shoppers look for these exclusive perks.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:20px">
+      <div style="background:#fff;padding:24px;border-radius:16px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
+        <div style="font-size:32px;margin-bottom:12px">🎁</div>
+        <h3 style="font-weight:800;font-size:16px;margin-bottom:6px">Reward Points</h3>
+        <p style="font-size:13px;color:#6b7280">Earn points on every purchase.</p>
+      </div>
+      <div style="background:#fff;padding:24px;border-radius:16px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
+        <div style="font-size:32px;margin-bottom:12px">💸</div>
+        <h3 style="font-weight:800;font-size:16px;margin-bottom:6px">Cashback</h3>
+        <p style="font-size:13px;color:#6b7280">Get money back in your wallet.</p>
+      </div>
+      <div style="background:#fff;padding:24px;border-radius:16px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
+        <div style="font-size:32px;margin-bottom:12px">🏷️</div>
+        <h3 style="font-weight:800;font-size:16px;margin-bottom:6px">Exclusive Discounts</h3>
+        <p style="font-size:13px;color:#6b7280">Special offers just for you.</p>
+      </div>
+      <div style="background:#fff;padding:24px;border-radius:16px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
+        <div style="font-size:32px;margin-bottom:12px">⭐</div>
+        <h3 style="font-weight:800;font-size:16px;margin-bottom:6px">Member Pricing</h3>
+        <p style="font-size:13px;color:#6b7280">Unlock special lower prices.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- ⑥ FEATURED PRODUCTS — from /api/deal-day-slider/4 -->
 <section class="sec sec-w"><div class="ctr">
@@ -171,6 +213,22 @@
   <div class="sec-hd"><h2 class="sec-ttl">Emarati Items</h2><a href="shop.html" class="see-all">All →</a></div>
   <div class="b-scroll" id="brandRow"></div>
 </div></section>
+
+<!-- NEW: TRUST BUILDING ELEMENTS (ID 13) -->
+<section class="sec" id="trustSec" style="background:#fff;padding:30px 0;border-top:1px solid #eee">
+  <div class="ctr" style="text-align:center">
+    <h3 style="font-size:16px;font-weight:800;margin-bottom:16px;color:#374151">Secure & Trusted Checkout</h3>
+    <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;align-items:center">
+      <div style="display:flex;align-items:center;gap:6px;font-weight:700;font-size:14px;color:#065f46;background:#d1fae5;padding:6px 12px;border-radius:50px">🔒 SSL Secure</div>
+      <div style="font-weight:800;font-size:24px;color:#1a1a5c;font-style:italic">VISA</div>
+      <div style="font-weight:800;font-size:24px;color:#eb001b">Mastercard</div>
+      <div style="font-weight:800;font-size:20px;color:#000"> Pay</div>
+      <div style="font-weight:800;font-size:20px;color:#5f6368">G Pay</div>
+      <div style="font-weight:900;font-size:20px;color:#3eedbf;background:#000;padding:2px 10px;border-radius:6px">tabby</div>
+      <div style="font-weight:900;font-size:20px;color:#fff;background:#f36c50;padding:2px 10px;border-radius:6px">tamara</div>
+    </div>
+  </div>
+</section>
 
 <!-- ⑨ ALL PRODUCTS GRID -->
 <section class="sec"><div class="ctr">
@@ -313,7 +371,9 @@ document.addEventListener('DOMContentLoaded', function() {
     API.getFeatured(),      // 5 - slider 4
     API.getFreshPick(),     // 6 - slider 5
     API.getBrands(),        // 7 - slider 8
-    API.getProds({limit:10}) // 8 - all products
+    API.getProds({limit:10}), // 8 - all products
+    API.getMobileAppPromo(),// 9 - app promo (id 12)
+    API.getTrustElements()  // 10 - trust elements (id 13)
   ]).then(function(results) {
 
     // ① HOME SLIDER — slider 9 → image_ids[].image_url
@@ -401,6 +461,11 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('allGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#9ca3af">Could not load products. Check proxy connection.</div>';
     }
 
+    // ⑩ MOBILE APP PROMO
+    // (Now using static banner from img/mobile-promo.png)
+
+    // ⑪ TRUST ELEMENTS
+    // (Image removed per user request)
 
     Bar.done();
   });

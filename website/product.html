@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async function(){
 
     // Stock
     var qtyAvail = pdData.qty_available !== undefined ? parseFloat(pdData.qty_available) : -1;
-    var oos = qtyAvail === 0;
+    var oos = qtyAvail <= 0 && qtyAvail !== -1;
     var stockEl = document.getElementById('pdStock');
     if(oos){
       stockEl.innerHTML='<span class="os os-cancel">Out of Stock</span>';
@@ -202,7 +202,7 @@ function updatePdCartState(){
   if(!sec) return;
 
   var qtyAvail = pdData.qty_available !== undefined ? parseFloat(pdData.qty_available) : -1;
-  var oos = qtyAvail === 0;
+  var oos = qtyAvail <= 0 && qtyAvail !== -1;
 
   if (oos) {
     sec.innerHTML = '';

@@ -1,0 +1,11 @@
+[[redirects]]
+  from = "/proxy/*"
+  to = "http://cooperp.freeddns.org:8076/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/telr/*"
+  to = "https://secure.telr.com/:splat"
+  status = 200
+  force = true

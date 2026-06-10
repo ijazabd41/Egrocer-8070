@@ -222,20 +222,25 @@ function buildFooter(){
   <div><h4 style="font-size:12px;font-weight:800;color:#fff;margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.08)">Quick Links</h4>
     <div class="ft-links"><a href="index.html">Home</a><a href="shop.html">Shop All</a><a href="offers.html">Hot Deals</a><a href="account.html">My Account</a><a href="track-order.html">Track Order</a></div></div>
   <div><h4 style="font-size:12px;font-weight:800;color:#fff;margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.08)">Support</h4>
-    <div class="ft-links"><a href="contact.html">Contact Us</a><a href="faq.html">FAQs</a><a href="about.html">About Us</a><a href="faq.html">Returns</a><a href="faq.html">Privacy Policy</a></div></div>
-  <div><h4 style="font-size:12px;font-weight:800;color:#fff;margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.08)">Find Us</h4>
-    <a href="https://maps.google.com/?q=Al+Ghandi+Complex+Nadd+Al+Hamar+Dubai" target="_blank" style="display:flex;align-items:center;justify-content:center;background:#1e1e1e;border-radius:12px;height:90px;color:rgba(255,255,255,.5);font-size:12px;text-decoration:none">
-      <div style="text-align:center"><div style="font-size:24px;margin-bottom:4px">📍</div><div>Google Maps</div></div>
-    </a>
-    <div style="display:flex;gap:7px;margin-top:11px">
-      <a href="#" style="width:34px;height:34px;background:rgba(255,255,255,.08);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;text-decoration:none" onmouseover="this.style.background='rgba(245,197,24,.2)'" onmouseout="this.style.background='rgba(255,255,255,.08)'">📘</a>
-      <a href="#" style="width:34px;height:34px;background:rgba(255,255,255,.08);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;text-decoration:none" onmouseover="this.style.background='rgba(245,197,24,.2)'" onmouseout="this.style.background='rgba(255,255,255,.08)'">📸</a>
-      <a href="https://wa.me/971555944719" target="_blank" style="width:34px;height:34px;background:rgba(255,255,255,.08);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;text-decoration:none" onmouseover="this.style.background='rgba(245,197,24,.2)'" onmouseout="this.style.background='rgba(255,255,255,.08)'">💬</a>
+    <div class="ft-links">
+      <a href="contact.html">Contact Us</a>
+      <a href="faq.html">FAQs</a>
+      <a href="about.html">About Us</a>
+      <a href="refund-policy.html">Return & Refund Policy</a>
+      <a href="cancellation-policy.html">Cancellation Policy</a>
+    </div>
+  </div>
+  <div><h4 style="font-size:12px;font-weight:800;color:#fff;margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.08)">Legal</h4>
+    <div class="ft-links">
+      <a href="terms-and-conditions.html">Terms & Conditions</a>
+      <a href="privacy-policy.html">Privacy Policy</a>
+      <a href="payment-policy.html">Payment Policy</a>
+      <a href="pricing-and-description.html">Pricing & Product Information</a>
     </div>
   </div>
 </div></div>
 <div class="ctr"><div class="ft-bot">
-  <span>© 2025 Coop Discounts – Best Coop Discounts L.L.C. All rights reserved.</span>
+  <span>© 2025 Coop Discounts – Best Coop Discounts LLC, United Arab Emirates. All rights reserved.</span>
   <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
     <span style="font-size:10px;color:rgba(255,255,255,.35)">We accept:</span>
     <span class="pt">VISA</span><span class="pt">MC</span><span class="pt">AMEX</span><span class="pt">Apple Pay</span><span class="pt">COD</span>

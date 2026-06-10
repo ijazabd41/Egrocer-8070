@@ -5,6 +5,40 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>Checkout – Coop Discounts</title>
 <link rel="stylesheet" href="css/style.css?v=13.0">
+<style>
+/* ── Checkout Skeleton Loader ──────────────────────────────── */
+#chkSkeleton {
+  position:absolute; inset:0; background:#fff; z-index:20;
+  padding:20px 0; border-radius:14px;
+  pointer-events:none;
+}
+.sk-block {
+  background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.4s infinite;
+  border-radius: 8px;
+}
+@keyframes sk-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+/* Step tabs skeleton */
+.sk-tabs { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+.sk-tab  { height:34px; border-radius:8px; }
+/* Delivery card skeletons */
+.sk-card { height:68px; margin-bottom:10px; border-radius:12px; }
+/* Summary skeleton (right col) */
+.sk-sum-line { height:18px; margin-bottom:10px; border-radius:6px; }
+/* Fade-out transition */
+#chkSkeleton.sk-hide {
+  animation: sk-fadeout 0.4s ease forwards;
+}
+@keyframes sk-fadeout {
+  to { opacity:0; pointer-events:none; }
+}
+/* Position wrapper so skeleton can be absolute and push footer down */
+.chk-sk-wrap { position:relative; min-height: 650px; }
+</style>
 </head>
 <body>
 <div id="site-header"></div>
@@ -16,7 +50,33 @@
 <div style="display:grid;grid-template-columns:1fr 360px;gap:22px;align-items:start" class="chk-layout">
 
 <!-- LEFT -->
-<div>
+<div class="chk-sk-wrap">
+
+<!-- SKELETON OVERLAY: shown until delivery methods & summary load -->
+<div id="chkSkeleton">
+  <!-- Step tab skeletons -->
+  <div class="sk-tabs">
+    <div class="sk-block sk-tab" style="width:140px"></div>
+    <div class="sk-block sk-tab" style="width:110px"></div>
+    <div class="sk-block sk-tab" style="width:160px"></div>
+  </div>
+  <!-- Section card skeleton -->
+  <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:16px">
+    <div class="sk-block" style="height:22px;width:160px;margin-bottom:14px"></div>
+    <div class="sk-block sk-card"></div>
+    <div class="sk-block sk-card"></div>
+    <div class="sk-block sk-card"></div>
+    <div class="sk-block sk-card"></div>
+    <div class="sk-block sk-card"></div>
+    <div class="sk-block sk-card"></div>
+    <div class="sk-block sk-card" style="opacity:.6"></div>
+  </div>
+  <!-- Next button skeleton -->
+  <div style="display:flex;justify-content:flex-end">
+    <div class="sk-block" style="height:38px;width:160px;border-radius:8px"></div>
+  </div>
+</div>
+<!-- /SKELETON -->
   <div id="loginReminder" style="display:none" class="alert alert-info">
     🔐 <a href="login.html?next=checkout.html" style="color:#a01820;font-weight:700">Sign in</a> for faster checkout & order history
   </div>
@@ -74,7 +134,7 @@
         <div class="fg full"><label class="fl">Street 2 (Apt / Villa)</label><input class="fi" id="addr2" placeholder="Apartment / Villa / Floor"></div>
         <div class="fg"><label class="fl">City</label><input class="fi" id="city" placeholder="Dubai"></div>
         <div class="fg"><label class="fl">ZIP / Postal Code</label><input class="fi" id="zip" placeholder="00000"></div>
-        <div class="fg"><label class="fl">Country</label><select class="fsel" id="country"><option value="">Loading...</option></select></div>
+        <div class="fg"><label class="fl">Country</label><select class="fsel" id="country" onchange="if(window.loadStatesForCountry) loadStatesForCountry(this.value, 'state')"><option value="">Loading...</option></select></div>
         <div class="fg"><label class="fl">State / Emirate</label><select class="fsel" id="state"><option value="">Loading...</option></select></div>
         <div class="fg"><label class="fl">Type</label><select class="fsel" id="addrType"><option value="delivery">Delivery</option><option value="invoice">Invoice</option></select></div>
       </div>
@@ -414,7 +474,14 @@ document.addEventListener('DOMContentLoaded', async function(){
 
   renderSummary();
   loadPayProviders();
-  loadDeliveryMethods();
+  // Hide skeleton once delivery methods have loaded
+  loadDeliveryMethods().finally(function(){
+    var sk = document.getElementById('chkSkeleton');
+    if(sk){
+      sk.classList.add('sk-hide');
+      setTimeout(function(){ sk.style.display='none'; }, 420);
+    }
+  });
 
 // Auto-fetch best loyalty coupon if logged in
   var preCoupon = new URLSearchParams(location.search).get('coupon');
@@ -562,15 +629,22 @@ async function loadCountriesStates(){
     var uae=countries.find(function(c){return c.name==='United Arab Emirates'||c.id===228;});
     if(uae) cSel.value=uae.id;
   }catch(_){ document.getElementById('country').innerHTML='<option value="228">United Arab Emirates</option>'; }
-  try{
-    var sR=await API.getStates();
-    var states=sR.data||[];
-    var sSel=document.getElementById('state');
-    var ccId=parseInt(document.getElementById('country').value)||228;
-    var filtered=states.filter(function(s){return Array.isArray(s.country_id)?s.country_id[0]===ccId:s.country_id===ccId;});
-    sSel.innerHTML='<option value="">Select Emirate</option>'+(filtered.length?filtered:states).map(function(s){return '<option value="'+s.id+'">'+s.name+'</option>';}).join('');
-  }catch(_){ document.getElementById('state').innerHTML='<option value="">Dubai</option>'; }
+  var ccId = document.getElementById('country').value || 228;
+  await loadStatesForCountry(ccId, 'state');
 }
+
+window.loadStatesForCountry = async function(countryId, targetId) {
+  var sSel = document.getElementById(targetId);
+  if(!sSel) return;
+  sSel.innerHTML = '<option value="">Loading...</option>';
+  try {
+    var sR = await API.getStates({ domain: `[('country_id','=',${parseInt(countryId)||0})]`, limit: 200 });
+    var states = sR.data || [];
+    sSel.innerHTML = '<option value="">Select Emirate/State</option>' + states.map(function(s){return '<option value="'+s.id+'">'+s.name+'</option>';}).join('');
+  } catch(_) {
+    sSel.innerHTML = '<option value="">Select Emirate/State</option>';
+  }
+};
 
 function renderSummary(){
   var items=Cart.raw(), sub=Cart.total();
@@ -677,14 +751,18 @@ async function saveCheckoutAddress(){
   var msg = document.getElementById('addrMsg');
   var name = document.getElementById('fn').value.trim();
   var street = document.getElementById('addr').value.trim();
+  var phone = document.getElementById('ph').value.trim();
   if(!name || !street){ msg.textContent='❌ Name and Street are required'; msg.style.color='var(--red)'; return; }
+  if(phone && !/^(?:\+971|00971|0)?(?:5[0124568]|[234679])\d{7}$/.test(phone.replace(/\s+/g,''))) {
+    msg.textContent='❌ Please enter a valid UAE phone number'; msg.style.color='var(--red)'; return;
+  }
   
   msg.textContent='⏳ Saving address...'; msg.style.color='#9ca3af';
   try {
     var payload = {
       parent_id: pid,
       name: name,
-      phone: document.getElementById('ph').value.trim(),
+      phone: phone,
       street: street,
       street2: document.getElementById('addr2').value.trim(),
       city: document.getElementById('city').value.trim(),
@@ -857,6 +935,12 @@ async function placeOrder(){
   if(contact.isStore){
     if(!contact.fn||!contact.ph){
       errEl.textContent='❌ Please enter your name and phone in the pickup contact section below.';
+      errEl.style.display='flex';
+      focusPickupContactMissing(contact);
+      return;
+    }
+    if(contact.ph && !/^(?:\+971|00971|0)?(?:5[0124568]|[234679])\d{7}$/.test(contact.ph.replace(/\s+/g,''))) {
+      errEl.textContent='❌ Please enter a valid UAE phone number for pickup contact.';
       errEl.style.display='flex';
       focusPickupContactMissing(contact);
       return;
