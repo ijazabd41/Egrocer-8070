@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CD.COM — Delivery Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cd_dashboard.css">
+<script src="js/error-logger.js?v=1.0"></script>
+<script src="cd_web_api.js"></script>
+<style>
+:root{--bg:#060D1A;--sidebar:#0D1B2A;--card:#0F1E30;--border:rgba(255,255,255,.08);--primary:#E62C31;
+--text:#F0F4F8;--text-mid:#94A3B8;--text-soft:#4A5568;--nav-active:rgba(230,44,49,.1);--font:'Inter',sans-serif;}
+/* Web6 dark overrides */
+.data-table th,.data-table td{border-bottom-color:rgba(255,255,255,.06);}
+.del-row{border-bottom-color:rgba(255,255,255,.06);}
+.mini-stat{border-right-color:rgba(255,255,255,.06);}
+input,select{background:var(--card)!important;color:var(--text)!important;border-color:rgba(255,255,255,.15)!important;}
+input::placeholder{color:var(--text-soft)!important;}
+.otp-box{background:var(--card)!important;color:var(--text)!important;}
+.role-toggle{display:flex;background:var(--border);border-radius:8px;padding:3px;gap:2px;margin-left:auto}
+.rt-btn{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-mid);transition:.15s;border:none;background:transparent}
+.rt-btn.active{background:var(--primary);color:#fff}
+.del-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.del-row:last-child{border-bottom:none}
+.del-av{width:38px;height:38px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.otp-step{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
+.otp-step.done{background:#F0FDF4;border-color:rgba(22,163,74,.3)}
+.otp-step.active{border-color:var(--primary)}
+.step-num{width:26px;height:26px;border-radius:50%;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.step-num.done-n{background:#16A34A;color:#fff}
+.step-num.active-n{background:var(--primary);color:#fff}
+</style>
+</head>
+<body>
+<div class="dash-shell">
+<aside class="dash-sidebar">
+  <div class="sb-logo">CD<span>.COM</span></div>
+  <div class="sb-user">
+    <div class="sb-avatar" id="sbav">D</div>
+    <div><div class="sb-name" id="sbname">—</div><div class="sb-role" id="sbrole">Delivery</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Delivery</div>
+    <a class="sb-item active" href="#"><span class="icon">🚚</span>Dashboard</a>
+    <a class="sb-item" href="#" onclick="showView('manager')"><span class="icon">📋</span>All Deliveries</a>
+    <a class="sb-item" href="#" onclick="showView('rider-unassigned')"><span class="icon">🔓</span>Available Pool</a>
+    <a class="sb-item" href="#" onclick="showView('rider-mine')"><span class="icon">📦</span>My Deliveries</a>
+    <div class="sb-section" style="margin-top:8px">Actions</div>
+    <a class="sb-item" href="#" onclick="showView('driver-perf')"><span class="icon">👷</span>Driver Performance</a>
+  </nav>
+  <div class="sb-footer"><div class="logout-link" onclick="CdApi.logout()">🚪&nbsp;Logout</div></div>
+</aside>
+<div class="dash-body">
+  <div class="dash-topbar">
+    <div><div class="tb-title" id="tb-title">Delivery Dashboard</div><div class="tb-sub" id="tb-sub">Real-time tracking</div></div>
+    <div class="tb-right">
+      <div class="role-toggle">
+        <button class="rt-btn active" onclick="setRole('manager',this)">Manager View</button>
+        <button class="rt-btn" onclick="setRole('rider',this)">Rider View</button>
+      </div>
+      <button class="tb-btn" onclick="loadCurrent()">🔄</button>
+    </div>
+  </div>
+  <div class="dash-content">
+    <div id="err" class="error-msg" style="display:none"></div>
+
+    <!-- Stats row - always visible -->
+    <div class="mini-stats" id="stats-row">
+      <div class="mini-stat"><div class="val" id="st-total"    style="color:#E62C31">—</div><div class="lbl">Total Today</div></div>
+      <div class="mini-stat"><div class="val" id="st-unassign" style="color:#DC2626">—</div><div class="lbl">Unassigned</div></div>
+      <div class="mini-stat"><div class="val" id="st-transit"  style="color:#F59E0B">—</div><div class="lbl">In Transit</div></div>
+      <div class="mini-stat"><div class="val" id="st-done"     style="color:#16A34A">—</div><div class="lbl">Delivered</div></div>
+      <div class="mini-stat"><div class="val" id="st-cancel"   style="color:#94A3B8">—</div><div class="lbl">Cancelled</div></div>
+    </div>
+
+    <!-- MANAGER VIEW -->
+    <div id="view-manager">
+      <div class="chart-row chart-row-2">
+        <div class="card">
+          <div class="card-head">
+            <div><div class="card-title">📋 All Deliveries</div><div class="card-sub" id="del-count">Loading...</div></div>
+            <div style="display:flex;gap:6px">
+              <span class="pill f-chip active" onclick="filterDel('',this)">All</span>
+              <span class="pill f-chip" onclick="filterDel('[(&quot;user_id&quot;,&quot;=&quot;,False)]',this)" style="background:rgba(220,38,38,.1);color:#DC2626">Unassigned</span>
+              <span class="pill f-chip" onclick="filterDel('[(&quot;state&quot;,&quot;=&quot;,&quot;done&quot;)]',this)" style="background:rgba(22,163,74,.1);color:#16A34A">Done</span>
+            </div>
+          </div>
+          <div id="del-list" style="max-height:420px;overflow-y:auto"></div>
+          <button class="btn-outline" onclick="loadMoreDels()" id="del-more-btn" style="width:100%;margin-top:10px;display:none">Load More</button>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="card-head"><div><div class="card-title">📊 Status Breakdown</div></div></div>
+            <canvas id="c-status" height="180"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">👷 Drivers</div></div>
+            <div id="driver-list"><div style="text-align:center;padding:16px;color:var(--text-mid)">Loading...</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIDER — UNASSIGNED -->
+    <div id="view-rider-unassigned" style="display:none">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">🔓 Available Deliveries</div><div class="card-sub">Tap Accept to claim</div></div><button class="card-action" onclick="loadRiderUnassigned()">Refresh</button></div>
+        <div id="ru-list"></div>
+        <button class="btn-outline" onclick="loadMoreRU()" id="ru-more" style="width:100%;margin-top:10px;display:none">Load More</button>
+      </div>
+    </div>
+
+    <!-- RIDER — MY DELIVERIES -->
+    <div id="view-rider-mine" style="display:none">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">📦 My Deliveries</div><div class="card-sub">Tap a delivery to manage</div></div><button class="card-action" onclick="loadRiderMine()">Refresh</button></div>
+        <div id="rm-list"></div>
+      </div>
+    </div>
+
+    <!-- OTP DETAIL PANEL -->
+    <div id="view-otp-detail" style="display:none">
+      <button class="btn-outline" onclick="showView('rider-mine')" style="margin-bottom:14px">← Back to My Deliveries</button>
+      <div class="chart-row chart-row-equal">
+        <div class="card">
+          <div class="card-head"><div><div class="card-title" id="otp-del-name">Delivery</div><div class="card-sub" id="otp-del-cust">Customer</div></div></div>
+          <div id="otp-err" class="error-msg"></div>
+          <!-- Step 1 -->
+          <div class="otp-step" id="step1">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+              <div class="step-num active-n" id="sn1">1</div>
+              <div><b>Send OTP to Customer</b><div style="font-size:11px;color:var(--text-mid)">Customer receives 6-digit code by email</div></div>
+            </div>
+            <button class="btn-primary" onclick="doSendOtp()" id="btn-send" style="width:100%">📨 Send OTP</button>
+            <button class="btn-outline" onclick="doSendOtp()" id="btn-resend" style="width:100%;display:none">🔄 Resend OTP</button>
+          </div>
+          <!-- Step 2 -->
+          <div class="otp-step" id="step2">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+              <div class="step-num" id="sn2">2</div>
+              <div><b>Enter OTP from Customer</b><div style="font-size:11px;color:var(--text-mid)">Ask customer for the 6-digit code</div></div>
+            </div>
+            <div class="otp-row" id="otp-inputs" style="display:none">
+              <input class="otp-box" maxlength="1" type="text" id="oi0" oninput="otpInp(0)">
+              <input class="otp-box" maxlength="1" type="text" id="oi1" oninput="otpInp(1)">
+              <input class="otp-box" maxlength="1" type="text" id="oi2" oninput="otpInp(2)">
+              <input class="otp-box" maxlength="1" type="text" id="oi3" oninput="otpInp(3)">
+              <input class="otp-box" maxlength="1" type="text" id="oi4" oninput="otpInp(4)">
+              <input class="otp-box" maxlength="1" type="text" id="oi5" oninput="otpInp(5)">
+            </div>
+            <button class="btn-primary" onclick="doVerifyOtp()" id="btn-verify" style="width:100%;margin-top:10px;display:none">✅ Verify OTP</button>
+          </div>
+          <!-- Step 3 -->
+          <div class="otp-step" id="step3">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+              <div class="step-num" id="sn3">3</div>
+              <div><b>Confirm Delivery</b><div style="font-size:11px;color:var(--text-mid)">Mark as delivered after OTP verified</div></div>
+            </div>
+            <button class="btn-primary" onclick="doMarkDone()" id="btn-done" style="width:100%;display:none;background:#16A34A">✅ Mark as Delivered</button>
+          </div>
+          <!-- Not home -->
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn-danger" onclick="doCustomerWait()" style="flex:1">⏳ Customer Not Home</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">ℹ️ Delivery Info</div></div>
+          <div id="otp-del-info"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DRIVER PERFORMANCE -->
+    <div id="view-driver-perf" style="display:none">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">👷 Driver Performance</div><div class="card-sub">All drivers stats</div></div><button class="card-action" onclick="loadDriverPerf()">Refresh</button></div>
+        <table class="data-table">
+          <thead><tr><th>Driver</th><th>Delivered</th><th>On-Time %</th><th>Avg Min</th><th>Active</th></tr></thead>
+          <tbody id="dp-body"><tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-mid)">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- Assign Modal -->
+<div id="assign-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;display:none;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;padding:24px;width:400px;max-width:90vw">
+    <h3 id="assign-title" style="margin-bottom:4px">Assign Delivery</h3>
+    <p id="assign-sub" style="font-size:12px;color:var(--text-mid);margin-bottom:16px"></p>
+    <div id="assign-drivers"></div>
+    <button class="btn-outline" onclick="closeAssign()" style="width:100%;margin-top:10px">Cancel</button>
+  </div>
+</div>
+
+<script>
+let currentRole='manager', delOffset=0, ruOffset=0, allDels=[], drivers=[], otpDelId=0, statusChart;
+
+window.addEventListener('DOMContentLoaded',()=>{
+  CdApi.requireLogin();
+  const n=CdApi.userName(), role=CdApi.roleCode();
+  document.getElementById('sbname').textContent=n;
+  document.getElementById('sbav').textContent=n?n[0].toUpperCase():'D';
+  document.getElementById('sbrole').textContent=role.replace(/_/g,' ');
+  if(role==='delivery_boy'||role==='delivery_manager'&&false) setRole('rider',document.querySelector('.rt-btn:last-child'));
+  statusChart=new Chart(document.getElementById('c-status'),{
+    type:'doughnut',
+    data:{labels:['Unassigned','In Transit','Delivered','Cancelled'],
+      datasets:[{data:[0,0,0,0],backgroundColor:['#FCA5A5','#93C5FD','#86EFAC','#D1D5DB'],borderWidth:0}]},
+    options:{cutout:'60%',plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:6}}}}
+  });
+  loadStats(); loadCurrentView();
+  setInterval(() => {
+    if (document.hidden) return;
+    if (document.getElementById('view-otp-detail').style.display !== 'block') {
+      if (currentRole === 'manager' && delOffset <= 15) { loadCurrent(); }
+      else if (currentRole === 'rider' && ruOffset <= 10) { loadCurrent(); }
+    }
+  }, 15000);
+});
+
+function setRole(r,el){
+  currentRole=r;
+  document.querySelectorAll('.rt-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  loadCurrentView();
+}
+
+function showView(v){
+  ['manager','rider-unassigned','rider-mine','otp-detail','driver-perf'].forEach(x=>
+    document.getElementById('view-'+x).style.display='none');
+  document.getElementById('view-'+v).style.display='block';
+  document.getElementById('tb-title').textContent=
+    {manager:'Delivery Management','rider-unassigned':'Available Deliveries',
+     'rider-mine':'My Deliveries','otp-detail':'OTP Verification','driver-perf':'Driver Performance'}[v]||'Delivery';
+}
+
+function loadCurrent(){loadStats();loadCurrentView();}
+
+function loadCurrentView(){
+  if(currentRole==='manager'){showView('manager');loadManagerView();}
+  else{showView('rider-unassigned');loadRiderUnassigned();}
+}
+
+async function loadStats(){
+  try{
+    const r=await CdApi.deliveryDashboard();
+    if(r.error){document.getElementById('err').textContent='Stats: '+r.message;document.getElementById('err').style.display='block';return;}
+    const s=r.stats||r||{};
+    setText('st-total',  s.total_today    ||0);
+    setText('st-unassign',s.unassigned    ||0);
+    setText('st-transit', s.in_transit    ||0);
+    setText('st-done',    s.delivered_today||0);
+    setText('st-cancel',  s.cancelled_today||0);
+    statusChart.data.datasets[0].data=[s.unassigned||0,s.in_transit||0,s.delivered_today||0,s.cancelled_today||0];
+    statusChart.update();
+  }catch(e){}
+}
+
+async function loadManagerView(){
+  delOffset=0; allDels=[];
+  await loadDeliveries('');
+  await loadDrivers();
+}
+
+async function loadDeliveries(domain){
+  try{
+    const params={limit:15,offset:delOffset};
+    if(domain) params.domain=domain;
+    const r=await (domain?CdApi.allDeliveries(15,delOffset,domain):CdApi.allDeliveries(15,delOffset));
+    const data=r.results||[];
+    if(delOffset===0) allDels=data; else allDels=[...allDels,...data];
+    setText('del-count',allDels.length+' deliveries'+(r.total?' of '+r.total:''));
+    renderDelList(allDels);
+    document.getElementById('del-more-btn').style.display=data.length===15?'block':'none';
+    delOffset+=data.length;
+    if(r.error){document.getElementById('err').textContent=r.message;document.getElementById('err').style.display='block';}
+  }catch(e){}
+}
+
+function filterDel(domain,el){
+  document.querySelectorAll('#view-manager .f-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active'); delOffset=0; allDels=[];
+  loadDeliveries(domain.replace(/&quot;/g,'"'));
+}
+function loadMoreDels(){loadDeliveries('');}
+
+function renderDelList(dels){
+  const stateColor={done:'#16A34A',assigned:'#3B82F6',cancel:'#DC2626',confirmed:'#F59E0B'};
+  const stateLabel={done:'Delivered',assigned:'Assigned',cancel:'Cancelled',confirmed:'Ready'};
+  document.getElementById('del-list').innerHTML=dels.map(d=>{
+    const st=d.state||''; const pid=d.partner_id; const cust=Array.isArray(pid)?pid[pid.length-1]:pid||'Customer';
+    const uid=d.user_id; const driver=Array.isArray(uid)?uid[uid.length-1]:''; const unassigned=!uid||uid===false;
+    const c=stateColor[st]||'#94A3B8'; const l=stateLabel[st]||st;
+    return `<div class="del-row">
+      <div class="del-av">${String(cust)[0]?.toUpperCase()||'C'}</div>
+      <div style="flex:1">
+        <div style="font-size:12px;color:var(--text-soft)">${d.name||''}</div>
+        <div style="font-size:14px;font-weight:700">${cust}</div>
+        <div style="font-size:11px;color:${unassigned?'#DC2626':'var(--text-mid)'}">
+          ${unassigned?'⚠️ Unassigned':'🚚 '+driver}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <span class="pill" style="background:${c}22;color:${c}">${l}</span>
+        ${unassigned?`<button onclick="openAssign(${d.id},'${d.name||''}')" style="background:var(--primary);color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer">Assign</button>`:''}
+      </div>
+    </div>`;
+  }).join('')||'<div style="text-align:center;padding:20px;color:var(--text-mid)">No deliveries</div>';
+}
+
+async function loadDrivers(){
+  try{
+    const r=await CdApi.deliveryPersons();
+    drivers=r.results||[];
+    document.getElementById('driver-list').innerHTML=drivers.length?
+      drivers.slice(0,6).map(d=>`<div class="del-row">
+        <div class="del-av">${(d.name||'D')[0].toUpperCase()}</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:600">${d.name||''}</div><div style="font-size:11px;color:var(--text-mid)">Delivery Boy · ID: ${d.id}</div></div>
+        <span class="pill pill-green">Active</span>
+      </div>`).join('')
+      :'<div style="text-align:center;padding:16px;color:var(--text-mid)">No drivers</div>';
+  }catch(e){}
+}
+
+// Assign modal
+function openAssign(id, name){
+  document.getElementById('assign-title').textContent='Assign '+name;
+  document.getElementById('assign-sub').textContent='Select a delivery driver';
+  document.getElementById('assign-drivers').innerHTML=drivers.map(d=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div class="del-av">${(d.name||'D')[0].toUpperCase()}</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600">${d.name||''}</div></div>
+      <button onclick="doAssign(${id},${d.id},'${d.name||''}');closeAssign()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer">Assign</button>
+    </div>`).join('');
+  document.getElementById('assign-modal').style.display='flex';
+}
+function closeAssign(){document.getElementById('assign-modal').style.display='none';}
+
+async function doAssign(delId,driverId,driverName){
+  const r=await CdApi.assignDelivery(delId,driverId);
+  alert(r.status==='success'?`✅ Assigned to ${driverName}`:r.message||'Error');
+  loadDeliveries('');
+}
+
+// Rider — Unassigned
+let ruItems=[];
+async function loadRiderUnassigned(){
+  ruOffset=0;ruItems=[];
+  try{
+    const r=await CdApi.riderUnassigned(10,0);
+    ruItems=r.results||[];
+    renderRU(ruItems);
+    document.getElementById('ru-more').style.display=ruItems.length===10?'block':'none';
+    ruOffset=ruItems.length;
+  }catch(e){}
+}
+async function loadMoreRU(){
+  const r=await CdApi.riderUnassigned(10,ruOffset);
+  const d=r.results||[];
+  ruItems=[...ruItems,...d];
+  renderRU(ruItems);
+  ruOffset+=d.length;
+  if(d.length<10)document.getElementById('ru-more').style.display='none';
+}
+function renderRU(items){
+  document.getElementById('ru-list').innerHTML=items.map(d=>{
+    const pid=d.partner_id,cust=Array.isArray(pid)?pid[pid.length-1]:pid||'Customer';
+    return `<div class="del-row">
+      <div class="del-av">${String(cust)[0]?.toUpperCase()||'C'}</div>
+      <div style="flex:1"><div style="font-size:12px;color:var(--text-soft)">${d.name||''}</div><div style="font-size:14px;font-weight:700">${cust}</div></div>
+      <button onclick="doAccept(${d.id})" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer">Accept</button>
+    </div>`;
+  }).join('')||'<div style="text-align:center;padding:20px;color:var(--text-mid)">🎉 No available deliveries</div>';
+}
+async function doAccept(id){
+  const r=await CdApi.riderAccept(id,CdApi.userId());
+  if(r.id||r.status==='success'){alert('✅ Delivery accepted!');loadRiderUnassigned();}
+  else alert(r.message||'Could not accept');
+}
+
+// Rider — My Deliveries
+async function loadRiderMine(){
+  try{
+    const r=await CdApi.riderMyDeliveries(CdApi.userId(),15,0);
+    const d=r.results||[];
+    document.getElementById('rm-list').innerHTML=d.map(x=>{
+      const pid=x.partner_id,cust=Array.isArray(pid)?pid[pid.length-1]:pid||'Customer';
+      const done=x.state==='done';
+      return `<div class="del-row" style="cursor:${done?'default':'pointer'}" onclick="${done?'':'openOtp('+x.id+',\''+x.name+'\',\''+cust+'\')'}">
+        <div class="del-av" style="background:${done?'#16A34A':'var(--primary)'}">${String(cust)[0]?.toUpperCase()||'C'}</div>
+        <div style="flex:1"><div style="font-size:12px;color:var(--text-soft)">${x.name||''}</div><div style="font-size:14px;font-weight:700">${cust}</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <span class="pill ${done?'pill-green':'pill-blue'}">${done?'Delivered':'Manage →'}</span>
+        </div>
+      </div>`;
+    }).join('')||'<div style="text-align:center;padding:20px;color:var(--text-mid)">No deliveries assigned yet</div>';
+  }catch(e){}
+}
+
+// OTP Flow
+let otpSent=false, otpVerified=false;
+function openOtp(id,name,cust){
+  otpDelId=id; otpSent=false; otpVerified=false;
+  for(let i=0;i<6;i++){const el=document.getElementById('oi'+i);if(el)el.value='';}
+  document.getElementById('otp-del-name').textContent=name;
+  document.getElementById('otp-del-cust').textContent='Customer: '+cust;
+  document.getElementById('otp-del-info').innerHTML=`
+    <div style="font-size:13px;margin-bottom:8px"><b>Delivery ID:</b> ${id}</div>
+    <div style="font-size:13px;margin-bottom:8px"><b>Customer:</b> ${cust}</div>
+    <div style="font-size:13px"><b>Status:</b> Assigned</div>`;
+  resetSteps();
+  showView('otp-detail');
+}
+function resetSteps(){
+  ['step1','step2','step3'].forEach((s,i)=>{
+    document.getElementById(s).className='otp-step'+(i===0?' active':'');
+    document.getElementById('sn'+(i+1)).className='step-num'+(i===0?' active-n':'');
+  });
+  show('btn-send'); hide('btn-resend'); hide('otp-inputs'); hide('btn-verify'); hide('btn-done');
+}
+function otpInp(i){
+  const el=document.getElementById('oi'+i);
+  if(el.value&&i<5) document.getElementById('oi'+(i+1))?.focus();
+  const full=[0,1,2,3,4,5].map(j=>document.getElementById('oi'+j)?.value||'').join('');
+  document.getElementById('btn-verify').style.display=full.length===6?'block':'none';
+}
+async function doSendOtp(){
+  document.getElementById('btn-send').textContent='Sending...';
+  const r=await CdApi.riderSendOtp(otpDelId);
+  otpSent=true;
+  document.getElementById('step1').className='otp-step done';
+  document.getElementById('sn1').className='step-num done-n'; document.getElementById('sn1').textContent='✓';
+  document.getElementById('step2').className='otp-step active';
+  document.getElementById('sn2').className='step-num active-n';
+  hide('btn-send'); show('btn-resend');
+  show('otp-inputs'); document.getElementById('oi0').focus();
+  alert('📧 OTP sent to customer email');
+}
+async function doVerifyOtp(){
+  const otp=[0,1,2,3,4,5].map(i=>document.getElementById('oi'+i)?.value||'').join('');
+  document.getElementById('btn-verify').textContent='Verifying...';
+  const r=await CdApi.riderVerifyOtp(otpDelId,otp);
+  const ok=r.success===true||r.status==='success'||r.verified===true;
+  if(ok){
+    otpVerified=true;
+    document.getElementById('step2').className='otp-step done';
+    document.getElementById('sn2').className='step-num done-n'; document.getElementById('sn2').textContent='✓';
+    document.getElementById('step3').className='otp-step active';
+    document.getElementById('sn3').className='step-num active-n';
+    show('btn-done');
+    document.getElementById('otp-err').style.display='none';
+  }else{
+    document.getElementById('otp-err').textContent=r.message||'Invalid OTP. Try again.';
+    document.getElementById('otp-err').style.display='block';
+    document.getElementById('btn-verify').textContent='Verify OTP';
+  }
+}
+async function doMarkDone(){
+  document.getElementById('btn-done').textContent='Processing...';
+  const r=await CdApi.riderMarkDone(otpDelId,CdApi.userId());
+  const ok=r.success===true||r.state==='done'||r.status==='success';
+  if(ok){alert('🎉 Delivery marked as done!');showView('rider-mine');loadRiderMine();}
+  else{alert(r.message||'Error');document.getElementById('btn-done').textContent='Mark as Delivered ✅';}
+}
+async function doCustomerWait(){
+  const r=await CdApi.riderCustomerWait(otpDelId,CdApi.userId(),'Customer not available');
+  alert(r.status==='success'||r.message?r.message:'Status updated');
+}
+
+async function loadDriverPerf(){
+  try{
+    const r=await CdApi.deliveryPersons();
+    const drivers=r.results||[];
+    document.getElementById('dp-body').innerHTML=drivers.length?
+      drivers.map(d=>`<tr>
+        <td style="font-weight:600">${d.name||''}</td>
+        <td>—</td><td>—</td><td>—</td><td><span class="pill pill-green">Active</span></td>
+      </tr>`).join('')
+      :'<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text-mid)">No drivers</td></tr>';
+  }catch(e){}
+}
+
+function setText(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function show(id){const e=document.getElementById(id);if(e)e.style.display='block';}
+function hide(id){const e=document.getElementById(id);if(e)e.style.display='none';}
+</script>
+</body>
+</html>
