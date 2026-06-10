@@ -13,6 +13,7 @@ const CdApi = (() => {
   const BASE = (() => {
     if (typeof location === 'undefined') return '/proxy';
     if (location.protocol === 'file:') return `http://localhost:${PROXY_PORT}/proxy`;
+    if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return '/proxy.php'; // Deployed environment
     if (location.port === PROXY_PORT) return '/proxy';
     return `http://localhost:${PROXY_PORT}/proxy`;
   })();
