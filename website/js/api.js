@@ -41,7 +41,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   const PX = (() => {
     if (typeof location === 'undefined') return '/proxy';               // Node/SSR
     if (location.protocol === 'file:') return `http://localhost:${PROXY_PORT}/proxy`;  // opened from filesystem
-    if (location.hostname.includes('netlify.app')) return '/proxy';    // Netlify live site
+    if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return '/proxy'; // deployed
     if (location.port === PROXY_PORT) return '/proxy';                 // local proxy server
     return `http://localhost:${PROXY_PORT}/proxy`;                     // local dev fallback
   })();
@@ -1043,7 +1043,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   const TELR_PX = (() => {
     if (typeof location === 'undefined') return `http://localhost:${PROXY_PORT}/telr`;
     if (location.protocol === 'file:') return `http://localhost:${PROXY_PORT}/telr`;
-    if (location.hostname.includes('netlify.app')) return '/telr';  // Netlify – use built-in redirect
+    if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return '/telr'; // Deployed environment
     if (location.port === PROXY_PORT) return '/telr';
     return `http://localhost:${PROXY_PORT}/telr`;
   })();
