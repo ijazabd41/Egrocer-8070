@@ -33,7 +33,50 @@ function isAllowedPath(odooPath) {
   return ALLOWED_PATH_PREFIXES.some(prefix => odooPath.startsWith(prefix));
 }
 
-console.log(`\n🚀 CD Proxy v2.1  |  Odoo: ${ODOO}  |  Port: ${PORT}\n`);
+function parseOdooUrl(urlStr) {
+  const qIdx = urlStr.indexOf('?');
+  const pathname = qIdx === -1 ? urlStr : urlStr.slice(0, qIdx);
+  const qsStr = qIdx === -1 ? '' : urlStr.slice(qIdx + 1);
+  
+  const searchParams = new Map();
+  if (qsStr) {
+    qsStr.split('&').forEach(pair => {
+      const eqIdx = pair.indexOf('=');
+      if (eqIdx === -1) {
+        searchParams.set(pair, '');
+      } else {
+        const key = pair.slice(0, eqIdx);
+        const val = pair.slice(eqIdx + 1);
+        searchParams.set(key, val);
+      }
+    });
+  }
+  
+  return { pathname, searchParams };
+}
+
+function safeEncodePath(fullPath) {
+  const qIdx = fullPath.indexOf('?');
+  if (qIdx === -1) return fullPath;
+  const pathname = fullPath.slice(0, qIdx);
+  const qs = fullPath.slice(qIdx + 1);
+  const encodedQs = qs.split('&').map(pair => {
+    const eqIdx = pair.indexOf('=');
+    if (eqIdx === -1) return pair;
+    const key = pair.slice(0, eqIdx);
+    const val = pair.slice(eqIdx + 1);
+    const safeVal = val
+      .replace(/'/g, '%27')
+      .replace(/ /g, '%20')
+      .replace(/\(/g, '%28')
+      .replace(/\)/g, '%29')
+      .replace(/,/g, '%2C');
+    return `${key}=${safeVal}`;
+  }).join('&');
+  return `${pathname}?${encodedQs}`;
+}
+
+console.log(`\n🚀 CD Proxy v2.3  |  Odoo: ${ODOO}  |  Port: ${PORT}\n`);
 
 function cors(res, origin) {
   // Only reflect the origin if it's in the allowlist; otherwise omit the header
@@ -67,7 +110,8 @@ function fwd(res, odooPath, method, body, cookie, sessionToken) {
   if (body) hdrs['Content-Length'] = Buffer.byteLength(body);
 
   const defaultPort = isS ? 443 : 80;
-  const opts = { hostname: odooUrl.hostname, port: odooUrl.port || defaultPort, path: odooPath, method, headers: hdrs };
+  const safePath = safeEncodePath(odooPath);
+  const opts = { hostname: odooUrl.hostname, port: odooUrl.port || defaultPort, path: safePath, method, headers: hdrs };
   
   let r;
   try {
@@ -115,8 +159,8 @@ http.createServer((req, res) => {
   cors(res, req.headers['origin']);
   if (req.method === 'OPTIONS') { res.statusCode = 204; return res.end(); }
 
-  // Use WHATWG URL API instead of deprecated url.parse
-  const reqUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  // Use manual URL parser to handle unescaped characters without throwing
+  const reqUrl = parseOdooUrl(req.url);
   const path = reqUrl.pathname;
 
   // ── TELR PAYMENT GATEWAY PROXY ──────────────────────────────────
