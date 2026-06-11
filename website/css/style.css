@@ -116,7 +116,7 @@ input,select,textarea{font-family:inherit}
 [dir="rtl"] .user-menu-dd{right:auto;left:0}
 
 /* ── NAV ───────────────────────────────────────────────────── */
-.nav{background:var(--red)}
+.nav{background:var(--red);margin-bottom:15px}
 .nav-in{display:flex;align-items:stretch}
 .nav-cats-btn{display:flex;align-items:center;gap:8px;padding:13px 20px;background:rgba(0,0,0,.2);color:#fff;font-weight:700;font-size:13px;white-space:nowrap;cursor:pointer;border-right:1px solid rgba(255,255,255,.12);transition:background var(--t);flex-shrink:0;border:none;font-family:inherit}
 .nav-cats-btn:hover{background:rgba(0,0,0,.35)}
