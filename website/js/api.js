@@ -1072,11 +1072,11 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
         currency: currency || 'AED',
         description: description || 'Order ' + orderId
       },
-      // Return URLs: Telr requires these to redirect the user back.
+      // Return URLs: Telr requires these exact keys to redirect the user back.
       return: {
-        auth: baseUrl + 'telr-return.html?status=authorised',
-        decl: baseUrl + 'telr-return.html?status=declined',
-        can: baseUrl + 'telr-return.html?status=cancelled'
+        authorised: baseUrl + 'telr-return.html?status=authorised',
+        declined: baseUrl + 'telr-return.html?status=declined',
+        cancelled: baseUrl + 'telr-return.html?status=cancelled'
       }
     };
 
