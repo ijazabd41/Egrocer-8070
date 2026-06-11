@@ -39,14 +39,40 @@ if ($method === 'POST' || $method === 'PUT' || $method === 'PATCH') {
     curl_setopt($ch, CURLOPT_POSTFIELDS, $input);
 }
 
+$sessionToken = '';
+foreach (getallheaders() as $name => $value) {
+    $lowerName = strtolower($name);
+    if ($lowerName === 'x-session-token') {
+        $sessionToken = $value;
+    }
+}
+
 $headers = array();
 foreach (getallheaders() as $name => $value) {
     $lowerName = strtolower($name);
-    if ($lowerName !== 'host' && $lowerName !== 'content-length' && $lowerName !== 'connection') {
+    if ($lowerName !== 'host' && $lowerName !== 'content-length' && $lowerName !== 'connection' && $lowerName !== 'x-session-token') {
+        if ($lowerName === 'cookie' && $sessionToken) {
+            $value .= '; session_id=' . $sessionToken;
+            $sessionToken = ''; // prevent adding it twice
+        }
         $headers[] = "$name: $value";
     }
 }
+if ($sessionToken) {
+    $headers[] = "Cookie: session_id=$sessionToken";
+}
 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+$responseHeaders = array();
+curl_setopt($ch, CURLOPT_HEADERFUNCTION, function($curl, $header) use (&$responseHeaders) {
+    $len = strlen($header);
+    $headerParts = explode(':', $header, 2);
+    if (count($headerParts) < 2) return $len;
+    $name = strtolower(trim($headerParts[0]));
+    $responseHeaders[$name][] = trim($headerParts[1]);
+    return $len;
+});
+
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HEADER, false);
 
@@ -57,10 +83,26 @@ if (curl_errno($ch)) {
     $httpCode = 500;
     $response = json_encode(['error' => 'Proxy cURL Error: ' . curl_error($ch)]);
 }
-
 curl_close($ch);
 
+// Expose headers for frontend
+header('Access-Control-Expose-Headers: Set-Cookie, Content-Type, Content-Disposition, X-Set-Session-Token');
+
+if (isset($responseHeaders['set-cookie'])) {
+    foreach ($responseHeaders['set-cookie'] as $cookie) {
+        if (preg_match('/session_id=([^;]+)/', $cookie, $matches)) {
+            header('X-Set-Session-Token: ' . $matches[1]);
+        }
+        header('Set-Cookie: ' . $cookie, false);
+    }
+}
+
+if (isset($responseHeaders['content-type'])) {
+    header('Content-Type: ' . $responseHeaders['content-type'][0]);
+} else {
+    header('Content-Type: application/json');
+}
+
 http_response_code($httpCode);
-header('Content-Type: application/json');
 echo $response;
 ?>
