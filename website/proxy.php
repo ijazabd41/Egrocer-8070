@@ -48,7 +48,7 @@ foreach (getallheaders() as $name => $value) {
 $headers = array();
 foreach (getallheaders() as $name => $value) {
     $lowerName = strtolower($name);
-    if ($lowerName !== 'host' && $lowerName !== 'content-length' && $lowerName !== 'connection' && $lowerName !== 'x-session-token') {
+    if ($lowerName !== 'host' && $lowerName !== 'content-length' && $lowerName !== 'connection' && $lowerName !== 'x-session-token' && $lowerName !== 'accept-encoding') {
         if ($lowerName === 'cookie' && $sessionToken) {
             $value .= '; session_id=' . $sessionToken;
             $sessionToken = ''; // prevent adding it twice
@@ -60,6 +60,7 @@ if ($sessionToken) {
     $headers[] = "Cookie: session_id=$sessionToken";
 }
 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+curl_setopt($ch, CURLOPT_ENCODING, ""); // Automatically handle gzip/deflate decoding
 
 $responseHeaders = array();
 curl_setopt($ch, CURLOPT_HEADERFUNCTION, function($curl, $header) use (&$responseHeaders) {

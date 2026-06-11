@@ -42,11 +42,12 @@ if ($method === 'POST' || $method === 'PUT' || $method === 'PATCH') {
 $headers = array();
 foreach (getallheaders() as $name => $value) {
     $lowerName = strtolower($name);
-    if ($lowerName !== 'host' && $lowerName !== 'content-length' && $lowerName !== 'connection') {
+    if ($lowerName !== 'host' && $lowerName !== 'content-length' && $lowerName !== 'connection' && $lowerName !== 'accept-encoding') {
         $headers[] = "$name: $value";
     }
 }
 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+curl_setopt($ch, CURLOPT_ENCODING, ""); // Automatically handle gzip/deflate decoding
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HEADER, false);
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // For compatibility with some shared hosts
