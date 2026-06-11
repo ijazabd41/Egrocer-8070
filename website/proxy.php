@@ -10,18 +10,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// Get the path requested after /proxy.php/
-$pathInfo = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '';
-if (empty($pathInfo) && isset($_SERVER['ORIG_PATH_INFO'])) {
-    $pathInfo = $_SERVER['ORIG_PATH_INFO'];
-}
-// Fallback
-if (empty($pathInfo)) {
-    $uri = $_SERVER['REQUEST_URI'];
-    $parts = explode('proxy.php', $uri);
-    if (count($parts) > 1) {
-        $pathInfo = explode('?', $parts[1])[0];
-    }
+// Safe URL parsing from REQUEST_URI without Apache URL-decoding
+$uri = $_SERVER['REQUEST_URI'];
+$parsedUrl = parse_url($uri);
+$path = isset($parsedUrl['path']) ? $parsedUrl['path'] : '';
+$prefix = '/proxy.php';
+$pos = strpos($path, $prefix);
+if ($pos !== false) {
+    $pathInfo = substr($path, $pos + strlen($prefix));
+} else {
+    $pathInfo = $path; // Fallback
 }
 
 $targetUrl = 'http://cooperp.freeddns.org:8076' . $pathInfo;
