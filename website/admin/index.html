@@ -144,13 +144,16 @@ tr:hover td{background:#1e293b}
       <strong style="color:#e2e8f0">ID 12</strong>=Logo &nbsp; <strong style="color:#e2e8f0">9</strong>=Home Sliders &nbsp; <strong style="color:#e2e8f0">2</strong>=Deal Day &nbsp; <strong style="color:#e2e8f0">1</strong>=Best Seller &nbsp;
       <strong style="color:#e2e8f0">3</strong>=Recommended &nbsp; <strong style="color:#e2e8f0">4</strong>=Featured &nbsp; <strong style="color:#e2e8f0">5</strong>=Fresh Pick &nbsp; <strong style="color:#e2e8f0">8</strong>=Brands
     </div>
-    ${[['12','Logo (banner_image field)'],['9','Home Sliders (image_ids[].id)'],['2','Deal of Day'],['1','Best Sellers'],['3','Recommended'],['4','Featured'],['5','Fresh Pick'],['8','Shop By Brand']]
+    <div id="slider-list"></div>
+    <script>
+      document.getElementById('slider-list').innerHTML = [['12','Logo (banner_image field)'],['9','Home Sliders (image_ids[].id)'],['2','Deal of Day'],['1','Best Sellers'],['3','Recommended'],['4','Featured'],['5','Fresh Pick'],['8','Shop By Brand']]
       .map(([id,nm])=>`<div style="background:var(--dk);border:1px solid var(--dk3);border-radius:8px;padding:9px 12px;margin-bottom:7px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
         <span style="background:#164e63;color:#67e8f9;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;font-family:monospace">GET</span>
         <code style="font-size:10px;color:#67e8f9;flex:1">/proxy/api/deal-day-slider/${id}</code>
         <span style="font-size:10px;color:#94a3b8">${nm}</span>
         <button class="btn btn-g" style="padding:4px 10px;font-size:10px" onclick="qtest('/api/deal-day-slider/${id}')">Test</button>
-      </div>`).join('')}
+      </div>`).join('');
+    </script>
     <div class="json" id="startup-res"></div>
   </div>
 </div>
@@ -236,7 +239,7 @@ tr:hover td{background:#1e293b}
 <!-- CHECKOUT -->
 <div class="pg" id="pg-checkout">
   <h1 style="font-size:16px;font-weight:900;color:#f1f5f9;margin-bottom:14px">💳 Checkout & Payment</h1>
-  <div class="card"><button class="btn btn-g" onclick="qtest('/api/payment-provider',&quot;domain=[('state','in',['enabled','test'])]&quot;)">Get Payment Providers</button><div class="json" id="pay-res"></div></div>
+  <div class="card"><button class="btn btn-g" onclick="qtest('/api/payment-provider', 'domain=[(\'state\',\'in\',[\'enabled\',\'test\'])]')">Get Payment Providers</button><div class="json" id="pay-res"></div></div>
   <div class="card"><div class="ct">Create Transaction</div>
     <div class="r2"><div><label class="lbl">Order ID</label><input class="inp" id="tx-oid" placeholder="61"></div><div><label class="lbl">Provider ID</label><input class="inp" id="tx-prov" placeholder="22"></div></div>
     <button class="btn" onclick="testTx()">Create TX</button>
@@ -264,7 +267,7 @@ tr:hover td{background:#1e293b}
   <h1 style="font-size:16px;font-weight:900;color:#f1f5f9;margin-bottom:14px">🚚 Delivery / Stock</h1>
   <div class="card">
     <button class="btn" onclick="loadDeliveries()">🔄 Load Delivery Orders</button>
-    <button class="btn btn-g" onclick="qtest('/api/delivery-method/',&quot;user_id=2&quot;)">Delivery Methods</button>
+    <button class="btn btn-g" onclick="qtest('/api/delivery-method/', 'user_id=2')">Delivery Methods</button>
     <div id="delivTable" style="margin-top:10px"><div style="text-align:center;padding:18px;color:#64748b">Click Load</div></div>
   </div>
 </div>
@@ -300,10 +303,11 @@ tr:hover td{background:#1e293b}
 <div class="pg" id="pg-tester">
   <h1 style="font-size:16px;font-weight:900;color:#f1f5f9;margin-bottom:14px">🧪 Live API Tester</h1>
   <div class="card">
-    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">
-      ${[['Logo','/api/deal-day-slider/12',''],['HomeSliders','/api/deal-day-slider/9',''],['DealDay','/api/deal-day-slider/2',''],['BestSeller','/api/deal-day-slider/1',''],['Recommended','/api/deal-day-slider/3',''],['Featured','/api/deal-day-slider/4',''],['FreshPick','/api/deal-day-slider/5',''],['Brands','/api/deal-day-slider/8',''],['WebSettings','/api/config-settings','user_id=2'],['Categories','/api/website-category',''],['Products','/api/product-template','limit=10'],['Orders','/api/order',''],['PayProviders','/api/payment-provider','domain=[(\'state\',\'in\',[\'enabled\',\'test\'])]'],['Invoices','/api/invoice/',''],['Deliveries','/api/delivery-order',''],['LoyaltyCards','/api/loyalty-card',''],['Contacts','/api/contacts',''],['OrderLines','/api/order-line',''],['DelivMethods','/api/delivery-method','user_id=2'],['Countries','/api/country',''],['States','/api/country-state',''],['LineQty','/api/order-line-qty/1',''],]
-        .map(([l,p,q])=>`<button class="btn btn-g" style="padding:4px 8px;font-size:10px" onclick="preset('${p}','${q}')">${l}</button>`).join('')}
-    </div>
+    <div id="tester-presets" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px"></div>
+    <script>
+      document.getElementById('tester-presets').innerHTML = [['Logo','/api/deal-day-slider/12',''],['HomeSliders','/api/deal-day-slider/9',''],['DealDay','/api/deal-day-slider/2',''],['BestSeller','/api/deal-day-slider/1',''],['Recommended','/api/deal-day-slider/3',''],['Featured','/api/deal-day-slider/4',''],['FreshPick','/api/deal-day-slider/5',''],['Brands','/api/deal-day-slider/8',''],['WebSettings','/api/config-settings','user_id=2'],['Categories','/api/website-category',''],['Products','/api/product-template','limit=10'],['Orders','/api/order',''],['PayProviders','/api/payment-provider','domain=[(\'state\',\'in\',[\'enabled\',\'test\'])]'],['Invoices','/api/invoice/',''],['Deliveries','/api/delivery-order',''],['LoyaltyCards','/api/loyalty-card',''],['Contacts','/api/contacts',''],['OrderLines','/api/order-line',''],['DelivMethods','/api/delivery-method','user_id=2'],['Countries','/api/country',''],['States','/api/country-state',''],['LineQty','/api/order-line-qty/1',''],]
+        .map(([l,p,q])=>`<button class="btn btn-g" style="padding:4px 8px;font-size:10px" onclick="preset('${p}','${q}')">${l}</button>`).join('');
+    </script>
     <div style="display:flex;gap:8px;margin-bottom:6px">
       <div style="flex:1"><label class="lbl">Endpoint Path</label><input class="inp" id="t-ep" placeholder="/api/product-template"></div>
       <div><label class="lbl">Method</label><select class="inp" id="t-meth" style="width:80px"><option>GET</option><option>POST</option></select></div>
