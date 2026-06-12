@@ -215,6 +215,9 @@
   <div class="chk-row"><span style="color:#6b7280">VAT (5%)</span><span id="chkVat" style="font-weight:700">AED 0.00</span></div>
   <div class="chk-row" id="discRow" style="display:none"><span style="color:#16a34a;font-weight:700">🎁 Discount</span><span id="discAmt" style="font-weight:700;color:#16a34a">–AED 0.00</span></div>
 
+  <div class="chk-total"><span>Total</span><span id="chkTotal">AED 0.00</span></div>
+  <div id="placeErr" class="alert alert-err" style="display:none;margin-top:12px"></div>
+
   <div id="step3SummaryBlocks" style="display:none">
   <!-- PROMO COUPON -->
   <div style="margin:14px 0;padding:14px;background:#fffbea;border-radius:10px;border:1px solid #f5c518">
@@ -238,8 +241,6 @@
   </div>
   </div>
 
-  <div class="chk-total"><span>Total</span><span id="chkTotal">AED 0.00</span></div>
-  <div id="placeErr" class="alert alert-err" style="display:none;margin-top:12px"></div>
   <button id="placeBtn" onclick="placeOrder()" class="sbtn" style="margin-top:14px">✅ Place Order</button>
   <p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:8px">🔒 Secure · Processed by our payment system</p>
 </div>

@@ -22,9 +22,24 @@ if ($pos !== false) {
     $pathInfo = $path; // Fallback
 }
 
+function isImage($p) {
+    return strpos($p, '/web/image/') !== false || strpos($p, '/web/binary/') !== false;
+}
+
+$queryString = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
+if (!isImage($pathInfo)) {
+    if (strpos($queryString, 'by_AJR=') === false) {
+        if (!empty($queryString)) {
+            $queryString .= '&by_AJR=1';
+        } else {
+            $queryString = 'by_AJR=1';
+        }
+    }
+}
+
 $targetUrl = 'http://cooperp.freeddns.org:8076' . $pathInfo;
-if (!empty($_SERVER['QUERY_STRING'])) {
-    $targetUrl .= '?' . $_SERVER['QUERY_STRING'];
+if (!empty($queryString)) {
+    $targetUrl .= '?' . $queryString;
 }
 
 $ch = curl_init($targetUrl);
