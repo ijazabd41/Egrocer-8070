@@ -19,13 +19,16 @@ const ErrorLogger = (() => {
   const BASE_URL = (() => {
     if (typeof location === 'undefined') return '/proxy';
     if (location.protocol === 'file:') return `http://localhost:${PROXY_PORT}/proxy`;
-    if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return '/proxy.php';
+    if (['3000', '5500', '8000', '8080'].includes(location.port) || location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+      return `http://${location.hostname}:${PROXY_PORT}/proxy`;
+    }
     if (location.port === PROXY_PORT) return '/proxy';
-    return `http://localhost:${PROXY_PORT}/proxy`;
+    return '/proxy.php';
   })();
 
-  const PUSH_ENDPOINT = new URL(`${BASE_URL}/api/v1/error-log/push`, typeof location !== 'undefined' ? location.origin : 'http://localhost').toString();
-  const PING_ENDPOINT = new URL(`${BASE_URL}/api/v1/error-log/ping`, typeof location !== 'undefined' ? location.origin : 'http://localhost').toString();
+  const _origin = (typeof location !== 'undefined' && location.origin !== 'null') ? location.origin : 'http://localhost';
+  const PUSH_ENDPOINT = new URL(`${BASE_URL}/api/v1/error-log/push`, _origin).toString();
+  const PING_ENDPOINT = new URL(`${BASE_URL}/api/v1/error-log/ping`, _origin).toString();
 
   // ── DEDUPLICATION / RATE LIMITING ────────────────────────────────
   // Prevent flooding: max 1 push per unique error_title within this window.

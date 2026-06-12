@@ -41,9 +41,11 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   const PX = (() => {
     if (typeof location === 'undefined') return '/proxy';               // Node/SSR
     if (location.protocol === 'file:') return `http://localhost:${PROXY_PORT}/proxy`;  // opened from filesystem
-    if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return '/proxy.php'; // deployed
+    if (['3000', '5500', '8000', '8080'].includes(location.port) || location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+      return `http://${location.hostname}:${PROXY_PORT}/proxy`;
+    }
     if (location.port === PROXY_PORT) return '/proxy';                 // local proxy server
-    return `http://localhost:${PROXY_PORT}/proxy`;                     // local dev fallback
+    return '/proxy.php';                                               // deployed fallback
   })();
   const DB = _DB;
   const CACHE_VERSION = 'v1';
@@ -177,9 +179,10 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     } else {
       fullPath = PX + path;
     }
+    const origin = (typeof location !== 'undefined' && location.origin !== 'null') ? location.origin : 'http://localhost';
     const u = fullPath.startsWith('http')
       ? new URL(fullPath)
-      : new URL(fullPath, location.origin);
+      : new URL(fullPath, origin);
     // Odoo list params (args, domain, line_ids) must keep literal brackets — URLSearchParams encodes them wrong.
     const ODOO_LIST_KEYS = new Set(['args', 'domain', 'line_ids']);
     const listParams = [];
