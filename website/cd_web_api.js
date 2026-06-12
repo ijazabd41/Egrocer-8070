@@ -33,7 +33,7 @@ const CdApi = (() => {
   };
 
   const _get = async (path, params = {}) => {
-    const url = new URL(BASE + path);
+    const url = new URL(BASE + path, window.location.origin);
     url.searchParams.set('by_AJR', '1');
     url.searchParams.set('_t', Date.now());
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
