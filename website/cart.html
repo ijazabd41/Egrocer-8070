@@ -26,10 +26,10 @@
     <div class="chk-summary" id="cartSummary">
       <h3>Order Summary</h3>
       <div class="chk-row"><span style="color:#6b7280">Subtotal</span><span id="cSub" style="font-weight:700">AED 0.00</span></div>
-      <div class="chk-row"><span style="color:#6b7280">Delivery</span><span style="font-weight:700;color:#16a34a">FREE</span></div>
+      <div class="chk-row"><span style="color:#6b7280">Delivery</span><span id="cDeliv" style="font-weight:700;color:#16a34a">FREE</span></div>
       <div class="chk-row"><span style="color:#6b7280">VAT (5%)</span><span id="cVat" style="font-weight:700">AED 0.00</span></div>
       <div class="chk-total"><span>Total</span><span id="cTotal">AED 0.00</span></div>
-      <a href="javascript:void(0)" onclick="if(Cart.count()===0){ toast('Your cart is empty', 'warn'); return; } location.href='checkout.html';" id="checkoutBtn" class="sbtn" style="margin-top:14px;display:block;text-align:center;text-decoration:none">Proceed to Checkout →</a>
+      <a href="javascript:void(0)" onclick="proceedCheckout()" id="checkoutBtn" class="sbtn" style="margin-top:14px;display:block;text-align:center;text-decoration:none">Proceed to Checkout →</a>
       <a href="shop.html" style="display:block;text-align:center;color:var(--red);font-weight:700;font-size:13px;margin-top:10px">← Continue Shopping</a>
 
       <!-- PROMO CODE -->
@@ -54,6 +54,46 @@ document.addEventListener('DOMContentLoaded', function(){
   renderCart();
 });
 
+function proceedCheckout() {
+    if(Cart.count()===0){ toast('Your cart is empty', 'warn'); return; }
+    if(Cart.total() < 50){ toast('Minimum order amount is AED 50', 'warn'); return; }
+    location.href='checkout.html';
+}
+
+function updateCartProgress(sub) {
+  var pContainer = document.getElementById('cartProgress');
+  if (!pContainer) {
+      pContainer = document.createElement('div');
+      pContainer.id = 'cartProgress';
+      var summaryDiv = document.getElementById('cartSummary');
+      summaryDiv.insertBefore(pContainer, summaryDiv.firstChild);
+  }
+  var minOrder = 50;
+  var freeDelivThreshold = 150;
+  var isFreeDeliv = sub >= freeDelivThreshold;
+  var progressPercent = sub < minOrder ? Math.min(100, Math.round((sub / minOrder) * 100)) : Math.min(100, Math.round((sub / freeDelivThreshold) * 100));
+  
+  var title = sub < minOrder ? 'Minimum Order' : 'Delivery Progress';
+  var statusText = isFreeDeliv ? 'FREE Delivery!' : 'Min 50 AED';
+  var statusColor = isFreeDeliv ? '#10b981' : (sub < minOrder ? '#f59e0b' : '#ED1C24');
+  var barColor = isFreeDeliv ? '#10b981' : (sub < minOrder ? '#f59e0b' : '#ED1C24');
+  var msg = isFreeDeliv 
+       ? 'Congratulations! You qualify for FREE delivery.'
+       : (sub < minOrder ? 'Add '+(minOrder - sub).toFixed(2)+' AED more to place your order.' : 'Add '+(freeDelivThreshold - sub).toFixed(2)+' AED more to qualify for FREE delivery.');
+
+  pContainer.innerHTML = '<div style="margin-bottom:16px;background:#f9fafb;padding:12px;border-radius:10px;border:1px solid #e5e7eb">'
+    + '<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:6px">'
+    + '<span>' + title + '</span>'
+    + '<span style="color:'+statusColor+'">'+statusText+'</span>'
+    + '</div>'
+    + '<div style="height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;margin-bottom:6px">'
+    + '<div style="height:100%;width:'+progressPercent+'%;background:'+barColor+';transition:width .3s"></div>'
+    + '</div>'
+    + '<div style="font-size:11px;color:'+(isFreeDeliv?'#10b981':'#6b7280')+';font-weight:600;text-align:center">' + msg + '</div>'
+    + (sub < freeDelivThreshold ? '<div style="font-size:11px;color:#ED1C24;font-weight:600;text-align:center;margin-top:6px;padding-top:6px;border-top:1px solid #f3f4f6">Orders below 150 AED are subject to a 5% delivery charge.</div>' : '')
+    + '</div>';
+}
+
 function renderCart(){
   var items = Cart.raw();
   var el = document.getElementById('cartItems');
@@ -71,10 +111,23 @@ function renderCart(){
   }
 
   // Calc totals
-  var sub = Cart.total(), vat = sub*0.05, total = sub+vat;
+  var sub = Cart.total();
+  var isFreeDeliv = sub >= 150;
+  var deliveryCharge = isFreeDeliv ? 0 : sub * 0.05;
+  var vat = sub * 0.05;
+  var total = sub + deliveryCharge + vat;
   document.getElementById('cSub').textContent = 'AED '+sub.toFixed(2);
+  var delivEl = document.getElementById('cDeliv');
+  if (isFreeDeliv) {
+      delivEl.textContent = 'FREE';
+      delivEl.style.color = '#16a34a';
+  } else {
+      delivEl.textContent = 'AED '+deliveryCharge.toFixed(2);
+      delivEl.style.color = '#f59e0b';
+  }
   document.getElementById('cVat').textContent = 'AED '+vat.toFixed(2);
   document.getElementById('cTotal').textContent = 'AED '+total.toFixed(2);
+  updateCartProgress(sub);
 
   el.innerHTML = '<div style="background:#fff;border-radius:16px;border:1.5px solid #e5e7eb;overflow:hidden">'
     +'<div style="padding:16px 20px;border-bottom:1.5px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center">'
@@ -128,10 +181,22 @@ async function changeQty(pid, delta){
     if(qEl) qEl.textContent = item.qty;
     if(sEl) sEl.textContent = 'AED '+((item.price*item.qty)||0).toFixed(2);
     // Update totals
-    var sub = Cart.total(), vat = sub*0.05;
+    var sub = Cart.total();
+    var isFreeDeliv = sub >= 150;
+    var deliveryCharge = isFreeDeliv ? 0 : sub * 0.05;
+    var vat = sub * 0.05;
     document.getElementById('cSub').textContent = 'AED '+sub.toFixed(2);
+    var delivEl = document.getElementById('cDeliv');
+    if (isFreeDeliv) {
+        delivEl.textContent = 'FREE';
+        delivEl.style.color = '#16a34a';
+    } else {
+        delivEl.textContent = 'AED '+deliveryCharge.toFixed(2);
+        delivEl.style.color = '#f59e0b';
+    }
     document.getElementById('cVat').textContent = 'AED '+vat.toFixed(2);
-    document.getElementById('cTotal').textContent = 'AED '+(sub+vat).toFixed(2);
+    document.getElementById('cTotal').textContent = 'AED '+(sub+deliveryCharge+vat).toFixed(2);
+    updateCartProgress(sub);
     tick();
   } else {
     renderCart(); // Item removed

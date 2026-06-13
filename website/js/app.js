@@ -310,10 +310,30 @@ function renderDrawer(){
       <button onclick="Cart.remove(${it.product_id})" style="color:#ED1C24;font-size:17px;background:none;border:none;cursor:pointer;padding:4px;flex-shrink:0">🗑️</button>
     </div>`).join('');
   const t=Cart.total();
+  const minOrder = 50;
+  const freeDelivThreshold = 150;
+  const progressPercent = Math.min(100, Math.round((t / freeDelivThreshold) * 100));
+  const remaining = freeDelivThreshold - t;
+  const progressHtml = `
+    <div style="margin-bottom:12px;background:#fff;padding:10px;border-radius:8px;border:1px solid #e5e7eb">
+      <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:6px">
+        <span>${t < minOrder ? 'Minimum Order' : 'Delivery Progress'}</span>
+        <span style="color:${t >= freeDelivThreshold ? '#10b981' : (t < minOrder ? '#f59e0b' : '#ED1C24')}">${t >= freeDelivThreshold ? 'FREE Delivery!' : 'Min 50 AED'}</span>
+      </div>
+      <div style="height:6px;background:#f3f4f6;border-radius:3px;overflow:hidden;margin-bottom:6px">
+        <div style="height:100%;width:${t < minOrder ? Math.min(100, Math.round((t / minOrder) * 100)) : Math.min(100, Math.round((t / freeDelivThreshold) * 100))}%;background:${t >= freeDelivThreshold ? '#10b981' : (t < minOrder ? '#f59e0b' : '#ED1C24')};transition:width .3s"></div>
+      </div>
+      <div style="font-size:10px;color:${t >= freeDelivThreshold ? '#10b981' : '#6b7280'};font-weight:600;text-align:center">
+        ${t >= freeDelivThreshold ? `Congratulations! You qualify for FREE delivery.` : (t < minOrder ? `Add ${(minOrder - t).toFixed(2)} AED more to place your order.` : `Add ${(freeDelivThreshold - t).toFixed(2)} AED more to qualify for FREE delivery.`)}
+      </div>
+      ${t < freeDelivThreshold ? `<div style="font-size:10px;color:#ED1C24;font-weight:600;text-align:center;margin-top:6px;padding-top:6px;border-top:1px solid #f3f4f6">Orders below 150 AED are subject to a 5% delivery charge.</div>` : ''}
+    </div>`;
+
   if(ftr)ftr.innerHTML=`
+    ${progressHtml}
     <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;margin-bottom:12px"><span>Total</span><span style="color:#a01820">AED ${t.toFixed(2)}</span></div>
     <a href="cart.html" onclick="closeDrw()" style="display:block;text-align:center;background:#f3f4f6;color:#374151;padding:10px;border-radius:8px;font-weight:700;font-size:13px;margin-bottom:8px;text-decoration:none">View Cart</a>
-    <a href="javascript:void(0)" onclick="if(Cart.count()===0){ toast('Your cart is empty', 'warn'); return; } closeDrw(); location.href='checkout.html';" style="display:block;text-align:center;background:#ED1C24;color:#fff;padding:12px;border-radius:8px;font-weight:800;font-size:14px;text-decoration:none">Checkout →</a>`;
+    <a href="javascript:void(0)" onclick="if(Cart.count()===0){ toast('Your cart is empty', 'warn'); return; } if(Cart.total() < ${minOrder}){ toast('Minimum order amount is AED ${minOrder}', 'warn'); return; } closeDrw(); location.href='checkout.html';" style="display:block;text-align:center;background:#ED1C24;color:#fff;padding:12px;border-radius:8px;font-weight:800;font-size:14px;text-decoration:none">Checkout →</a>`;
 }
 
 /* ── TOAST ────────────────────────────────────────────── */
