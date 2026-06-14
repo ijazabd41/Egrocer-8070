@@ -651,16 +651,38 @@ function renderSummary(){
   var items=Cart.raw(), sub=Cart.total();
   var totalDiscount = Math.max(0, Math.min((discountPromo || 0) + (discountLoyalty || 0), sub));
   var isFreeDeliv = sub >= 150;
-  var deliveryCharge = isFreeDeliv ? 0 : sub * 0.05;
+  var deliveryCharge = 0;
+  var pickupDiscount = 0;
+  if (typeof selDeliveryMethod !== 'undefined' && selDeliveryMethod) {
+      if (selDeliveryKind === 'store') {
+          pickupDiscount = sub * 0.05;
+          isFreeDeliv = true;
+      } else {
+          var fixed = parseFloat(selDeliveryMethod.fixed_price || 0);
+          if (fixed < 0) {
+              pickupDiscount = Math.abs(fixed);
+              isFreeDeliv = true;
+          } else if (!isFreeDeliv) {
+              deliveryCharge = fixed;
+          }
+      }
+  }
+  var totalDiscount = Math.max(0, Math.min((discountPromo || 0) + (discountLoyalty || 0) + pickupDiscount, sub));
   var vat=sub*0.05, total=sub+vat+deliveryCharge-totalDiscount;
   document.getElementById('chkSub').textContent='AED '+sub.toFixed(2);
   var delivEl = document.getElementById('chkDeliv');
-  if (isFreeDeliv) {
+  if (pickupDiscount > 0) {
+      delivEl.textContent = '-AED ' + pickupDiscount.toFixed(2);
+      delivEl.style.color = '#16a34a';
+  } else if (isFreeDeliv) {
       delivEl.textContent = 'FREE';
       delivEl.style.color = '#16a34a';
-  } else {
+  } else if (deliveryCharge > 0) {
       delivEl.textContent = 'AED '+deliveryCharge.toFixed(2);
       delivEl.style.color = '#f59e0b';
+  } else {
+      delivEl.textContent = 'Calculated at checkout';
+      delivEl.style.color = '#6b7280';
   }
   document.getElementById('chkVat').textContent='AED '+vat.toFixed(2);
   document.getElementById('chkTotal').textContent='AED '+total.toFixed(2);
@@ -671,6 +693,12 @@ function renderSummary(){
       pContainer.id = 'checkoutProgress';
       var summaryDiv = document.querySelector('.chk-summary');
       summaryDiv.insertBefore(pContainer, summaryDiv.children[1]);
+  }
+  
+  if (typeof selDeliveryKind !== 'undefined' && selDeliveryKind === 'store') {
+      pContainer.style.display = 'none';
+  } else {
+      pContainer.style.display = 'block';
   }
   var minOrder = 50;
   var freeDelivThreshold = 150;
@@ -693,7 +721,6 @@ function renderSummary(){
     + '<div style="height:100%;width:'+progressPercent+'%;background:'+barColor+';transition:width .3s"></div>'
     + '</div>'
     + '<div style="font-size:11px;color:'+(isFreeDeliv?'#10b981':'#6b7280')+';font-weight:600;text-align:center">' + msg + '</div>'
-    + (sub < freeDelivThreshold ? '<div style="font-size:11px;color:#ED1C24;font-weight:600;text-align:center;margin-top:6px;padding-top:6px;border-top:1px solid #f3f4f6">Orders below 150 AED are subject to a 5% delivery charge.</div>' : '')
     + '</div>';
   if(totalDiscount>0){
     document.getElementById('discRow').style.display='flex';
@@ -725,9 +752,15 @@ async function loadDeliveryMethods(){
       d.className='pmeth'+(i===0?' on':'');
       d.id='dm-'+m.id;
       d.onclick=(function(mid,mname,k,mm){return function(){selDelivery(mid,mname,k,mm);};})(m.id,m.name,kind,m);
+      var priceStr = price === 0 ? 'FREE' : (price < 0 ? '-AED ' + Math.abs(price).toFixed(2) : 'AED ' + price.toFixed(2));
+      var priceColor = price <= 0 ? '#16a34a' : '#a01820';
+      if (kind === 'store') {
+          priceStr = '-5% Discount';
+          priceColor = '#16a34a';
+      }
       d.innerHTML='<span class="pmeth-ic">'+ic+'</span>'
         +'<div><div class="pmeth-lbl">'+m.name+'</div>'+(m.delivery_type?'<div class="pmeth-desc">'+m.delivery_type[1]+'</div>':'<div class="pmeth-desc">'+(kind==='store'?'Pick up from store':'Home delivery')+'</div>')+'</div>'
-        +'<span style="margin-left:auto;font-weight:800;color:'+(price===0?'#16a34a':'#a01820')+'">'+(price===0?'FREE':'AED '+price.toFixed(2))+'</span>';
+        +'<span style="margin-left:auto;font-weight:800;color:'+priceColor+'">'+priceStr+'</span>';
       el.appendChild(d);
     });
     if(methods.length){
@@ -753,6 +786,7 @@ function selDelivery(id,name,kind,method){
   toggleAddressSection();
   pushCarrierToOrder();
   checkPlaceOrderBtnState();
+  renderSummary();
 }
 
 function toggleAddressSection(){

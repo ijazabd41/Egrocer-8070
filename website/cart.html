@@ -90,7 +90,6 @@ function updateCartProgress(sub) {
     + '<div style="height:100%;width:'+progressPercent+'%;background:'+barColor+';transition:width .3s"></div>'
     + '</div>'
     + '<div style="font-size:11px;color:'+(isFreeDeliv?'#10b981':'#6b7280')+';font-weight:600;text-align:center">' + msg + '</div>'
-    + (sub < freeDelivThreshold ? '<div style="font-size:11px;color:#ED1C24;font-weight:600;text-align:center;margin-top:6px;padding-top:6px;border-top:1px solid #f3f4f6">Orders below 150 AED are subject to a 5% delivery charge.</div>' : '')
     + '</div>';
 }
 
@@ -113,7 +112,7 @@ function renderCart(){
   // Calc totals
   var sub = Cart.total();
   var isFreeDeliv = sub >= 150;
-  var deliveryCharge = isFreeDeliv ? 0 : sub * 0.05;
+  var deliveryCharge = 0; // Handled by backend
   var vat = sub * 0.05;
   var total = sub + deliveryCharge + vat;
   document.getElementById('cSub').textContent = 'AED '+sub.toFixed(2);
@@ -122,8 +121,8 @@ function renderCart(){
       delivEl.textContent = 'FREE';
       delivEl.style.color = '#16a34a';
   } else {
-      delivEl.textContent = 'AED '+deliveryCharge.toFixed(2);
-      delivEl.style.color = '#f59e0b';
+      delivEl.textContent = 'Calculated at checkout';
+      delivEl.style.color = '#6b7280';
   }
   document.getElementById('cVat').textContent = 'AED '+vat.toFixed(2);
   document.getElementById('cTotal').textContent = 'AED '+total.toFixed(2);
@@ -183,7 +182,7 @@ async function changeQty(pid, delta){
     // Update totals
     var sub = Cart.total();
     var isFreeDeliv = sub >= 150;
-    var deliveryCharge = isFreeDeliv ? 0 : sub * 0.05;
+    var deliveryCharge = 0; // Handled by backend
     var vat = sub * 0.05;
     document.getElementById('cSub').textContent = 'AED '+sub.toFixed(2);
     var delivEl = document.getElementById('cDeliv');
@@ -191,8 +190,8 @@ async function changeQty(pid, delta){
         delivEl.textContent = 'FREE';
         delivEl.style.color = '#16a34a';
     } else {
-        delivEl.textContent = 'AED '+deliveryCharge.toFixed(2);
-        delivEl.style.color = '#f59e0b';
+        delivEl.textContent = 'Calculated at checkout';
+        delivEl.style.color = '#6b7280';
     }
     document.getElementById('cVat').textContent = 'AED '+vat.toFixed(2);
     document.getElementById('cTotal').textContent = 'AED '+(sub+deliveryCharge+vat).toFixed(2);

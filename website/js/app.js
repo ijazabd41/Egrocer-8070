@@ -326,7 +326,6 @@ function renderDrawer(){
       <div style="font-size:10px;color:${t >= freeDelivThreshold ? '#10b981' : '#6b7280'};font-weight:600;text-align:center">
         ${t >= freeDelivThreshold ? `Congratulations! You qualify for FREE delivery.` : (t < minOrder ? `Add ${(minOrder - t).toFixed(2)} AED more to place your order.` : `Add ${(freeDelivThreshold - t).toFixed(2)} AED more to qualify for FREE delivery.`)}
       </div>
-      ${t < freeDelivThreshold ? `<div style="font-size:10px;color:#ED1C24;font-weight:600;text-align:center;margin-top:6px;padding-top:6px;border-top:1px solid #f3f4f6">Orders below 150 AED are subject to a 5% delivery charge.</div>` : ''}
     </div>`;
 
   if(ftr)ftr.innerHTML=`
