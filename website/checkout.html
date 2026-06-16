@@ -211,7 +211,8 @@
   <h3>Order Summary</h3>
   <div id="itemsList" style="margin-bottom:14px;max-height:260px;overflow-y:auto"></div>
   <div class="chk-row"><span style="color:#6b7280">Subtotal</span><span id="chkSub" style="font-weight:700">AED 0.00</span></div>
-  <div class="chk-row"><span style="color:#6b7280">Delivery</span><span id="chkDeliv" style="font-weight:700;color:#16a34a">FREE</span></div>
+  <div class="chk-row"><span style="color:#6b7280">Delivery</span><span id="chkDelivery" style="font-weight:700;color:#16a34a">FREE</span></div>
+  <div class="chk-row" id="pickupDiscRow" style="display:none"><span style="color:#16a34a;font-weight:700">🏪 Store Pickup Discount (5%)</span><span id="pickupDiscAmt" style="font-weight:700;color:#16a34a">–AED 0.00</span></div>
   <div class="chk-row"><span style="color:#6b7280">VAT (5%)</span><span id="chkVat" style="font-weight:700">AED 0.00</span></div>
   <div class="chk-row" id="discRow" style="display:none"><span style="color:#16a34a;font-weight:700">🎁 Discount</span><span id="discAmt" style="font-weight:700;color:#16a34a">–AED 0.00</span></div>
 
@@ -439,6 +440,14 @@ function focusPickupContactMissing(contact){
 }
 
 document.addEventListener('DOMContentLoaded', async function(){
+  var sub = Cart.total();
+  if(sub < 100) {
+    if(typeof toast === 'function') toast('Minimum order amount is AED 100.', 'warn');
+    setTimeout(function() {
+      location.href = 'cart.html';
+    }, 1500);
+    return;
+  }
   updateStepUi();
   if(!API.loggedIn()) document.getElementById('loginReminder').style.display='flex';
 
@@ -649,85 +658,65 @@ window.loadStatesForCountry = async function(countryId, targetId) {
 
 function renderSummary(){
   var items=Cart.raw(), sub=Cart.total();
-  var totalDiscount = Math.max(0, Math.min((discountPromo || 0) + (discountLoyalty || 0), sub));
-  var isFreeDeliv = sub >= 150;
-  var deliveryCharge = 0;
-  var pickupDiscount = 0;
-  if (typeof selDeliveryMethod !== 'undefined' && selDeliveryMethod) {
-      if (selDeliveryKind === 'store') {
-          pickupDiscount = sub * 0.05;
-          isFreeDeliv = true;
-      } else {
-          var fixed = parseFloat(selDeliveryMethod.fixed_price || 0);
-          if (fixed < 0) {
-              pickupDiscount = Math.abs(fixed);
-              isFreeDeliv = true;
-          } else if (!isFreeDeliv) {
-              deliveryCharge = fixed;
-          }
-      }
+  
+  // 1. Calculate pickup discount (5% of subtotal)
+  var pickupDisc = 0;
+  if (selDeliveryKind === 'store') {
+    pickupDisc = parseFloat((sub * 0.05).toFixed(2));
   }
-  var totalDiscount = Math.max(0, Math.min((discountPromo || 0) + (discountLoyalty || 0) + pickupDiscount, sub));
-  var vat=sub*0.05, total=sub+vat+deliveryCharge-totalDiscount;
-  document.getElementById('chkSub').textContent='AED '+sub.toFixed(2);
-  var delivEl = document.getElementById('chkDeliv');
-  if (pickupDiscount > 0) {
-      delivEl.textContent = '-AED ' + pickupDiscount.toFixed(2);
-      delivEl.style.color = '#16a34a';
-  } else if (isFreeDeliv) {
-      delivEl.textContent = 'FREE';
-      delivEl.style.color = '#16a34a';
-  } else if (deliveryCharge > 0) {
-      delivEl.textContent = 'AED '+deliveryCharge.toFixed(2);
-      delivEl.style.color = '#f59e0b';
+  
+  // 2. Calculate delivery fee
+  var delFee = 0;
+  if (selDeliveryKind === 'store' || sub >= 150) {
+    delFee = 0;
   } else {
-      delivEl.textContent = 'Calculated at checkout';
-      delivEl.style.color = '#6b7280';
+    delFee = selDeliveryMethod ? parseFloat(selDeliveryMethod.fixed_price || 0) : 15;
   }
+  
+  // 3. promo and loyalty discount capped at sub - pickup discount
+  var promoDiscount = Math.max(0, Math.min((discountPromo || 0) + (discountLoyalty || 0), sub - pickupDisc));
+  var totalDiscount = promoDiscount + pickupDisc;
+  
+  // 4. VAT (5% on subtotal - discounts + delivery fee)
+  var netTaxable = Math.max(0, sub - totalDiscount + delFee);
+  var vat = parseFloat((netTaxable * 0.05).toFixed(2));
+  var total = sub - totalDiscount + delFee + vat;
+  
+  // 5. Update UI elements
+  document.getElementById('chkSub').textContent='AED '+sub.toFixed(2);
+  
+  var chkDeliveryEl = document.getElementById('chkDelivery');
+  if (chkDeliveryEl) {
+    if (delFee === 0) {
+      chkDeliveryEl.textContent = 'FREE';
+      chkDeliveryEl.style.color = '#16a34a';
+    } else {
+      chkDeliveryEl.textContent = 'AED ' + delFee.toFixed(2);
+      chkDeliveryEl.style.color = '#a01820';
+    }
+  }
+  
+  var pickupDiscRow = document.getElementById('pickupDiscRow');
+  var pickupDiscAmt = document.getElementById('pickupDiscAmt');
+  if (pickupDiscRow && pickupDiscAmt) {
+    if (pickupDisc > 0) {
+      pickupDiscRow.style.display = 'flex';
+      pickupDiscAmt.textContent = '–AED ' + pickupDisc.toFixed(2);
+    } else {
+      pickupDiscRow.style.display = 'none';
+    }
+  }
+  
   document.getElementById('chkVat').textContent='AED '+vat.toFixed(2);
   document.getElementById('chkTotal').textContent='AED '+total.toFixed(2);
-
-  var pContainer = document.getElementById('checkoutProgress');
-  if (!pContainer) {
-      pContainer = document.createElement('div');
-      pContainer.id = 'checkoutProgress';
-      var summaryDiv = document.querySelector('.chk-summary');
-      summaryDiv.insertBefore(pContainer, summaryDiv.children[1]);
-  }
   
-  if (typeof selDeliveryKind !== 'undefined' && selDeliveryKind === 'store') {
-      pContainer.style.display = 'none';
-  } else {
-      pContainer.style.display = 'block';
-  }
-  var minOrder = 50;
-  var freeDelivThreshold = 150;
-  var progressPercent = sub < minOrder ? Math.min(100, Math.round((sub / minOrder) * 100)) : Math.min(100, Math.round((sub / freeDelivThreshold) * 100));
-  
-  var title = sub < minOrder ? 'Minimum Order' : 'Delivery Progress';
-  var statusText = isFreeDeliv ? 'FREE Delivery!' : 'Min 50 AED';
-  var statusColor = isFreeDeliv ? '#10b981' : (sub < minOrder ? '#f59e0b' : '#ED1C24');
-  var barColor = isFreeDeliv ? '#10b981' : (sub < minOrder ? '#f59e0b' : '#ED1C24');
-  var msg = isFreeDeliv 
-       ? 'Congratulations! You qualify for FREE delivery.'
-       : (sub < minOrder ? 'Add '+(minOrder - sub).toFixed(2)+' AED more to place your order.' : 'Add '+(freeDelivThreshold - sub).toFixed(2)+' AED more to qualify for FREE delivery.');
-
-  pContainer.innerHTML = '<div style="margin-bottom:16px;background:#f9fafb;padding:12px;border-radius:10px;border:1px solid #e5e7eb">'
-    + '<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:6px">'
-    + '<span>' + title + '</span>'
-    + '<span style="color:'+statusColor+'">'+statusText+'</span>'
-    + '</div>'
-    + '<div style="height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;margin-bottom:6px">'
-    + '<div style="height:100%;width:'+progressPercent+'%;background:'+barColor+';transition:width .3s"></div>'
-    + '</div>'
-    + '<div style="font-size:11px;color:'+(isFreeDeliv?'#10b981':'#6b7280')+';font-weight:600;text-align:center">' + msg + '</div>'
-    + '</div>';
-  if(totalDiscount>0){
+  if(promoDiscount>0){
     document.getElementById('discRow').style.display='flex';
-    document.getElementById('discAmt').textContent='-AED '+totalDiscount.toFixed(2);
+    document.getElementById('discAmt').textContent='-AED '+promoDiscount.toFixed(2);
   }else{
     document.getElementById('discRow').style.display='none';
   }
+  
   document.getElementById('itemsList').innerHTML=items.length?items.map(function(it){
     return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6">'
       +'<div style="width:44px;height:44px;background:#f9fafb;border-radius:8px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center">'+(it.image?'<img src="'+it.image+'" style="width:100%;height:100%;object-fit:contain">':'📦')+'</div>'
@@ -752,15 +741,9 @@ async function loadDeliveryMethods(){
       d.className='pmeth'+(i===0?' on':'');
       d.id='dm-'+m.id;
       d.onclick=(function(mid,mname,k,mm){return function(){selDelivery(mid,mname,k,mm);};})(m.id,m.name,kind,m);
-      var priceStr = price === 0 ? 'FREE' : (price < 0 ? '-AED ' + Math.abs(price).toFixed(2) : 'AED ' + price.toFixed(2));
-      var priceColor = price <= 0 ? '#16a34a' : '#a01820';
-      if (kind === 'store') {
-          priceStr = '-5% Discount';
-          priceColor = '#16a34a';
-      }
       d.innerHTML='<span class="pmeth-ic">'+ic+'</span>'
         +'<div><div class="pmeth-lbl">'+m.name+'</div>'+(m.delivery_type?'<div class="pmeth-desc">'+m.delivery_type[1]+'</div>':'<div class="pmeth-desc">'+(kind==='store'?'Pick up from store':'Home delivery')+'</div>')+'</div>'
-        +'<span style="margin-left:auto;font-weight:800;color:'+priceColor+'">'+priceStr+'</span>';
+        +'<span style="margin-left:auto;font-weight:800;color:'+(price===0?'#16a34a':'#a01820')+'">'+(price===0?'FREE':'AED '+price.toFixed(2))+'</span>';
       el.appendChild(d);
     });
     if(methods.length){
@@ -773,6 +756,7 @@ async function loadDeliveryMethods(){
       pushCarrierToOrder();
     }
     toggleAddressSection();
+    renderSummary();
   }catch(_){}
 }
 
@@ -1005,6 +989,12 @@ async function applyLoyaltyPoints(){
 async function placeOrder(){
   var errEl=document.getElementById('placeErr'), btn=document.getElementById('placeBtn');
   errEl.style.display='none';
+  var sub = Cart.total();
+  if(sub < 100) {
+    errEl.textContent='❌ Minimum order amount is AED 100.';
+    errEl.style.display='flex';
+    return;
+  }
   if(!validateStep(2)){ goStep(2); return; }
   if(currentStep!==3) goStep(3);
   var contact=await resolveCheckoutContact();
@@ -1132,9 +1122,13 @@ async function placeOrder(){
     try{await API.updDelivery(parseInt(oid),selCarrierId, updOpts);}catch(_){}
 
     // 4) Add delivery note
-    var note = contact.isStore
-      ? '[STORE PICKUP] ' + contact.fn + ' | ' + contact.ph + (contact.em?' | '+contact.em:'') + (contact.partnerInvoiceId?' | Invoice Contact ID '+contact.partnerInvoiceId:'')
-      : '[DELIVERY] Ship Contact ID ' + contact.partnerShippingId + ' | Invoice Contact ID ' + (contact.partnerInvoiceId || contact.partnerShippingId);
+    var note = '';
+    if(contact.isStore) {
+      var pickupDisc = parseFloat((sub * 0.05).toFixed(2));
+      note = '[STORE PICKUP] ' + contact.fn + ' | ' + contact.ph + (contact.em?' | '+contact.em:'') + (contact.partnerInvoiceId?' | Invoice Contact ID '+contact.partnerInvoiceId:'') + ' | Store Pickup Discount (5%): -AED ' + pickupDisc.toFixed(2);
+    } else {
+      note = '[DELIVERY] Ship Contact ID ' + contact.partnerShippingId + ' | Invoice Contact ID ' + (contact.partnerInvoiceId || contact.partnerShippingId);
+    }
     var notesVal = document.getElementById('notes').value.trim();
     if(notesVal) note+=' | Notes: '+notesVal;
     note += ' | Payment Method: ' + selProviderName;
@@ -1152,10 +1146,16 @@ async function placeOrder(){
       log.info('Checkout','Telr → transaction created',{orderId:oid,txId:txId});
 
       // Step 5b: Calculate total amount
-      var sub = Cart.total();
-      var totalDiscount = Math.max(0, Math.min((discountPromo||0)+(discountLoyalty||0), sub));
-      var vat = sub * 0.05;
-      var totalAmount = (sub + vat - totalDiscount).toFixed(2);
+      var pickupDiscAmount = contact.isStore ? parseFloat((sub * 0.05).toFixed(2)) : 0;
+      var deliveryFeeVal = 0;
+      if (!contact.isStore && sub < 150) {
+        deliveryFeeVal = selDeliveryMethod ? parseFloat(selDeliveryMethod.fixed_price || 0) : 15;
+      }
+      var promoDiscVal = Math.max(0, Math.min((discountPromo||0)+(discountLoyalty||0), sub - pickupDiscAmount));
+      var totalDiscVal = promoDiscVal + pickupDiscAmount;
+      var netTaxVal = Math.max(0, sub - totalDiscVal + deliveryFeeVal);
+      var vatVal = parseFloat((netTaxVal * 0.05).toFixed(2));
+      var totalAmount = (sub - totalDiscVal + deliveryFeeVal + vatVal).toFixed(2);
 
       // Step 5c: Create Telr session
       var telrSession = await API.createTelrSession(parseInt(oid), totalAmount, 'AED', 'Order ' + (orderName||oid));

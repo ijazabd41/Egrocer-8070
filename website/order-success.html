@@ -95,10 +95,11 @@ document.addEventListener('DOMContentLoaded', async function(){
         API.log.debug('OrderSuccess','lines fetched via getLines',{orderId:orderId,lineCount:lines.length});
       }catch(e){API.log.warn('OrderSuccess','getLines failed',{orderId:orderId,message:e.message});}
     }
-    var carrier = Array.isArray(o.carrier_id) ? (typeof o.carrier_id[0]==='object'?o.carrier_id[0].name:o.carrier_id[1]) : (o.carrier_id||'');
-    var amtSub = parseFloat(o.amount_untaxed||0);
-    var amtTax = parseFloat(o.amount_tax||0);
-    var amtTotal = parseFloat(o.amount_total||0);
+    var pricing = recalculateOrderPrices(o, lines);
+    var carrier = pricing.carrier;
+    var amtSub = pricing.itemsSubtotal;
+    var amtTax = pricing.vat;
+    var amtTotal = pricing.total;
     API.log.info('OrderSuccess','load ✓',{
       orderId:orderId,name:o.name,state:state,lineCount:lines.length,total:amtTotal
     });
@@ -113,8 +114,8 @@ document.addEventListener('DOMContentLoaded', async function(){
       +'</div>'
       +(o.note?'<div style="font-size:11px;color:#6b7280;margin-bottom:12px;padding:10px;background:#f9fafb;border-radius:8px;line-height:1.5"><strong>📝 Delivery Note:</strong><br>'+o.note+'</div>':'')
       // Order lines
-      +(lines.length ? '<div style="border-top:1.5px solid #f3f4f6;padding-top:14px"><div style="font-size:13px;font-weight:800;margin-bottom:10px">Items Ordered ('+lines.length+')</div>'
-        + lines.map(function(l){
+      +(pricing.regularLines.length ? '<div style="border-top:1.5px solid #f3f4f6;padding-top:14px"><div style="font-size:13px;font-weight:800;margin-bottom:10px">Items Ordered ('+pricing.regularLines.length+')</div>'
+        + pricing.regularLines.map(function(l){
             // product_id can be [id, "Name"]  OR  [{id, name}]  OR  string fallback
             var pnm = '';
             if(Array.isArray(l.product_id)){
@@ -136,8 +137,11 @@ document.addEventListener('DOMContentLoaded', async function(){
               +'</div>';
           }).join('')
         + (amtSub||amtTax ? '<div style="margin-top:10px;padding-top:10px;border-top:1.5px solid #e5e7eb;font-size:12px">'
-            +(amtSub?'<div style="display:flex;justify-content:space-between;color:#6b7280"><span>Subtotal</span><span>AED '+amtSub.toFixed(2)+'</span></div>':'')
-            +(amtTax?'<div style="display:flex;justify-content:space-between;color:#6b7280;margin-top:3px"><span>VAT</span><span>AED '+amtTax.toFixed(2)+'</span></div>':'')
+            +'<div style="display:flex;justify-content:space-between;color:#6b7280"><span>Subtotal</span><span>AED '+amtSub.toFixed(2)+'</span></div>'
+            +(pricing.isPickup?'<div style="display:flex;justify-content:space-between;color:#16a34a;margin-top:3px"><span>Store Pickup Discount (5%)</span><span>-AED '+pricing.pickupDiscount.toFixed(2)+'</span></div>':'')
+            +(pricing.promoDiscount>0?'<div style="display:flex;justify-content:space-between;color:#16a34a;margin-top:3px"><span>Discount</span><span>-AED '+pricing.promoDiscount.toFixed(2)+'</span></div>':'')
+            +(pricing.delFee>0?'<div style="display:flex;justify-content:space-between;color:#6b7280;margin-top:3px"><span>Delivery Fee</span><span>AED '+pricing.delFee.toFixed(2)+'</span></div>':'')
+            +(amtTax?'<div style="display:flex;justify-content:space-between;color:#6b7280;margin-top:3px"><span>VAT (5%)</span><span>AED '+amtTax.toFixed(2)+'</span></div>':'')
             +'<div style="display:flex;justify-content:space-between;font-weight:800;margin-top:6px;font-size:14px"><span>Total</span><span style="color:var(--red-d)">AED '+amtTotal.toFixed(2)+'</span></div>'
           +'</div>' : '')
         +'</div>' : '<div style="text-align:center;padding:18px;color:#9ca3af;font-size:13px">No items found on this order</div>');
@@ -156,6 +160,8 @@ document.addEventListener('DOMContentLoaded', async function(){
           if(!inv) continue;
           var istate = Array.isArray(inv.state)?inv.state[1]:inv.state||'Draft';
           var pdfUrl = inv.access_token ? API.invPdfUrl(inv.id, inv.access_token) : (inv.access_url ? API.PX+inv.access_url : '');
+          var invPrices = recalculateInvoicePrices(inv, pricing.isPickup);
+          var invTotal = invPrices.total;
           invHtml += '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid #f3f4f6">'
             +'<div><div style="font-size:14px;font-weight:800">'+(inv.name||'Invoice #'+inv.id)+'</div>'
             +'<div style="font-size:11px;color:#6b7280;margin-top:2px">Invoice ID: <strong>'+inv.id+'</strong></div>'
@@ -163,7 +169,7 @@ document.addEventListener('DOMContentLoaded', async function(){
             +'</div>'
             +'<div style="text-align:right">'
             +'<span class="os '+(istate.toLowerCase().includes('post')?'os-ok':istate.toLowerCase().includes('cancel')?'os-cancel':'os-draft')+'" style="display:block;margin-bottom:5px">'+istate+'</span>'
-            +'<div style="font-weight:800;color:var(--red-d)">AED '+parseFloat(inv.amount_total||0).toFixed(2)+'</div>'
+            +'<div style="font-weight:800;color:var(--red-d)">AED '+invTotal.toFixed(2)+'</div>'
             +'</div>'
             +(pdfUrl ? '<div style="width:100%;margin-top:8px"><a href="'+pdfUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;padding:9px 18px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">📄 Download Invoice PDF</a></div>' : '<div style="width:100%;margin-top:6px;font-size:11px;color:#9ca3af">PDF available once the invoice is posted</div>')
             +'</div>';

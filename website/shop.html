@@ -231,7 +231,7 @@ async function loadProds() {
     if (domainParts.length) params.domain = '[' + domainParts.join(',') + ']';
 
     var r = await API.getProds(params);
-    var prods = (r.data || []).filter(function(p){ return parseFloat(p.list_price||0) > 0; });
+    var prods = (r.data || []).filter(function(p){ return parseFloat(p.ecommerce_price || p.ecommerce_pricee || p.list_price || 0) > 0; });
     var total = currentCatPids ? currentCatPids.length : (r.total || prods.length);
     document.getElementById('shopCount').textContent = 'Showing ' + prods.length + ' products' + (total > PAGE_SIZE ? ' of ' + total : '');
     el.innerHTML = prods.length ? prods.map(buildCard).join('') :
