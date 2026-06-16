@@ -1644,6 +1644,26 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     return { ...r, data: p ? filterLoyaltyByPartner(all, p) : all };
   };
   const myProfile  = () => { const p=myPid(); return p?getContact(p):Promise.resolve({data:[]}); };
+  
+  // ── SHAREHOLDER APIs ──────────────────────────────────────────
+  const getShareholderFieldMap = () => GET('/api/shareholder/field_map');
+  const shareholderLookup = (num) => POST('/api/shareholder/lookup', { shareholder_number: num, partner_sequence: num });
+  const shareholderSendOtp = (num) => POST('/api/shareholder/send_otp', { shareholder_number: num });
+  const shareholderVerifyOtp = (num, otp) => POST('/api/shareholder/verify_otp', { shareholder_number: num, otp });
+  const getShareholderProfile = (num) => POST('/api/shareholder/profile', { shareholder_number: num });
+  const updateShareholderProfile = (num, data) => POST('/api/shareholder/update_profile', { shareholder_number: num, ...data });
+  const getShareholderPurchases = (num) => POST('/api/shareholder/purchases', { shareholder_number: num });
+  const linkShareholderOrder = (num, orderId) => {
+    const payload = { shareholder_number: num };
+    if (typeof orderId === 'string' && (orderId.startsWith('S') || orderId.includes('-'))) {
+      payload.order_name = orderId;
+    } else {
+      payload.order_id = orderId;
+    }
+    return POST('/api/shareholder/link_order', payload);
+  };
+  const getShareholderCertificates = (num) => POST('/api/shareholder/certificates', { shareholder_number: num });
+  const getShareholderRewards = (num) => POST('/api/shareholder/rewards', { shareholder_number: num });
 
   return {
     build: API_BUILD,
@@ -1653,6 +1673,9 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     loggedIn, me, myPid, mySessionId, myUserId, myName, sess, saveSess, clearSess,
     // Auth
     login, logout, register, updatePassword, forgotPassword,
+    getShareholderFieldMap, shareholderLookup, shareholderSendOtp, shareholderVerifyOtp,
+    getShareholderProfile, updateShareholderProfile, getShareholderPurchases,
+    linkShareholderOrder, getShareholderCertificates, getShareholderRewards,
     // Startup/Sliders
     getLogo, getHomeSliders, getDealOfDay, getBestSeller, getRecommended,
     getFeatured, getFreshPick, getBrands, getMobileAppPromo, getTrustElements, getAllDeals, getDealById,
