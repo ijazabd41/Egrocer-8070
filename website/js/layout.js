@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
   if(h){
     h.innerHTML=buildHeader();
     if(typeof updateHeaderUser === 'function') updateHeaderUser();
-    if(typeof initUserMenu === 'function') initUserMenu();
   }
   if(f)f.innerHTML=buildFooter();
   loadLogo();
@@ -127,16 +126,10 @@ function buildHeader(){
       <span class="ic"><span class="u-avatar" style="font-size:20px">👤</span></span>
       <span class="lbl u-name">Sign In</span>
     </a>
-    <button type="button" class="hbtn u-menu-trigger signedin-only" style="display:none" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+    <a class="hbtn u-link signedin-only" href="account.html" style="display:none" aria-label="My Account">
       <span class="ic"><span class="u-avatar" style="font-size:20px">👤</span></span>
       <span class="lbl u-name">Account</span>
-    </button>
-    <div class="user-menu-dd" id="userMenuDd" role="menu" aria-label="Account menu">
-      <div class="user-menu-hdr"><strong class="user-menu-fullname"></strong></div>
-      <a href="account.html" class="user-menu-item" role="menuitem"><span class="en">👤 My Account</span><span class="ar" style="display:none">👤 حسابي</span></a>
-      <a href="track-order.html" class="user-menu-item" role="menuitem"><span class="en">📦 Track Order</span><span class="ar" style="display:none">📦 تتبع الطلب</span></a>
-      <button type="button" class="user-menu-item user-menu-logout" role="menuitem"><span class="en">🚪 Sign Out</span><span class="ar" style="display:none">🚪 تسجيل الخروج</span></button>
-    </div>
+    </a>
   </div>
     <a class="hbtn" href="wishlist.html" aria-label="Wishlist">
       <span class="ic">❤️</span><span class="lbl">Wishlist</span>

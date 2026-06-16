@@ -335,6 +335,15 @@ async function loadOrders(isLoadMore = false){
       var cls = stateKey==='sale'||stateKey==='done'?'os-ok':stateKey==='cancel'?'os-cancel':'os-draft';
       var hasInvoice = Array.isArray(o.invoice_ids)?o.invoice_ids.length>0:!!o.invoice_ids;
       var hasDelivery = Array.isArray(o.picking_ids)?o.picking_ids.length>0:!!o.picking_ids;
+      
+      var totalVal = parseFloat(o.amount_total || 0);
+      if (o.note && o.note.includes('[STORE PICKUP]')) {
+        var match = o.note.match(/Store Pickup Discount \(5%\):\s*-AED\s*([\d.]+)/i);
+        var pickupDisc = match ? parseFloat(match[1]) : parseFloat((parseFloat(o.amount_untaxed || 0) * 0.05).toFixed(2));
+        var netUntaxed = Math.max(0, parseFloat(o.amount_untaxed || 0) - pickupDisc);
+        var newVat = parseFloat((netUntaxed * 0.05).toFixed(2));
+        totalVal = netUntaxed + newVat;
+      }
       return '<div class="order-card">'
         +'<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">'
         +'<div><div style="font-size:15px;font-weight:900">'+o.name+'</div>'
@@ -343,7 +352,7 @@ async function loadOrders(isLoadMore = false){
         +'</div>'
         +'<div style="text-align:right">'
         +'<span class="os '+cls+'" style="display:block;margin-bottom:5px">'+state+'</span>'
-        +'<div style="font-size:17px;font-weight:900;color:var(--red-d)">AED '+parseFloat(o.amount_total||0).toFixed(2)+'</div>'
+        +'<div style="font-size:17px;font-weight:900;color:var(--red-d)">AED '+totalVal.toFixed(2)+'</div>'
         +'</div></div>'
         +'<div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap;align-items:center">'
         +'<button onclick="viewOrderDetail('+o.id+')" style="background:var(--red);color:#fff;border:none;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer">📋 View Details</button>'
@@ -396,31 +405,47 @@ async function viewOrderDetail(oid){
       .map(function(x){ return typeof x==='object'?x.id:x; });
     var pickingIds = (Array.isArray(o.picking_ids)?o.picking_ids:(o.picking_ids?[o.picking_ids]:[]))
       .map(function(x){ return typeof x==='object'?x.id:x; });
-    var carrier = Array.isArray(o.carrier_id)?o.carrier_id[1]:(o.carrier_id||'');
     var partner = Array.isArray(o.partner_id)?o.partner_id[1]:'';
+
+    var pricing = recalculateOrderPrices(o, lines);
+    var carrier = pricing.carrier;
+    var amtSub = pricing.itemsSubtotal;
+    var amtTax = pricing.vat;
+    var amtTotal = pricing.total;
 
     var summaryHtml = ''
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">'
       +'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Order #</div><div style="font-weight:800">'+(o.name||oid)+'</div></div>'
       +'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Status</div><span class="os '+(stateKey==='sale'||stateKey==='done'?'os-ok':stateKey==='cancel'?'os-cancel':'os-draft')+'">'+state+'</span></div>'
       +'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Date</div><div style="font-size:12px">'+(o.date_order||'').slice(0,16)+'</div></div>'
-      +'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Total</div><div style="font-weight:900;color:var(--red-d);font-size:16px">AED '+parseFloat(o.amount_total||0).toFixed(2)+'</div></div>'
+      +'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Total</div><div style="font-weight:900;color:var(--red-d);font-size:16px">AED '+amtTotal.toFixed(2)+'</div></div>'
       +(carrier?'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Delivery Method</div><div style="font-size:12px">🚚 '+carrier+'</div></div>':'')
       +(partner?'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Customer</div><div style="font-size:12px">'+partner+'</div></div>':'')
       +'</div>'
       +(o.note?'<div style="font-size:11px;color:#6b7280;margin-bottom:12px;padding:10px;background:#f9fafb;border-radius:8px;line-height:1.5"><strong>📝 Delivery Note:</strong><br>'+o.note+'</div>':'')
-      +(lines.length?'<div style="border-top:1.5px solid #f3f4f6;padding-top:12px;margin-bottom:12px">'
-        +'<div style="font-size:12px;font-weight:800;margin-bottom:8px">Order Items ('+lines.length+')</div>'
-        +lines.map(function(l){
+      +(pricing.regularLines.length?'<div style="border-top:1.5px solid #f3f4f6;padding-top:12px;margin-bottom:12px">'
+        +'<div style="font-size:12px;font-weight:800;margin-bottom:8px">Order Items ('+pricing.regularLines.length+')</div>'
+        +pricing.regularLines.map(function(l){
           var pnm=(Array.isArray(l.product_id)?l.product_id[1]:l.name||l.display_name||'–');
           if(typeof pnm==='object'&&pnm) pnm = pnm.name || pnm.display_name || '–';
           pnm = (pnm||'').replace(/^\[.*?\]\s*/,'').trim();
+          var qty = parseFloat(l.product_uom_qty || l.qty || 1);
+          var unit = parseFloat(l.price_unit || 0);
+          var sub = parseFloat(l.price_subtotal || l.price_total || 0);
+          if(!sub) sub = qty * unit;
           return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f9fafb;gap:8px">'
             +'<div style="flex:1"><div style="font-size:12px;font-weight:700">'+pnm+'</div>'
-            +'<div style="font-size:10px;color:#9ca3af">Qty: '+(l.product_uom_qty||l.qty||1)+' × AED '+parseFloat(l.price_unit||0).toFixed(2)+'</div></div>'
-            +'<div style="font-weight:700;color:var(--red-d);font-size:13px">AED '+parseFloat(l.price_subtotal||l.price_total||0).toFixed(2)+'</div>'
+            +'<div style="font-size:10px;color:#9ca3af">Qty: '+qty+' × AED '+unit.toFixed(2)+'</div></div>'
+            +'<div style="font-weight:700;color:var(--red-d);font-size:13px">AED '+sub.toFixed(2)+'</div>'
             +'</div>';}).join('')
-        +'<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:800;padding-top:10px;border-top:2px solid #e5e7eb"><span>Total</span><span style="color:var(--red-d)">AED '+parseFloat(o.amount_total||0).toFixed(2)+'</span></div>'
+        +'<div style="margin-top:10px;padding-top:10px;border-top:1.5px solid #e5e7eb;font-size:12px">'
+          +'<div style="display:flex;justify-content:space-between;color:#6b7280"><span>Subtotal</span><span>AED '+amtSub.toFixed(2)+'</span></div>'
+          +(pricing.isPickup?'<div style="display:flex;justify-content:space-between;color:#16a34a;margin-top:3px"><span>Store Pickup Discount (5%)</span><span>-AED '+pricing.pickupDiscount.toFixed(2)+'</span></div>':'')
+          +(pricing.promoDiscount>0?'<div style="display:flex;justify-content:space-between;color:#16a34a;margin-top:3px"><span>Discount</span><span>-AED '+pricing.promoDiscount.toFixed(2)+'</span></div>':'')
+          +(pricing.delFee>0?'<div style="display:flex;justify-content:space-between;color:#6b7280;margin-top:3px"><span>Delivery Fee</span><span>AED '+pricing.delFee.toFixed(2)+'</span></div>':'')
+          +(amtTax?'<div style="display:flex;justify-content:space-between;color:#6b7280;margin-top:3px"><span>VAT (5%)</span><span>AED '+amtTax.toFixed(2)+'</span></div>':'')
+          +'<div style="display:flex;justify-content:space-between;font-weight:800;margin-top:6px;font-size:14px"><span>Total</span><span style="color:var(--red-d)">AED '+amtTotal.toFixed(2)+'</span></div>'
+        +'</div>'
         +'</div>' : '<div style="text-align:center;padding:14px;color:#9ca3af;font-size:12px">No items found on this order</div>')
       // Reserve slots so we can fill them after async calls finish
       +'<div id="ord-invoice-'+oid+'" style="margin-top:8px"></div>'
@@ -444,6 +469,8 @@ async function viewOrderDetail(oid){
             if(!inv) continue;
             var istate=Array.isArray(inv.state)?inv.state[1]:inv.state||'Draft';
             var pdfUrl=inv.access_token?API.invPdfUrl(inv.id,inv.access_token):(inv.access_url?API.PX+inv.access_url:'');
+            var invPrices = recalculateInvoicePrices(inv, pricing.isPickup);
+            var invTotal = invPrices.total;
             invHtml += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;flex-wrap:wrap">'
               +'<div><div style="font-size:13px;font-weight:800">'+(inv.name||'Invoice #'+inv.id)+'</div>'
               +'<div style="font-size:10px;color:#6b7280">Invoice ID: <strong>'+inv.id+'</strong></div>'
@@ -451,7 +478,7 @@ async function viewOrderDetail(oid){
               +'</div>'
               +'<div style="text-align:right">'
               +'<span class="os '+(istate.toLowerCase().includes('post')?'os-ok':istate.toLowerCase().includes('cancel')?'os-cancel':'os-draft')+'" style="display:block;margin-bottom:4px">'+istate+'</span>'
-              +'<div style="font-weight:800;color:var(--red-d);font-size:13px">AED '+parseFloat(inv.amount_total||0).toFixed(2)+'</div>'
+              +'<div style="font-weight:800;color:var(--red-d);font-size:13px">AED '+invTotal.toFixed(2)+'</div>'
               +(inv.amount_residual&&parseFloat(inv.amount_residual)>0?'<div style="font-size:10px;color:#9ca3af">Due: AED '+parseFloat(inv.amount_residual).toFixed(2)+'</div>':'')
               +'</div>'
               +(pdfUrl?'<div style="width:100%;margin-top:6px"><a href="'+pdfUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:var(--red);color:#fff;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;text-decoration:none">📄 Get Invoice PDF</a></div>':'<div style="width:100%;margin-top:6px;font-size:10px;color:#9ca3af">PDF available once invoice is posted</div>')
@@ -560,6 +587,13 @@ async function loadInvoices(isLoadMore = false){
       var cls = state.toLowerCase().includes('post')?'os-ok':state.toLowerCase().includes('cancel')?'os-cancel':'os-draft';
       // PDF URL from access_token OR access_url
       var pdfUrl = inv.access_token ? API.invPdfUrl(inv.id, inv.access_token) : (inv.access_url?API.PX+inv.access_url:'');
+      
+      var isPickup = (inv.narration || inv.note || '').includes('[STORE PICKUP]') ||
+                    (inv.invoice_origin && ordersCache.some(function(o){ return o.name === inv.invoice_origin && (o.note || '').includes('[STORE PICKUP]'); })) ||
+                    (inv.origin && ordersCache.some(function(o){ return o.name === inv.origin && (o.note || '').includes('[STORE PICKUP]'); }));
+      var invPrices = recalculateInvoicePrices(inv, isPickup);
+      var invTotal = invPrices.total;
+
       return '<div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:12px">'
         +'<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">'
         +'<div><div style="font-size:15px;font-weight:900">'+(inv.name||'Invoice')+'</div>'
@@ -569,7 +603,7 @@ async function loadInvoices(isLoadMore = false){
         +'</div>'
         +'<div style="text-align:right">'
         +'<span class="os '+cls+'" style="display:block;margin-bottom:5px">'+state+'</span>'
-        +'<div style="font-size:17px;font-weight:900;color:var(--red-d)">AED '+parseFloat(inv.amount_total||0).toFixed(2)+'</div>'
+        +'<div style="font-size:17px;font-weight:900;color:var(--red-d)">AED '+invTotal.toFixed(2)+'</div>'
         +(inv.amount_residual&&parseFloat(inv.amount_residual)>0?'<div style="font-size:11px;color:#9ca3af">Due: AED '+parseFloat(inv.amount_residual).toFixed(2)+'</div>':'')
         +'</div></div>'
         // PDF DOWNLOAD BUTTON

@@ -3,6 +3,155 @@
 /* ── PROGRESS BAR ─────────────────────────────────────── */
 const Bar={_el:null,_v:0,_t:null,init(){if(this._el)return;this._el=document.createElement('div');this._el.style.cssText='position:fixed;top:0;left:0;height:3px;background:#ED1C24;z-index:99999;width:0;transition:width .25s;pointer-events:none';document.body.prepend(this._el);},start(){this.init();this._v=0;this._el.style.opacity='1';this._set(10);clearInterval(this._t);this._t=setInterval(()=>{if(this._v<85){this._v+=Math.random()*5;this._set(this._v);}},400);},done(){clearInterval(this._t);this._set(100);setTimeout(()=>{this._el.style.opacity='0';setTimeout(()=>{this._el.style.width='0';this._el.style.opacity='1';},400);},250);},_set(v){this._v=v;if(this._el)this._el.style.width=v+'%';}};
 
+/* ── HELPER FUNCTIONS FOR DELIVERY & DISCOUNTS ────────── */
+function isStorePickupMethod(m){
+  if(!m) return false;
+  var name=(m.name||'').toLowerCase();
+  var dtype=Array.isArray(m.delivery_type)?String(m.delivery_type[0]||'').toLowerCase():String(m.delivery_type||'').toLowerCase();
+  return /pickup|store|collect|click.?&.?collect|demo/i.test(name)||/pickup|store|collect/i.test(dtype);
+}
+
+function getCartProgressHtml(subtotal) {
+  var minProgress = Math.min(100, (subtotal / 100) * 100);
+  var freeProgress = Math.min(100, (subtotal / 150) * 100);
+  var minReached = subtotal >= 100;
+  var freeReached = subtotal >= 150;
+  
+  var minMsg = minReached 
+    ? "Minimum order reached ✓" 
+    : "Add AED " + (100 - subtotal).toFixed(2) + " more to reach minimum order.";
+    
+  var freeMsg = freeReached 
+    ? "You have unlocked FREE delivery 🎉" 
+    : "Add AED " + (150 - subtotal).toFixed(2) + " more to unlock free delivery.";
+    
+  return `
+    <div class="progress-card" style="background:#fff; border:1.5px solid #e5e7eb; border-radius:14px; padding:16px; margin-bottom:16px; font-family:Inter,sans-serif;">
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <!-- Minimum Order Progress -->
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#374151;">
+            <span>Minimum Order (AED 100)</span>
+            <span style="color:${minReached ? '#10B981' : '#ED1C24'}">${minMsg}</span>
+          </div>
+          <div style="background:#e5e7eb; border-radius:50px; height:8px; overflow:hidden; position:relative;">
+            <div style="width:${minProgress}%; height:100%; border-radius:50px; background:${minReached ? 'linear-gradient(90deg, #10B981, #34D399)' : 'linear-gradient(90deg, #ED1C24, #ff5c5c)'}; transition:width 0.4s ease-out;"></div>
+          </div>
+        </div>
+        
+        <!-- Free Delivery Progress -->
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#374151;">
+            <span>Free Delivery (AED 150)</span>
+            <span style="color:${freeReached ? '#10B981' : '#3B82F6'}">${freeMsg}</span>
+          </div>
+          <div style="background:#e5e7eb; border-radius:50px; height:8px; overflow:hidden; position:relative;">
+            <div style="width:${freeProgress}%; height:100%; border-radius:50px; background:${freeReached ? 'linear-gradient(90deg, #10B981, #34D399)' : 'linear-gradient(90deg, #3B82F6, #60A5FA)'}; transition:width 0.4s ease-out;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function recalculateOrderPrices(o, lines) {
+  var isPickup = (o.note || '').includes('[STORE PICKUP]');
+  var carrier = Array.isArray(o.carrier_id) ? (typeof o.carrier_id[0]==='object'?o.carrier_id[0].name:o.carrier_id[1]) : (o.carrier_id||'');
+  
+  var regularLines = [];
+  var discountLines = [];
+  var deliveryLines = [];
+  
+  (lines || []).forEach(function(l) {
+    var isDelLine = l.is_delivery || /delivery|shipping|postage/i.test(l.name || '');
+    if (isDelLine) {
+      deliveryLines.push(l);
+      return;
+    }
+    var price = parseFloat(l.price_unit || 0);
+    var sub = parseFloat(l.price_subtotal || l.price_total || l.price_subtotal_incl || 0);
+    if (price < 0 || sub < 0) {
+      discountLines.push(l);
+    } else {
+      regularLines.push(l);
+    }
+  });
+
+  var itemsSubtotal = regularLines.reduce(function(sum, l) {
+    var qty = parseFloat(l.product_uom_qty || l.qty || 1);
+    var unit = parseFloat(l.price_unit || 0);
+    var sub = parseFloat(l.price_subtotal || l.price_total || l.price_subtotal_incl || 0);
+    if (!sub) sub = qty * unit;
+    return sum + sub;
+  }, 0);
+
+  var promoDiscount = Math.abs(discountLines.reduce(function(sum, l) {
+    var qty = parseFloat(l.product_uom_qty || l.qty || 1);
+    var unit = parseFloat(l.price_unit || 0);
+    var sub = parseFloat(l.price_subtotal || l.price_total || l.price_subtotal_incl || 0);
+    if (!sub) sub = qty * unit;
+    return sum + sub;
+  }, 0));
+
+  var delFee = deliveryLines.reduce(function(sum, l) {
+    var qty = parseFloat(l.product_uom_qty || l.qty || 1);
+    var unit = parseFloat(l.price_unit || 0);
+    var sub = parseFloat(l.price_subtotal || l.price_total || l.price_subtotal_incl || 0);
+    if (!sub) sub = qty * unit;
+    return sum + sub;
+  }, 0);
+
+  var pickupDiscount = 0;
+  if (isPickup) {
+    var match = (o.note || '').match(/Store Pickup Discount \(5%\):\s*-AED\s*([\d.]+)/i);
+    pickupDiscount = match ? parseFloat(match[1]) : parseFloat((itemsSubtotal * 0.05).toFixed(2));
+  }
+
+  var netTaxable = Math.max(0, itemsSubtotal - promoDiscount - pickupDiscount + delFee);
+  var vat = parseFloat((netTaxable * 0.05).toFixed(2));
+  var total = itemsSubtotal - promoDiscount - pickupDiscount + delFee + vat;
+
+  return {
+    isPickup: isPickup,
+    carrier: carrier,
+    regularLines: regularLines,
+    discountLines: discountLines,
+    deliveryLines: deliveryLines,
+    itemsSubtotal: itemsSubtotal,
+    promoDiscount: promoDiscount,
+    delFee: delFee,
+    pickupDiscount: pickupDiscount,
+    vat: vat,
+    total: total
+  };
+}
+
+function recalculateInvoicePrices(inv, isPickup) {
+  var invSub = parseFloat(inv.amount_untaxed || 0);
+  var invTotal = parseFloat(inv.amount_total || 0);
+  var invTax = parseFloat(inv.amount_tax || 0);
+  
+  if (isPickup) {
+    var invPickupDisc = parseFloat((invSub * 0.05).toFixed(2));
+    var invNet = Math.max(0, invSub - invPickupDisc);
+    var invVat = parseFloat((invNet * 0.05).toFixed(2));
+    var invNewTotal = invSub - invPickupDisc + invVat;
+    return {
+      subtotal: invSub,
+      pickupDiscount: invPickupDisc,
+      vat: invVat,
+      total: invNewTotal
+    };
+  }
+  
+  return {
+    subtotal: invSub,
+    pickupDiscount: 0,
+    vat: invTax,
+    total: invTotal
+  };
+}
+
 /* ── SKELETONS ────────────────────────────────────────── */
 function skelRow(n=6,h=190){return Array(n).fill(0).map(()=>`<div style="min-width:140px;height:${h}px;border-radius:12px;flex-shrink:0" class="skel"></div>`).join('');}
 function skelGrid(n=8,h=290){return Array(n).fill(0).map(()=>`<div style="height:${h}px" class="skel"></div>`).join('');}
@@ -293,7 +442,14 @@ function renderDrawer(){
     body.innerHTML=`<div style="text-align:center;padding:52px 20px"><div style="font-size:60px;margin-bottom:14px">🛒</div><h3 style="font-size:15px;font-weight:800;color:#374151;margin-bottom:8px">Your cart is empty</h3><a href="shop.html" onclick="closeDrw()" style="color:#ED1C24;font-weight:700;font-size:13px">Start Shopping →</a></div>`;
     if(ftr)ftr.innerHTML='';return;
   }
-  body.innerHTML=items.map(it=>`
+  
+  const t=Cart.total();
+  const progressHtml = getCartProgressHtml(t);
+  const minWarningHtml = t < 100 
+    ? `<div style="background:#fef2f2;border:1.5px solid #ED1C24;border-radius:8px;padding:8px 12px;font-size:11.5px;font-weight:700;color:#ED1C24;margin-bottom:10px;text-align:center;">⚠️ Minimum order amount is AED 100.</div>` 
+    : '';
+
+  body.innerHTML=progressHtml + minWarningHtml + items.map(it=>`
     <div style="display:flex;gap:11px;padding:12px 0;border-bottom:1px solid #f3f4f6;align-items:center">
       <div style="width:54px;height:54px;background:#f9fafb;border-radius:10px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb">
         ${it.image?`<img src="${it.image}" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><span style="font-size:22px;display:none;align-items:center;justify-content:center;width:100%;height:100%">📦</span>`:'<span style="font-size:22px">📦</span>'}
@@ -309,30 +465,17 @@ function renderDrawer(){
       </div>
       <button onclick="Cart.remove(${it.product_id})" style="color:#ED1C24;font-size:17px;background:none;border:none;cursor:pointer;padding:4px;flex-shrink:0">🗑️</button>
     </div>`).join('');
-  const t=Cart.total();
-  const minOrder = 50;
-  const freeDelivThreshold = 150;
-  const progressPercent = Math.min(100, Math.round((t / freeDelivThreshold) * 100));
-  const remaining = freeDelivThreshold - t;
-  const progressHtml = `
-    <div style="margin-bottom:12px;background:#fff;padding:10px;border-radius:8px;border:1px solid #e5e7eb">
-      <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:6px">
-        <span>${t < minOrder ? 'Minimum Order' : 'Delivery Progress'}</span>
-        <span style="color:${t >= freeDelivThreshold ? '#10b981' : (t < minOrder ? '#f59e0b' : '#ED1C24')}">${t >= freeDelivThreshold ? 'FREE Delivery!' : 'Min 50 AED'}</span>
-      </div>
-      <div style="height:6px;background:#f3f4f6;border-radius:3px;overflow:hidden;margin-bottom:6px">
-        <div style="height:100%;width:${t < minOrder ? Math.min(100, Math.round((t / minOrder) * 100)) : Math.min(100, Math.round((t / freeDelivThreshold) * 100))}%;background:${t >= freeDelivThreshold ? '#10b981' : (t < minOrder ? '#f59e0b' : '#ED1C24')};transition:width .3s"></div>
-      </div>
-      <div style="font-size:10px;color:${t >= freeDelivThreshold ? '#10b981' : '#6b7280'};font-weight:600;text-align:center">
-        ${t >= freeDelivThreshold ? `Congratulations! You qualify for FREE delivery.` : (t < minOrder ? `Add ${(minOrder - t).toFixed(2)} AED more to place your order.` : `Add ${(freeDelivThreshold - t).toFixed(2)} AED more to qualify for FREE delivery.`)}
-      </div>
-    </div>`;
-
-  if(ftr)ftr.innerHTML=`
-    ${progressHtml}
-    <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;margin-bottom:12px"><span>Total</span><span style="color:#a01820">AED ${t.toFixed(2)}</span></div>
-    <a href="cart.html" onclick="closeDrw()" style="display:block;text-align:center;background:#f3f4f6;color:#374151;padding:10px;border-radius:8px;font-weight:700;font-size:13px;margin-bottom:8px;text-decoration:none">View Cart</a>
-    <a href="javascript:void(0)" onclick="if(Cart.count()===0){ toast('Your cart is empty', 'warn'); return; } if(Cart.total() < ${minOrder}){ toast('Minimum order amount is AED ${minOrder}', 'warn'); return; } closeDrw(); location.href='checkout.html';" style="display:block;text-align:center;background:#ED1C24;color:#fff;padding:12px;border-radius:8px;font-weight:800;font-size:14px;text-decoration:none">Checkout →</a>`;
+    
+  if(ftr){
+    const checkoutBtnHtml = t >= 100
+      ? `<a href="javascript:void(0)" onclick="if(Cart.count()===0){ toast('Your cart is empty', 'warn'); return; } closeDrw(); location.href='checkout.html';" style="display:block;text-align:center;background:#ED1C24;color:#fff;padding:12px;border-radius:8px;font-weight:800;font-size:14px;text-decoration:none">Checkout →</a>`
+      : `<a href="javascript:void(0)" style="display:block;text-align:center;background:#d1d5db;color:#9ca3af;padding:12px;border-radius:8px;font-weight:800;font-size:14px;text-decoration:none;cursor:not-allowed;" onclick="toast('Minimum order amount is AED 100', 'warn');">Checkout →</a>`;
+      
+    ftr.innerHTML=`
+      <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;margin-bottom:12px"><span>Total</span><span style="color:#a01820">AED ${t.toFixed(2)}</span></div>
+      <a href="cart.html" onclick="closeDrw()" style="display:block;text-align:center;background:#f3f4f6;color:#374151;padding:10px;border-radius:8px;font-weight:700;font-size:13px;margin-bottom:8px;text-decoration:none">View Cart</a>
+      ${checkoutBtnHtml}`;
+  }
 }
 
 /* ── TOAST ────────────────────────────────────────────── */
@@ -354,7 +497,7 @@ function buildCard(p){
   if(!p?.id)return'';
   const id=p.id;
   const name=(p.name||p.display_name||'').replace(/^\[.*?\]\s*/,'').trim()||'Product';
-  const price=parseFloat(p.list_price||p.lst_price||0);
+  const price=parseFloat(p.ecommerce_price||p.ecommerce_pricee||p.list_price||p.lst_price||0);
   const std=parseFloat(p.standard_price||0);
   // CRITICAL: image_1024 is a PATH like /web/image/product.template/123/image_1024
   // Must prepend /proxy to load it
@@ -503,7 +646,7 @@ async function fetchProductsById(id) {
 
 function cartPayloadFromProduct(p) {
   const pid = p.id;
-  const price = parseFloat(p.list_price || p.lst_price || 0);
+  const price = parseFloat(p.ecommerce_price || p.ecommerce_pricee || p.list_price || p.lst_price || 0);
   const qty = p.qty_available !== undefined ? parseFloat(p.qty_available) : -1;
   const name = (p.name || p.display_name || 'Product').replace(/^\[.*?\]\s*/, '').trim();
   const image = p.image_1024 ? API.img(p.image_1024) : API.prodImg(pid);
@@ -638,7 +781,7 @@ async function enrichDealCards(items) {
       wrap?.setAttribute('data-pid', pid);
     }
 
-    const price = parseFloat(p.list_price || 0);
+    const price = parseFloat(p.ecommerce_price || p.ecommerce_pricee || p.list_price || 0);
     const std = parseFloat(p.standard_price || 0);
     const qty = p.qty_available !== undefined ? parseFloat(p.qty_available) : -1;
     const oos = qty <= 0 && qty !== -1;
@@ -688,59 +831,25 @@ const WL={
 };
 
 /* ── SESSION / HEADER USER STATE ─────────────────────── */
-function closeUserMenu(){
-  const dd=document.getElementById('userMenuDd');
-  const trigger=document.querySelector('.u-menu-trigger');
-  dd?.classList.remove('open');
-  trigger?.setAttribute('aria-expanded','false');
-}
-
-function initUserMenu(){
-  const wrap=document.querySelector('.user-menu-wrap');
-  if(!wrap||wrap._umInit)return;
-  wrap._umInit=true;
-  const trigger=wrap.querySelector('.u-menu-trigger');
-  const dd=document.getElementById('userMenuDd');
-  trigger?.addEventListener('click',e=>{
-    e.stopPropagation();
-    const open=dd?.classList.toggle('open');
-    trigger.setAttribute('aria-expanded',open?'true':'false');
-  });
-  wrap.querySelector('.user-menu-logout')?.addEventListener('click',async e=>{
-    e.preventDefault();
-    closeUserMenu();
-    await API.logout();
-    Cart.clear();
-    toast('Signed out');
-    setTimeout(()=>location.href='index.html',600);
-  });
-  document.addEventListener('click',e=>{if(!wrap.contains(e.target))closeUserMenu();});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeUserMenu();});
-}
-
 function updateHeaderUser(){
-  initUserMenu();
   const user=API.me();
   if(user?.uid){
     const nm=user.name?user.name.split(' ')[0]:'Account';
-    const full=user.name||'My Account';
     document.querySelectorAll('.u-name').forEach(el=>el.textContent=nm);
-    document.querySelectorAll('.user-menu-fullname').forEach(el=>el.textContent=full);
     document.querySelectorAll('.u-avatar').forEach(el=>{
       el.textContent=nm.charAt(0).toUpperCase();
-    el.style.cssText='background:#ED1C24;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800';
+      el.style.cssText='background:#ED1C24;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800';
     });
     document.querySelectorAll('.signin-only').forEach(el=>el.style.display='none');
     document.querySelectorAll('.signedin-only').forEach(el=>el.style.display='flex');
-    closeUserMenu();
   }else{
     document.querySelectorAll('.u-name').forEach(el=>el.textContent='Sign In');
     document.querySelectorAll('.u-avatar').forEach(el=>{el.textContent='👤';el.style.cssText='';});
     document.querySelectorAll('.signin-only').forEach(el=>el.style.display='');
     document.querySelectorAll('.signedin-only').forEach(el=>el.style.display='none');
-    closeUserMenu();
   }
 }
+
 
 /* ── COUNTDOWN ────────────────────────────────────────── */
 let _cdI;

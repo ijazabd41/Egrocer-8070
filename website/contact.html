@@ -1,10 +1,46 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Contact – Coop Discounts</title><link rel="stylesheet" href="css/style.css?v=13.0"></head>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Contact – Coop Discounts</title><meta name="description" content="Contact Coop Discounts Hyper Market. Visit us at Al Ghandi Complex, Nadd Al Hamar, Dubai, or call 055 594 4719. Open daily 8AM–12AM."><link rel="stylesheet" href="css/style.css?v=13.0"></head>
 <body><div id="site-header"></div>
 <div class="phero"><h1>📞 Contact Us</h1><p>We're here to help you</p></div>
-<section class="sec"><div class="w" style="max-width:720px;margin:0 auto">
+<section class="sec"><div class="ctr" style="max-width:720px">
+
+  <!-- Contact Info Cards -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
-    ${[['📍','Visit Us','Al Ghandi Complex, Showroom 03, Nadd Al Hamar, Dubai, UAE'],['📞','Call Us','055 594 4719'],['✉️','Email Us','info@coop-discounts.com'],['🕐','Working Hours','Daily 8:00 AM – 12:00 AM']].map(([ic,t,d])=>`<div class="fs" style="display:flex;gap:14px;align-items:flex-start"><span style="font-size:28px"></span><div><div style="font-size:14px;font-weight:800;margin-bottom:4px"></div><div style="font-size:13px;color:#6b7280"></div></div></div>`).join('')}
+
+    <div class="fs" style="display:flex;gap:14px;align-items:flex-start">
+      <span style="font-size:28px">📍</span>
+      <div>
+        <div style="font-size:14px;font-weight:800;margin-bottom:4px">Visit Us</div>
+        <div style="font-size:13px;color:#6b7280">Al Ghandi Complex, Showroom 03, Nadd Al Hamar, Dubai, UAE</div>
+      </div>
+    </div>
+
+    <div class="fs" style="display:flex;gap:14px;align-items:flex-start">
+      <span style="font-size:28px">📞</span>
+      <div>
+        <div style="font-size:14px;font-weight:800;margin-bottom:4px">Call Us</div>
+        <div style="font-size:13px;color:#6b7280"><a href="tel:+971555944719" style="color:#6b7280">055 594 4719</a></div>
+      </div>
+    </div>
+
+    <div class="fs" style="display:flex;gap:14px;align-items:flex-start">
+      <span style="font-size:28px">✉️</span>
+      <div>
+        <div style="font-size:14px;font-weight:800;margin-bottom:4px">Email Us</div>
+        <div style="font-size:13px;color:#6b7280"><a href="mailto:info@coop-discounts.com" style="color:#6b7280">info@coop-discounts.com</a></div>
+      </div>
+    </div>
+
+    <div class="fs" style="display:flex;gap:14px;align-items:flex-start">
+      <span style="font-size:28px">🕐</span>
+      <div>
+        <div style="font-size:14px;font-weight:800;margin-bottom:4px">Working Hours</div>
+        <div style="font-size:13px;color:#6b7280">Daily 8:00 AM – 12:00 AM</div>
+      </div>
+    </div>
+
   </div>
+
+  <!-- Contact Form -->
   <div class="fs"><h3>Send a Message</h3>
     <div class="fgrid">
       <div class="fg"><label class="fl">Name</label><input class="fi" id="ctName" placeholder="Your name"></div>
@@ -13,6 +49,7 @@
     </div>
     <button class="sbtn" style="width:auto;padding:11px 28px;margin-top:4px" onclick="toast('✅ Message sent! We will reply within 24 hours.')">Send Message</button>
   </div>
+
 </div></section>
 <div id="site-footer"></div>
 <script src="js/api-cache.js?v=1"></script><script src="js/error-logger.js?v=1.0"></script>

@@ -26,10 +26,10 @@
     <div class="chk-summary" id="cartSummary">
       <h3>Order Summary</h3>
       <div class="chk-row"><span style="color:#6b7280">Subtotal</span><span id="cSub" style="font-weight:700">AED 0.00</span></div>
-      <div class="chk-row"><span style="color:#6b7280">Delivery</span><span id="cDeliv" style="font-weight:700;color:#16a34a">FREE</span></div>
+      <div class="chk-row"><span style="color:#6b7280">Delivery</span><span id="cDelivery" style="font-weight:700;color:#16a34a">FREE</span></div>
       <div class="chk-row"><span style="color:#6b7280">VAT (5%)</span><span id="cVat" style="font-weight:700">AED 0.00</span></div>
       <div class="chk-total"><span>Total</span><span id="cTotal">AED 0.00</span></div>
-      <a href="javascript:void(0)" onclick="proceedCheckout()" id="checkoutBtn" class="sbtn" style="margin-top:14px;display:block;text-align:center;text-decoration:none">Proceed to Checkout →</a>
+      <a href="javascript:void(0)" onclick="if(Cart.count()===0){ toast('Your cart is empty', 'warn'); return; } location.href='checkout.html';" id="checkoutBtn" class="sbtn" style="margin-top:14px;display:block;text-align:center;text-decoration:none">Proceed to Checkout →</a>
       <a href="shop.html" style="display:block;text-align:center;color:var(--red);font-weight:700;font-size:13px;margin-top:10px">← Continue Shopping</a>
 
       <!-- PROMO CODE -->
@@ -54,45 +54,6 @@ document.addEventListener('DOMContentLoaded', function(){
   renderCart();
 });
 
-function proceedCheckout() {
-    if(Cart.count()===0){ toast('Your cart is empty', 'warn'); return; }
-    if(Cart.total() < 50){ toast('Minimum order amount is AED 50', 'warn'); return; }
-    location.href='checkout.html';
-}
-
-function updateCartProgress(sub) {
-  var pContainer = document.getElementById('cartProgress');
-  if (!pContainer) {
-      pContainer = document.createElement('div');
-      pContainer.id = 'cartProgress';
-      var summaryDiv = document.getElementById('cartSummary');
-      summaryDiv.insertBefore(pContainer, summaryDiv.firstChild);
-  }
-  var minOrder = 50;
-  var freeDelivThreshold = 150;
-  var isFreeDeliv = sub >= freeDelivThreshold;
-  var progressPercent = sub < minOrder ? Math.min(100, Math.round((sub / minOrder) * 100)) : Math.min(100, Math.round((sub / freeDelivThreshold) * 100));
-  
-  var title = sub < minOrder ? 'Minimum Order' : 'Delivery Progress';
-  var statusText = isFreeDeliv ? 'FREE Delivery!' : 'Min 50 AED';
-  var statusColor = isFreeDeliv ? '#10b981' : (sub < minOrder ? '#f59e0b' : '#ED1C24');
-  var barColor = isFreeDeliv ? '#10b981' : (sub < minOrder ? '#f59e0b' : '#ED1C24');
-  var msg = isFreeDeliv 
-       ? 'Congratulations! You qualify for FREE delivery.'
-       : (sub < minOrder ? 'Add '+(minOrder - sub).toFixed(2)+' AED more to place your order.' : 'Add '+(freeDelivThreshold - sub).toFixed(2)+' AED more to qualify for FREE delivery.');
-
-  pContainer.innerHTML = '<div style="margin-bottom:16px;background:#f9fafb;padding:12px;border-radius:10px;border:1px solid #e5e7eb">'
-    + '<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:6px">'
-    + '<span>' + title + '</span>'
-    + '<span style="color:'+statusColor+'">'+statusText+'</span>'
-    + '</div>'
-    + '<div style="height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;margin-bottom:6px">'
-    + '<div style="height:100%;width:'+progressPercent+'%;background:'+barColor+';transition:width .3s"></div>'
-    + '</div>'
-    + '<div style="font-size:11px;color:'+(isFreeDeliv?'#10b981':'#6b7280')+';font-weight:600;text-align:center">' + msg + '</div>'
-    + '</div>';
-}
-
 function renderCart(){
   var items = Cart.raw();
   var el = document.getElementById('cartItems');
@@ -109,30 +70,16 @@ function renderCart(){
     return;
   }
 
-  // Calc totals
+  // Calc subtotal and dynamic warning/progress bars
   var sub = Cart.total();
-  var isFreeDeliv = sub >= 150;
-  var deliveryCharge = 0; // Handled by backend
-  var vat = sub * 0.05;
-  var total = sub + deliveryCharge + vat;
-  document.getElementById('cSub').textContent = 'AED '+sub.toFixed(2);
-  var delivEl = document.getElementById('cDeliv');
-  if (isFreeDeliv) {
-      delivEl.textContent = 'FREE';
-      delivEl.style.color = '#16a34a';
-  } else {
-      delivEl.textContent = 'Calculated at checkout';
-      delivEl.style.color = '#6b7280';
-  }
-  document.getElementById('cVat').textContent = 'AED '+vat.toFixed(2);
-  document.getElementById('cTotal').textContent = 'AED '+total.toFixed(2);
-  updateCartProgress(sub);
-
-  el.innerHTML = '<div style="background:#fff;border-radius:16px;border:1.5px solid #e5e7eb;overflow:hidden">'
-    +'<div style="padding:16px 20px;border-bottom:1.5px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center">'
-    +'<span style="font-size:14px;font-weight:800">'+items.length+' Item'+(items.length>1?'s':'')+'</span>'
-    +'<button onclick="clearCart()" style="background:none;border:none;color:#9ca3af;font-size:12px;font-weight:600;cursor:pointer;transition:color .2s" onmouseover="this.style.color=\'#ED1C24\'" onmouseout="this.style.color=\'#9ca3af\'">🗑️ Clear All</button>'
-    +'</div>'
+  
+  el.innerHTML = '<div id="cartProgressContainer"></div>'
+    + '<div id="cartMinWarning"></div>'
+    + '<div style="background:#fff;border-radius:16px;border:1.5px solid #e5e7eb;overflow:hidden">'
+    + '<div style="padding:16px 20px;border-bottom:1.5px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center">'
+    + '<span style="font-size:14px;font-weight:800">'+items.length+' Item'+(items.length>1?'s':'')+'</span>'
+    + '<button onclick="clearCart()" style="background:none;border:none;color:#9ca3af;font-size:12px;font-weight:600;cursor:pointer;transition:color .2s" onmouseover="this.style.color=\'#ED1C24\'" onmouseout="this.style.color=\'#9ca3af\'">🗑️ Clear All</button>'
+    + '</div>'
     + items.map(function(it, idx){
       var disc = it.standard_price && it.standard_price > it.price ? Math.round((1-it.price/it.standard_price)*100) : 0;
       return '<div style="display:flex;gap:14px;padding:16px 20px;border-bottom:1px solid #f9fafb;align-items:flex-start" id="citem-'+it.product_id+'">'
@@ -165,6 +112,86 @@ function renderCart(){
         +'</div>';
     }).join('')
     +'</div>';
+
+  updateCartProgressAndWarning(sub);
+}
+
+function updateCartProgressAndWarning(sub) {
+  var progressEl = document.getElementById('cartProgressContainer');
+  if (progressEl) progressEl.innerHTML = getCartProgressHtml(sub);
+
+  var warningEl = document.getElementById('cartMinWarning');
+  var checkoutBtn = document.getElementById('checkoutBtn');
+  if (sub < 100) {
+    if (warningEl) {
+      warningEl.innerHTML = '<div style="background:#fef2f2;border:1.5px solid #ED1C24;border-radius:12px;padding:12px;font-size:13px;font-weight:700;color:#ED1C24;margin-bottom:16px;text-align:center;">⚠️ Minimum order amount is AED 100.</div>';
+      warningEl.style.display = 'block';
+    }
+    if (checkoutBtn) {
+      checkoutBtn.style.background = '#d1d5db';
+      checkoutBtn.style.color = '#9ca3af';
+      checkoutBtn.style.cursor = 'not-allowed';
+      checkoutBtn.onclick = function(e) {
+        e.preventDefault();
+        toast('Minimum order amount is AED 100', 'warn');
+      };
+    }
+  } else {
+    if (warningEl) {
+      warningEl.innerHTML = '';
+      warningEl.style.display = 'none';
+    }
+    if (checkoutBtn) {
+      checkoutBtn.style.background = 'var(--red)';
+      checkoutBtn.style.color = '#fff';
+      checkoutBtn.style.cursor = 'pointer';
+      checkoutBtn.onclick = function() {
+        location.href = 'checkout.html';
+      };
+    }
+  }
+
+  updateCartDeliveryFeeAndTotals(sub);
+}
+
+async function updateCartDeliveryFeeAndTotals(sub) {
+  var delFee = 0;
+  if (sub < 150) {
+    try {
+      var r = await API.getDeliveryMethods();
+      var methods = r.data || [];
+      var stdMethod = methods.find(m => !isStorePickupMethod(m));
+      if (stdMethod) {
+        delFee = parseFloat(stdMethod.fixed_price || 0);
+      } else {
+        delFee = 15;
+      }
+    } catch (_) {
+      delFee = 15;
+    }
+  }
+
+  var delEl = document.getElementById('cDelivery');
+  if (delEl) {
+    if (delFee === 0) {
+      delEl.textContent = 'FREE';
+      delEl.style.color = '#16a34a';
+    } else {
+      delEl.textContent = 'AED ' + delFee.toFixed(2);
+      delEl.style.color = '#374151';
+    }
+  }
+
+  var vat = (sub + delFee) * 0.05;
+  var total = sub + delFee + vat;
+
+  var subEl = document.getElementById('cSub');
+  var vatEl = document.getElementById('cVat');
+  var totEl = document.getElementById('cTotal');
+
+  if (subEl) subEl.textContent = 'AED ' + sub.toFixed(2);
+  if (vatEl) vatEl.textContent = 'AED ' + vat.toFixed(2);
+  if (totEl) totEl.textContent = 'AED ' + total.toFixed(2);
 }
 
 async function changeQty(pid, delta){
@@ -179,23 +206,9 @@ async function changeQty(pid, delta){
     var sEl = document.getElementById('sub-'+pid);
     if(qEl) qEl.textContent = item.qty;
     if(sEl) sEl.textContent = 'AED '+((item.price*item.qty)||0).toFixed(2);
-    // Update totals
+    // Update progress bars & warnings & totals
     var sub = Cart.total();
-    var isFreeDeliv = sub >= 150;
-    var deliveryCharge = 0; // Handled by backend
-    var vat = sub * 0.05;
-    document.getElementById('cSub').textContent = 'AED '+sub.toFixed(2);
-    var delivEl = document.getElementById('cDeliv');
-    if (isFreeDeliv) {
-        delivEl.textContent = 'FREE';
-        delivEl.style.color = '#16a34a';
-    } else {
-        delivEl.textContent = 'Calculated at checkout';
-        delivEl.style.color = '#6b7280';
-    }
-    document.getElementById('cVat').textContent = 'AED '+vat.toFixed(2);
-    document.getElementById('cTotal').textContent = 'AED '+(sub+deliveryCharge+vat).toFixed(2);
-    updateCartProgress(sub);
+    updateCartProgressAndWarning(sub);
     tick();
   } else {
     renderCart(); // Item removed

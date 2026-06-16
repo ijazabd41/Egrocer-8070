@@ -278,7 +278,6 @@
 
     /* Header Bottom Nav */
     .r-bottom-nav {
-      border-bottom: 1px solid var(--border);
       background: #BE131A;
     }
 
@@ -1396,7 +1395,7 @@
     function buildProductGrid(prods) {
       var el = document.getElementById('allGrid');
       if (!el) return;
-      var filtered = (prods || []).filter(function (p) { return parseFloat(p.list_price || 0) > 0; });
+      var filtered = (prods || []).filter(function (p) { return parseFloat(p.ecommerce_price || p.ecommerce_pricee || p.list_price || 0) > 0; });
       if (!filtered.length) { el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#9ca3af">No products available</div>'; return; }
       el.innerHTML = filtered.slice(0, 10).map(buildCard).join('');
     }
