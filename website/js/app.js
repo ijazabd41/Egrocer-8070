@@ -45,7 +45,7 @@ function getCartProgressHtml(subtotal, isCheckout = false) {
     minHtml = `
         <!-- Minimum Order Progress -->
         <div style="display:flex; flex-direction:column; gap:6px;">
-          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#374151;">
+          <div style="display:flex; justify-content:space-between; font-size:13.2px; font-weight:700; color:#374151;">
             <span>Minimum Order (AED 100)</span>
             <span style="color:${minReached ? '#10B981' : '#ED1C24'}">${minMsg}</span>
           </div>
@@ -61,7 +61,7 @@ function getCartProgressHtml(subtotal, isCheckout = false) {
     freeHtml = `
         <!-- Free Delivery Progress -->
         <div style="display:flex; flex-direction:column; gap:6px;">
-          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#374151;">
+          <div style="display:flex; justify-content:space-between; font-size:13.2px; font-weight:700; color:#374151;">
             <span>Free Delivery (AED 150)</span>
             <span style="color:${freeReached ? '#10B981' : '#3B82F6'}">${freeMsg}</span>
           </div>
@@ -450,9 +450,9 @@ function tick(){
     const qty = item ? item.qty : 0;
     if (btnCls === 'mini-atc') {
       if (qty > 0) {
-        el.innerHTML = `<div style="display:flex;background:var(--red, #ED1C24);color:#fff;height:28px"><button onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},-1)" style="flex:1;background:transparent;color:#fff;font-weight:700;border:none;cursor:pointer;font-size:16px;font-family:Montserrat,sans-serif;">−</button><span style="flex:1;text-align:center;font-size:12px;font-weight:800;line-height:28px;">${qty}</span><button onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},1)" style="flex:1;background:transparent;color:#fff;font-weight:700;border:none;cursor:pointer;font-size:16px;font-family:Montserrat,sans-serif;">+</button></div>`;
+        el.innerHTML = `<div style="display:flex;background:var(--red, #ED1C24);color:#fff;height:28px"><button onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},-1)" style="flex:1;background:transparent;color:#fff;font-weight:700;border:none;cursor:pointer;font-size:17.6px;font-family:Montserrat,sans-serif;">−</button><span style="flex:1;text-align:center;font-size:13.2px;font-weight:800;line-height:28px;">${qty}</span><button onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},1)" style="flex:1;background:transparent;color:#fff;font-weight:700;border:none;cursor:pointer;font-size:17.6px;font-family:Montserrat,sans-serif;">+</button></div>`;
       } else {
-        el.innerHTML = `<button class="${btnCls}" onclick="event.preventDefault();event.stopPropagation();addToCart(decodeURIComponent('${pdEnc}'))" style="width:100%;background:var(--red, #ED1C24);color:#fff;border:none;padding:7px;font-size:11px;font-weight:700;cursor:pointer;transition:background .2s;font-family:Montserrat,sans-serif;" onmouseover="this.style.background='#BE161D'" onmouseout="this.style.background='var(--red, #ED1C24)'">Add to Cart</button>`;
+        el.innerHTML = `<button class="${btnCls}" onclick="event.preventDefault();event.stopPropagation();addToCart(decodeURIComponent('${pdEnc}'))" style="width:100%;background:var(--red, #ED1C24);color:#fff;border:none;padding:7px;font-size:12.1px;font-weight:700;cursor:pointer;transition:background .2s;font-family:Montserrat,sans-serif;" onmouseover="this.style.background='#BE161D'" onmouseout="this.style.background='var(--red, #ED1C24)'">Add to Cart</button>`;
       }
     } else if (qty > 0) {
       el.innerHTML = dealQtyHtml(pid, qty);
@@ -473,41 +473,41 @@ function renderDrawer(){
   if(!body)return;
   const items=Cart.raw();
   if(!items.length){
-    body.innerHTML=`<div style="text-align:center;padding:52px 20px"><div style="font-size:60px;margin-bottom:14px">🛒</div><h3 style="font-size:15px;font-weight:800;color:#374151;margin-bottom:8px">Your cart is empty</h3><a href="shop.html" onclick="closeDrw()" style="color:#ED1C24;font-weight:700;font-size:13px">Start Shopping →</a></div>`;
+    body.innerHTML=`<div style="text-align:center;padding:52px 20px"><div style="font-size:66px;margin-bottom:14px">🛒</div><h3 style="font-size:16.5px;font-weight:800;color:#374151;margin-bottom:8px">Your cart is empty</h3><a href="shop.html" onclick="closeDrw()" style="color:#ED1C24;font-weight:700;font-size:14.3px">Start Shopping →</a></div>`;
     if(ftr)ftr.innerHTML='';return;
   }
   
   const t=Cart.total();
   const progressHtml = getCartProgressHtml(t);
   const minWarningHtml = t < 100 
-    ? `<div style="background:#fef2f2;border:1.5px solid #ED1C24;border-radius:8px;padding:8px 12px;font-size:11.5px;font-weight:700;color:#ED1C24;margin-bottom:10px;text-align:center;">⚠️ Minimum order amount is AED 100.</div>` 
+    ? `<div style="background:#fef2f2;border:1.5px solid #ED1C24;border-radius:8px;padding:8px 12px;font-size:12.7px;font-weight:700;color:#ED1C24;margin-bottom:10px;text-align:center;">⚠️ Minimum order amount is AED 100.</div>` 
     : '';
 
   body.innerHTML=progressHtml + minWarningHtml + items.map(it=>`
     <div style="display:flex;gap:11px;padding:12px 0;border-bottom:1px solid #f3f4f6;align-items:center">
       <div style="width:54px;height:54px;background:#f9fafb;border-radius:10px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb">
-        ${it.image?`<img src="${it.image}" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><span style="font-size:22px;display:none;align-items:center;justify-content:center;width:100%;height:100%">📦</span>`:'<span style="font-size:22px">📦</span>'}
+        ${it.image?`<img src="${it.image}" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><span style="font-size:24.2px;display:none;align-items:center;justify-content:center;width:100%;height:100%">📦</span>`:'<span style="font-size:24.2px">📦</span>'}
       </div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#111">${it.name}</div>
-        <div style="font-size:14px;font-weight:800;color:#a01820;margin:3px 0">AED ${(it.price||0).toFixed(2)}</div>
+        <div style="font-size:13.2px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#111">${it.name}</div>
+        <div style="font-size:15.4px;font-weight:800;color:#a01820;margin:3px 0">AED ${(it.price||0).toFixed(2)}</div>
         <div style="display:flex;border:1.5px solid #ED1C24;border-radius:8px;overflow:hidden;width:86px;margin-top:5px">
-          <button onclick="Cart.setQty(${it.product_id},-1)" style="width:28px;height:26px;background:#fef2f2;color:#a01820;font-size:15px;font-weight:700;border:none;cursor:pointer">−</button>
-          <span style="flex:1;text-align:center;font-size:12px;font-weight:700;line-height:26px;color:#a01820">${it.qty}</span>
-          <button onclick="Cart.setQty(${it.product_id},1)" style="width:28px;height:26px;background:#fef2f2;color:#a01820;font-size:15px;font-weight:700;border:none;cursor:pointer">+</button>
+          <button onclick="Cart.setQty(${it.product_id},-1)" style="width:28px;height:26px;background:#fef2f2;color:#a01820;font-size:16.5px;font-weight:700;border:none;cursor:pointer">−</button>
+          <span style="flex:1;text-align:center;font-size:13.2px;font-weight:700;line-height:26px;color:#a01820">${it.qty}</span>
+          <button onclick="Cart.setQty(${it.product_id},1)" style="width:28px;height:26px;background:#fef2f2;color:#a01820;font-size:16.5px;font-weight:700;border:none;cursor:pointer">+</button>
         </div>
       </div>
-      <button onclick="Cart.remove(${it.product_id})" style="color:#ED1C24;font-size:17px;background:none;border:none;cursor:pointer;padding:4px;flex-shrink:0">🗑️</button>
+      <button onclick="Cart.remove(${it.product_id})" style="color:#ED1C24;font-size:18.7px;background:none;border:none;cursor:pointer;padding:4px;flex-shrink:0">🗑️</button>
     </div>`).join('');
     
   if(ftr){
     const checkoutBtnHtml = t >= 100
-      ? `<a href="javascript:void(0)" onclick="if(Cart.count()===0){ toast('Your cart is empty', 'warn'); return; } closeDrw(); location.href='checkout.html';" style="display:block;text-align:center;background:#ED1C24;color:#fff;padding:12px;border-radius:8px;font-weight:800;font-size:14px;text-decoration:none">Checkout →</a>`
-      : `<a href="javascript:void(0)" style="display:block;text-align:center;background:#d1d5db;color:#9ca3af;padding:12px;border-radius:8px;font-weight:800;font-size:14px;text-decoration:none;cursor:not-allowed;" onclick="toast('Minimum order amount is AED 100', 'warn');">Checkout →</a>`;
+      ? `<a href="javascript:void(0)" onclick="if(Cart.count()===0){ toast('Your cart is empty', 'warn'); return; } closeDrw(); location.href='checkout.html';" style="display:block;text-align:center;background:#ED1C24;color:#fff;padding:12px;border-radius:8px;font-weight:800;font-size:15.4px;text-decoration:none">Checkout →</a>`
+      : `<a href="javascript:void(0)" style="display:block;text-align:center;background:#d1d5db;color:#9ca3af;padding:12px;border-radius:8px;font-weight:800;font-size:15.4px;text-decoration:none;cursor:not-allowed;" onclick="toast('Minimum order amount is AED 100', 'warn');">Checkout →</a>`;
       
     ftr.innerHTML=`
-      <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;margin-bottom:12px"><span>Total</span><span style="color:#a01820">AED ${t.toFixed(2)}</span></div>
-      <a href="cart.html" onclick="closeDrw()" style="display:block;text-align:center;background:#f3f4f6;color:#374151;padding:10px;border-radius:8px;font-weight:700;font-size:13px;margin-bottom:8px;text-decoration:none">View Cart</a>
+      <div style="display:flex;justify-content:space-between;font-size:16.5px;font-weight:800;margin-bottom:12px"><span>Total</span><span style="color:#a01820">AED ${t.toFixed(2)}</span></div>
+      <a href="cart.html" onclick="closeDrw()" style="display:block;text-align:center;background:#f3f4f6;color:#374151;padding:10px;border-radius:8px;font-weight:700;font-size:14.3px;margin-bottom:8px;text-decoration:none">View Cart</a>
       ${checkoutBtnHtml}`;
   }
 }
@@ -516,7 +516,7 @@ function renderDrawer(){
 let _tt;
 function toast(msg,type='ok'){
   let el=document.getElementById('cd-toast');
-  if(!el){el=document.createElement('div');el.id='cd-toast';el.style.cssText='position:fixed;bottom:72px;right:16px;padding:12px 18px;border-radius:12px;font-size:12px;font-weight:600;z-index:99998;box-shadow:0 8px 32px rgba(0,0,0,.18);transition:all .3s;transform:translateY(80px);opacity:0;max-width:280px;pointer-events:none;font-family:Inter,"Tajawal",sans-serif';document.body.appendChild(el);}
+  if(!el){el=document.createElement('div');el.id='cd-toast';el.style.cssText='position:fixed;bottom:72px;right:16px;padding:12px 18px;border-radius:12px;font-size:13.2px;font-weight:600;z-index:99998;box-shadow:0 8px 32px rgba(0,0,0,.18);transition:all .3s;transform:translateY(80px);opacity:0;max-width:280px;pointer-events:none;font-family:Inter,"Tajawal",sans-serif';document.body.appendChild(el);}
   el.style.background=type==='err'?'#ED1C24':type==='warn'?'#d4a800':'#1c1c2e';
   el.style.color='#fff';el.textContent=msg;
   requestAnimationFrame(()=>{el.style.transform='translateY(0)';el.style.opacity='1';});
@@ -550,7 +550,7 @@ function buildCard(p){
         <img src="${imgSrc}" alt="${name.replace(/"/g,'&quot;')}" loading="lazy"
           style="width:100%;height:100%;object-fit:contain;display:block"
           onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-        <span style="font-size:44px;display:none;align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">📦</span>
+        <span style="font-size:48.4px;display:none;align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">📦</span>
       </a>
       ${oos?'':`<button class="wish-btn" onclick="WL.toggle(${id},'${name.replace(/'/g,"\\'")}')">♡</button>`}
     </div>
@@ -565,9 +565,9 @@ function buildCard(p){
         `<div class="cd-qty-ctrl" data-pid="${id}" data-pdenc="${pdEnc}" data-btnclass="pc-atc" style="margin-top:auto">
            ${Cart.raw().find(i=>i.product_id===id)?.qty > 0 
              ? `<div style="display:flex;border:1.5px solid var(--red);border-radius:8px;overflow:hidden;width:100%;height:38px">
-                  <button onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${id},-1)" style="width:34px;background:#fef2f2;color:var(--red);font-size:18px;font-weight:700;border:none;cursor:pointer">−</button>
-                  <span style="flex:1;text-align:center;font-size:14px;font-weight:800;line-height:35px;color:var(--red)">${Cart.raw().find(i=>i.product_id===id).qty}</span>
-                  <button onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${id},1)" style="width:34px;background:#fef2f2;color:var(--red);font-size:18px;font-weight:700;border:none;cursor:pointer">+</button>
+                  <button onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${id},-1)" style="width:34px;background:#fef2f2;color:var(--red);font-size:19.8px;font-weight:700;border:none;cursor:pointer">−</button>
+                  <span style="flex:1;text-align:center;font-size:15.4px;font-weight:800;line-height:35px;color:var(--red)">${Cart.raw().find(i=>i.product_id===id).qty}</span>
+                  <button onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${id},1)" style="width:34px;background:#fef2f2;color:var(--red);font-size:19.8px;font-weight:700;border:none;cursor:pointer">+</button>
                 </div>`
              : `<button class="pc-atc" onclick="event.preventDefault();event.stopPropagation();addToCart(decodeURIComponent('${pdEnc}'))">🛒 Add to Cart</button>`}
          </div>`}
@@ -727,9 +727,9 @@ async function addToCart(json) {
 
 function dealQtyHtml(pid, qty) {
   return `<div style="display:flex;border:1.5px solid var(--red);border-radius:8px;overflow:hidden;width:100%;height:38px">
-     <button type="button" onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},-1)" style="width:34px;background:#fef2f2;color:var(--red);font-size:18px;font-weight:700;border:none;cursor:pointer">−</button>
-     <span style="flex:1;text-align:center;font-size:14px;font-weight:800;line-height:35px;color:var(--red)">${qty}</span>
-     <button type="button" onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},1)" style="width:34px;background:#fef2f2;color:var(--red);font-size:18px;font-weight:700;border:none;cursor:pointer">+</button>
+     <button type="button" onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},-1)" style="width:34px;background:#fef2f2;color:var(--red);font-size:19.8px;font-weight:700;border:none;cursor:pointer">−</button>
+     <span style="flex:1;text-align:center;font-size:15.4px;font-weight:800;line-height:35px;color:var(--red)">${qty}</span>
+     <button type="button" onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},1)" style="width:34px;background:#fef2f2;color:var(--red);font-size:19.8px;font-weight:700;border:none;cursor:pointer">+</button>
    </div>`;
 }
 
@@ -757,7 +757,7 @@ function buildDealCards(slider, containerId) {
   if (!el) return;
   const items = (slider?.image_ids || []).filter(it => sliderTemplateId(it));
   if (!items.length) {
-    el.innerHTML = '<div style="padding:20px;color:#9ca3af;font-size:13px;text-align:center">No products in this section</div>';
+    el.innerHTML = '<div style="padding:20px;color:#9ca3af;font-size:14.3px;text-align:center">No products in this section</div>';
     return;
   }
   const cartMap = new Map(Cart.raw().map(i => [i.product_id, i.qty]));
@@ -773,10 +773,10 @@ function buildDealCards(slider, containerId) {
         <img src="${imgSrc}" alt="${name.replace(/"/g, '&quot;')}" loading="lazy" decoding="async"
           style="width:100%;height:100%;object-fit:contain;display:block"
           onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-        <span style="font-size:36px;display:none;align-items:center;justify-content:center;width:100%;height:100%">📦</span>
+        <span style="font-size:39.6px;display:none;align-items:center;justify-content:center;width:100%;height:100%">📦</span>
       </div>
       <div class="dp-nm dp-nav" style="cursor:pointer">${name || 'Product'}</div>
-      <div class="dp-price" id="dpp-${sid}"><span style="color:#9ca3af;font-size:10px">Loading...</span></div>
+      <div class="dp-price" id="dpp-${sid}"><span style="color:#9ca3af;font-size:11px">Loading...</span></div>
       <div class="cd-qty-ctrl" data-pid="${pid}" data-item-id="${sid}" data-pdenc="" data-btnclass="dp-atc" style="margin-top:auto">
         ${inCart ? dealQtyHtml(pid, cartMap.get(pid)) : '<button type="button" class="dp-atc" disabled style="opacity:.7">Loading...</button>'}
       </div>
@@ -802,12 +802,12 @@ async function enrichDealCards(items) {
     const nmEl = card?.querySelector('.dp-nm');
 
     if (!p || !pid) {
-      if (priceEl) priceEl.innerHTML = '<span style="color:#9ca3af;font-size:12px">Out of Stock</span>';
+      if (priceEl) priceEl.innerHTML = '<span style="color:#9ca3af;font-size:13.2px">Out of Stock</span>';
       if (wrap) wrap.innerHTML = '<button type="button" class="dp-atc" disabled style="background:#cbd5e1;color:#fff;cursor:not-allowed">Out of Stock</button>';
       card?.removeAttribute('data-href');
       navEls?.forEach(n => { n.style.cursor = 'default'; });
       if (imgWrap && !imgWrap.querySelector('.oos-bdg')) {
-        imgWrap.insertAdjacentHTML('beforeend', '<div class="oos-bdg" style="position:absolute;top:10px;right:10px;background:#64748b;color:#fff;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;z-index:2">Out of Stock</div>');
+        imgWrap.insertAdjacentHTML('beforeend', '<div class="oos-bdg" style="position:absolute;top:10px;right:10px;background:#64748b;color:#fff;font-size:12.1px;font-weight:700;padding:4px 8px;border-radius:6px;z-index:2">Out of Stock</div>');
         imgWrap.style.position = 'relative';
       }
       continue;
@@ -832,14 +832,14 @@ async function enrichDealCards(items) {
     if (nmEl && !nmEl.querySelector('.dp-sku')) {
       const code = p.barcode || p.default_code;
       if (code) {
-        nmEl.insertAdjacentHTML('beforeend', `<div class="dp-sku" style="color:#9ca3af;font-size:11px;font-weight:600;margin-top:4px">${code}</div>`);
+        nmEl.insertAdjacentHTML('beforeend', `<div class="dp-sku" style="color:#9ca3af;font-size:12.1px;font-weight:600;margin-top:4px">${code}</div>`);
       }
     }
 
     if (priceEl) {
       priceEl.innerHTML = price > 0
-        ? `<strong style="color:#a01820">AED ${price.toFixed(2)}</strong>${std > price ? `<span style="color:#9ca3af;text-decoration:line-through;font-size:9px;margin-left:4px">${std.toFixed(2)}</span>` : ''}`
-        : '<span style="color:#9ca3af;font-size:12px">Price unavailable</span>';
+        ? `<strong style="color:#a01820">AED ${price.toFixed(2)}</strong>${std > price ? `<span style="color:#9ca3af;text-decoration:line-through;font-size:9.9px;margin-left:4px">${std.toFixed(2)}</span>` : ''}`
+        : '<span style="color:#9ca3af;font-size:13.2px">Price unavailable</span>';
     }
     if (imgEl && p.image_1024) { imgEl.src = imgSrc; imgEl.style.display = 'block'; }
 
@@ -848,7 +848,7 @@ async function enrichDealCards(items) {
       if (oos) {
         wrap.innerHTML = '<button type="button" class="dp-atc" disabled style="background:#cbd5e1;color:#fff;cursor:not-allowed">Out of Stock</button>';
         if (imgWrap && !imgWrap.querySelector('.oos-bdg')) {
-          imgWrap.insertAdjacentHTML('beforeend', '<div class="oos-bdg" style="position:absolute;top:10px;right:10px;background:#64748b;color:#fff;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;z-index:2">Out of Stock</div>');
+          imgWrap.insertAdjacentHTML('beforeend', '<div class="oos-bdg" style="position:absolute;top:10px;right:10px;background:#64748b;color:#fff;font-size:12.1px;font-weight:700;padding:4px 8px;border-radius:6px;z-index:2">Out of Stock</div>');
           imgWrap.style.position = 'relative';
         }
       } else {
@@ -888,7 +888,7 @@ function updateHeaderUser(){
     document.querySelectorAll('.u-name').forEach(el=>el.textContent=nm);
     document.querySelectorAll('.u-avatar').forEach(el=>{
       el.textContent=nm.charAt(0).toUpperCase();
-      el.style.cssText='background:#ED1C24;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800';
+      el.style.cssText='background:#ED1C24;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14.3px;font-weight:800';
     });
     document.querySelectorAll('.signin-only').forEach(el=>el.style.display='none');
     document.querySelectorAll('.signedin-only').forEach(el=>el.style.display='flex');
