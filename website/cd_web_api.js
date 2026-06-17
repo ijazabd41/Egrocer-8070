@@ -174,6 +174,10 @@ const CdApi = (() => {
     _get('/api/stock/inventory/update-qty', {quant_id:quantId, counted_qty:qty});
   const validateInventory = (locId) =>
     _get('/api/stock/inventory/validate', {location_id:locId});
+  
+  // ── STORE KEEPER APIs ────────────────────────────────────
+  const storeKeeperQueue = () => _get('/api/stock/dashboard', {period:'all'});
+  const markOrderReady = (orderId) => _get(`/api/stock/order/${orderId}/action_ready`);
 
   return {
     // auth
@@ -193,6 +197,6 @@ const CdApi = (() => {
     // stock
     stockDashboard, inventoryValuation, deadStock,
     stockLocations, stockQuants, stockProducts, lowStock, stockMovements,
-    updateCountedQty, validateInventory,
+    updateCountedQty, validateInventory, storeKeeperQueue, markOrderReady,
   };
 })();

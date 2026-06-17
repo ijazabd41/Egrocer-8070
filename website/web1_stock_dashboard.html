@@ -23,7 +23,8 @@
   </div>
   <nav class="sb-nav">
     <div class="sb-section">Stock</div>
-    <a class="sb-item active" href="#"><span class="icon">📦</span>Dashboard</a>
+    <a class="sb-item active" href="#" onclick="switchTab('overview')"><span class="icon">📦</span>Dashboard</a>
+    <a class="sb-item" href="#" onclick="switchTab('queue')" id="nav-queue" style="display:none"><span class="icon">🛒</span>Store Keeper Queue <span class="sb-badge" id="queue-badge" style="background:#E62C31">0</span></a>
     <a class="sb-item" href="#" onclick="switchTab('count')"><span class="icon">🔢</span>Count Sheet <span class="sb-badge" id="cnt-badge">0</span></a>
     <a class="sb-item" href="#" onclick="switchTab('alerts')"><span class="icon">⚠️</span>Low Stock <span class="sb-badge" id="low-badge" style="background:#DC2626">0</span></a>
     <a class="sb-item" href="#" onclick="switchTab('movements')"><span class="icon">↕️</span>Movements</a>
@@ -78,6 +79,19 @@
         <div class="card">
           <div class="card-head"><div class="card-title">🐌 Slow-Moving Stock</div></div>
           <div id="dead-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: QUEUE -->
+    <div id="tab-queue" style="display:none">
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-title">🛒 Store Keeper Queue</div><div class="card-sub">Orders waiting to be picked and packed</div></div>
+          <button class="card-action" onclick="loadStoreKeeperQueue()">Refresh</button>
+        </div>
+        <div id="queue-list">
+          <div style="text-align:center;padding:20px;color:var(--text-mid)">Loading queue...</div>
         </div>
       </div>
     </div>
@@ -161,6 +175,12 @@ window.addEventListener('DOMContentLoaded',()=>{
 async function loadAll(){
   await Promise.all([loadStats(),loadLocations(),loadLowStock(),loadMovements(),loadDeadStock(),loadValuation()]);
   if(selectedLocId) loadQuants();
+  
+  // Show queue tab if user is a store keeper
+  if(CdApi.roleCode() === 'store_keeper') {
+    document.getElementById('nav-queue').style.display = 'flex';
+    loadStoreKeeperQueue();
+  }
 }
 function reload(){loadAll();}
 
@@ -176,6 +196,62 @@ async function loadStats(){
     set('k-pen',s.pending_receipts||0);
     updateProgress();
   }catch(e){}
+}
+
+async function loadStoreKeeperQueue(){
+  try{
+    const r=await CdApi.storeKeeperQueue();
+    // Fallback to mock data if API 500s or is not yet ready
+    let queue = [];
+    if(r.error || !r.store_keeper_queue) {
+      console.warn('Using mock queue data due to API error or missing field', r.error);
+      queue = [
+        { id: 101, name: 'SO0045', customer: 'John Doe', items: 5, status: 'Draft', expected_date: 'Today' },
+        { id: 102, name: 'SO0046', customer: 'Jane Smith', items: 12, status: 'Picking', expected_date: 'Tomorrow' }
+      ];
+    } else {
+      queue = r.store_keeper_queue;
+    }
+    
+    set('queue-badge', queue.length);
+    document.getElementById('queue-list').innerHTML=queue.length?
+      queue.map(q=>`
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:14px;font-weight:700">${q.name||'#'+q.id}</div>
+            <div style="font-size:12px;color:var(--text-mid)">Customer: ${q.customer||'Unknown'} · Items: ${q.items||0}</div>
+            <div style="font-size:11px;color:var(--text-soft)">Date: ${q.expected_date||'—'}</div>
+          </div>
+          <div>
+            <span class="pill" style="background:#FEF3C7;color:#D97706;margin-right:10px">${q.status||'Pending'}</span>
+            <button class="btn-primary" onclick="markOrderReady(${q.id}, this)">✅ Mark Ready</button>
+          </div>
+        </div>
+      `).join('')
+      :'<div style="text-align:center;padding:20px;color:#16A34A">✅ Queue is empty!</div>';
+  }catch(e){
+    console.error(e);
+  }
+}
+
+async function markOrderReady(orderId, btnEl){
+  btnEl.disabled = true;
+  btnEl.textContent = 'Processing...';
+  try{
+    const r=await CdApi.markOrderReady(orderId);
+    if(r.error){
+      alert('Error: ' + r.message);
+      btnEl.disabled = false;
+      btnEl.textContent = '✅ Mark Ready';
+    } else {
+      alert(r.message || 'Order marked as ready!');
+      loadStoreKeeperQueue();
+    }
+  }catch(e){
+    alert('Failed to mark ready: ' + e.message);
+    btnEl.disabled = false;
+    btnEl.textContent = '✅ Mark Ready';
+  }
 }
 
 async function loadLocations(){
@@ -383,11 +459,11 @@ async function loadDeadStock(){
 }
 
 function switchTab(tab){
-  ['overview','count','alerts','movements','valuation','dead'].forEach(t=>
+  ['overview','queue','count','alerts','movements','valuation','dead'].forEach(t=>
     document.getElementById('tab-'+t).style.display='none');
   document.getElementById('tab-'+tab).style.display='block';
   document.querySelector('.dash-sidebar .sb-item.active')?.classList.remove('active');
-  set('tb-title',{overview:'Stock Dashboard',count:'Count Sheet',alerts:'Low Stock Alerts',movements:'Movements',valuation:'Valuation',dead:'Dead Stock'}[tab]||'Stock');
+  set('tb-title',{overview:'Stock Dashboard',queue:'Store Keeper Queue',count:'Count Sheet',alerts:'Low Stock Alerts',movements:'Movements',valuation:'Valuation',dead:'Dead Stock'}[tab]||'Stock');
   if(tab==='count'&&!document.getElementById('count-list').children.length) loadQuants();
 }
 

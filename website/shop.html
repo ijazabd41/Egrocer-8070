@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Shop – Coop Discounts Hyper Market</title>
-<link rel="stylesheet" href="css/style.css?v=13.0">
+<link rel="stylesheet" href="css/style.css?v=15.1">
 <style>
 @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .skel{background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:sk 1.5s infinite;border-radius:10px}
@@ -103,7 +103,7 @@
 
 <div id="site-footer"></div>
 <script src="js/error-logger.js?v=1.0"></script>
-<script src="js/api.js?v=8.5"></script><script src="js/app.js?v=8.5"></script><script src="js/layout.js?v=13.0"></script>
+<script src="js/api.js?v=8.5"></script><script src="js/app.js?v=8.14"></script><script src="js/layout.js?v=15.1"></script>
 <script>
 var PAGE_SIZE = 16;
 var currentPage = 0;
@@ -231,7 +231,7 @@ async function loadProds() {
     if (domainParts.length) params.domain = '[' + domainParts.join(',') + ']';
 
     var r = await API.getProds(params);
-    var prods = (r.data || []).filter(function(p){ return parseFloat(p.ecommerce_price || p.ecommerce_pricee || p.list_price || 0) > 0; });
+    var prods = (r.data || []).filter(function(p){ return getProdPrice(p) > 0; });
     var total = currentCatPids ? currentCatPids.length : (r.total || prods.length);
     document.getElementById('shopCount').textContent = 'Showing ' + prods.length + ' products' + (total > PAGE_SIZE ? ' of ' + total : '');
     el.innerHTML = prods.length ? prods.map(buildCard).join('') :

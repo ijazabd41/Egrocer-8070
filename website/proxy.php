@@ -37,7 +37,7 @@ if (!isImage($pathInfo)) {
     }
 }
 
-$targetUrl = 'http://cooperp.freeddns.org:8076' . $pathInfo;
+$targetUrl = 'http://cooperp.freeddns.org:8077' . $pathInfo;
 if (!empty($queryString)) {
     $targetUrl .= '?' . $queryString;
 }

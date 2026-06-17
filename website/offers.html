@@ -1,23 +1,154 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hot Deals – Coop Discounts</title><link rel="stylesheet" href="css/style.css?v=13.0"></head>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hot Deals – Coop Discounts</title><link rel="stylesheet" href="css/style.css?v=15.1"></head>
 <body><div id="site-header"></div>
-<div class="phero"><h1>🔥 Hot Deals & Offers</h1><p>Unbeatable prices every day at Coop Discounts</p></div>
-<section class="sec"><div class="w">
-  <div class="pgrid" id="offersGrid"></div>
-  <div style="text-align:center;margin-top:24px" id="offerPages"></div>
-</div></section>
+<div class="phero" style="background:#fff; border-bottom:1px solid #eaeaea;"><h1>🔥 Hot Deals & Offers</h1><p>Unbeatable prices every day at Coop Discounts</p></div>
+
+  <!-- ③ DEAL OF THE DAY — from /api/deal-day-slider/2 -->
+  <section class="sec" style="background:#f8f9fa; padding:40px 0;">
+    <div class="ctr">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px;">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:28px;">⚡</span>
+            <h2 class="deal-ttl" id="ddTtl" style="font-size:28px; font-weight:800; color:#111; margin:0; line-height:1;">Deal of the Day</h2>
+          </div>
+        </div>
+      </div>
+      <div class="dscroll" id="ddProds">
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ④ BEST SELLERS — from /api/deal-day-slider/1 -->
+  <section class="sec" style="padding:40px 0;">
+    <div class="ctr">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px;">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:28px;">🏆</span>
+            <h2 class="deal-ttl" id="bsTtl" style="font-size:28px; font-weight:800; color:#111; margin:0; line-height:1;">Best Sellers</h2>
+          </div>
+        </div>
+      </div>
+      <div class="dscroll" id="bsProds">
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑤ RECOMMENDED — from /api/deal-day-slider/3 -->
+  <section class="sec" style="background:#f8f9fa; padding:40px 0;">
+    <div class="ctr">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px;">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:28px;">⭐</span>
+            <h2 class="deal-ttl" id="recTtl" style="font-size:28px; font-weight:800; color:#111; margin:0; line-height:1;">Recommended For You</h2>
+          </div>
+        </div>
+      </div>
+      <div class="dscroll" id="recProds">
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑥ FEATURED PRODUCTS — from /api/deal-day-slider/4 -->
+  <section class="sec" style="padding:40px 0;">
+    <div class="ctr">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px;">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:28px;">🌟</span>
+            <h2 class="deal-ttl" id="ftTtl" style="font-size:28px; font-weight:800; color:#111; margin:0; line-height:1;">Featured Products</h2>
+          </div>
+        </div>
+      </div>
+      <div class="dscroll" id="ftProds">
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑦ FRESH PICK TODAY — from /api/deal-day-slider/5 -->
+  <section class="sec" style="background:#f8f9fa; padding:40px 0;">
+    <div class="ctr">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px;">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:28px;">🥦</span>
+            <h2 class="deal-ttl" id="fpTtl" style="font-size:28px; font-weight:800; color:#111; margin:0; line-height:1;">Fresh Pick Today</h2>
+          </div>
+        </div>
+      </div>
+      <div class="dscroll" id="fpProds">
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+        <div class="skel" style="min-width:180px;height:185px;flex-shrink:0;border-radius:16px;"></div>
+      </div>
+    </div>
+  </section>
+
 <style>@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}</style>
 <div id="site-footer"></div>
 <script src="js/api-cache.js?v=1"></script><script src="js/error-logger.js?v=1.0"></script>
-<script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.9"></script><script src="js/layout.js?v=13.0"></script>
+<script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.14"></script><script src="js/layout.js?v=15.1"></script>
 <script>
-let pg=0;
 async function load(){
   Bar.start();
-  const el=document.getElementById('offersGrid');
-  if(el)el.innerHTML=skelGrid(10,300);
-  try{const r=await API.getProds({limit:20,Offset:pg*20});const prods=(r.data||[]).filter(p=>p.type?.[0]!=='service'&&parseFloat(p.ecommerce_price||p.ecommerce_pricee||p.list_price||0)>0);el.innerHTML=prods.length?prods.map(buildCard).join(''):'<div style="grid-column:1/-1;text-align:center;padding:40px;color:#9ca3af">No products</div>';}
-  catch(e){el.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px;color:#ED1C24">⚠️ ${e.message}</div>`;}
-  Bar.done();
+
+  Promise.allSettled([
+    API.getDealOfDay(),     // 0
+    API.getBestSeller(),    // 1
+    API.getRecommended(),   // 2
+    API.getFeatured(),      // 3
+    API.getFreshPick()      // 4
+  ]).then(function (results) {
+    if (results[0].status === 'fulfilled') {
+      buildDealSection(results[0].value.data && results[0].value.data[0], 'ddProds', 'ddTtl');
+    } else {
+      document.getElementById('ddProds').innerHTML = '<div style="padding:20px;color:#9ca3af">No deals today</div>';
+    }
+
+    if (results[1].status === 'fulfilled') {
+      buildDealSection(results[1].value.data && results[1].value.data[0], 'bsProds', 'bsTtl');
+    } else {
+      var bs = document.getElementById('bsProds'); if (bs) bs.innerHTML = '<div style="padding:20px;color:#9ca3af">No products</div>';
+    }
+
+    if (results[2].status === 'fulfilled') {
+      buildDealSection(results[2].value.data && results[2].value.data[0], 'recProds', 'recTtl');
+    } else {
+      var rec = document.getElementById('recProds'); if (rec) rec.innerHTML = '<div style="padding:20px;color:#9ca3af">No products</div>';
+    }
+
+    if (results[3].status === 'fulfilled') {
+      buildDealSection(results[3].value.data && results[3].value.data[0], 'ftProds', 'ftTtl');
+    } else {
+      var ft = document.getElementById('ftProds'); if (ft) ft.innerHTML = '<div style="padding:20px;color:#9ca3af">No products</div>';
+    }
+
+    if (results[4].status === 'fulfilled') {
+      buildDealSection(results[4].value.data && results[4].value.data[0], 'fpProds', 'fpTtl');
+    } else {
+      var fp = document.getElementById('fpProds'); if (fp) fp.innerHTML = '<div style="padding:20px;color:#9ca3af">No products</div>';
+    }
+    
+    Bar.done();
+  });
 }
 document.addEventListener('DOMContentLoaded',load);
 </script></body></html>

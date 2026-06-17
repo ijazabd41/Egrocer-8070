@@ -34,7 +34,7 @@ async function loadLogo(){
       const src=API.img(d.banner_image);
       document.querySelectorAll('.co-logo').forEach(img=>{
         img.src=src;img.style.display='block';
-        img.onload=()=>{document.querySelectorAll('.logo-fb').forEach(e=>e.style.display='none');};
+        img.onload=()=>{document.querySelectorAll('.r-logo-icon').forEach(e=>e.style.display='none');};
         img.onerror=()=>img.style.display='none';
       });
     }
@@ -92,70 +92,84 @@ async function loadNavCats(){
 
 function buildHeader(){
   return `
-<div class="topbar"><div class="ctr">
-  <div class="tb-l">
-    <span>📍 <span class="en">Al Ghandi Complex, Showroom 03, Nadd Al Hamar, Dubai</span><span class="ar" style="display:none">مجمع الغندي، شورم٠٣، ند الحمر، دبي</span></span>
-    <span>🕐 <span class="en">Daily 8AM – 12AM</span><span class="ar" style="display:none">يومياً ٨ص – ١٢م</span></span>
-  </div>
-  <div class="tb-r">
-    <a href="tel:+971555944719">📞 055 594 4719</a>
-    <a href="mailto:info@coop-discounts.com" style="display:none" class="en">✉️ info@coop-discounts.com</a>
-    <div class="tb-lang" onclick="toggleLang()">🌐 <span class="lang-lbl">العربية</span></div>
-  </div>
-</div></div>
-
-<header class="hdr"><div class="ctr"><div class="hdr-in">
-  <a href="index.html" class="logo">
-    <div class="logo-img-w">
-      <img class="co-logo" src="" alt="Coop Discounts" style="display:none">
-      <div class="logo-fb">🛒</div>
+<div class="r-topbar">
+      <div class="ctr">
+        <div class="r-topbar-left">
+          <div class="r-loc-tab">Select location</div>
+          <div class="r-deliv-msg">Delivery Available in Sharjah, Ajman & Dubai Areas</div>
+        </div>
+        <div class="r-topbar-right">
+          <button class="r-lang-btn" onclick="toggleLang()">ع</button>
+          <button class="r-lang-btn" style="background:#f3f4f6">En</button>
+        </div>
+      </div>
     </div>
-    <div class="logo-txt">
-      <h1>Coop Discounts</h1>
-      <span>Hyper Market</span>
-    </div>
-  </a>
-  <div class="srch-wrap">
-    <select class="srch-sel" id="srchSel"><option value="">All</option></select>
-    <input class="srch-inp" type="text" placeholder="Search products, brands, barcodes..." aria-label="Search">
-    <button class="srch-btn" onclick="doSearch()" aria-label="Search">🔍</button>
-  </div>
-  <div class="h-acts">
-  <div class="user-menu-wrap">
-    <a class="hbtn u-link signin-only" href="login.html" id="userBtn" aria-label="Sign In">
-      <span class="ic"><span class="u-avatar" style="font-size:20px">👤</span></span>
-      <span class="lbl u-name">Sign In</span>
-    </a>
-    <a class="hbtn u-link signedin-only" href="account.html" style="display:none" aria-label="My Account">
-      <span class="ic"><span class="u-avatar" style="font-size:20px">👤</span></span>
-      <span class="lbl u-name">Account</span>
-    </a>
-  </div>
-    <a class="hbtn" href="wishlist.html" aria-label="Wishlist">
-      <span class="ic">❤️</span><span class="lbl">Wishlist</span>
-    </a>
-    <button class="hbtn" onclick="openDrw()" aria-label="Cart" style="position:relative">
-      <span class="ic">🛒</span>
-      <span class="cart-badge" id="hCartBadge" aria-live="polite">0</span>
-      <span class="lbl">Cart</span>
-    </button>
-  </div>
-</div></div></header>
 
-<nav class="nav" aria-label="Main navigation"><div class="ctr"><div class="nav-in">
-  <button class="nav-cats-btn" onclick="openModal('catMo')" aria-label="All categories">
-    ☰ <span class="en">All Categories</span><span class="ar" style="display:none">جميع الأقسام</span>
-  </button>
-  <button class="nav-hamburger" onclick="document.getElementById('topNavLinks').classList.toggle('show')" aria-label="Menu">☰</button>
-  <div class="nav-links" id="topNavLinks">
-    <a href="index.html" class="nav-a">🏠 <span class="en">Home</span><span class="ar" style="display:none">الرئيسية</span></a>
-    <a href="offers.html" class="nav-a">🔥 <span class="en">Hot Deals</span><span class="ar" style="display:none">أحدث العروض</span> <span class="n-badge">SALE</span></a>
-    <a href="shop.html" class="nav-a">🛍️ <span class="en">All Products</span><span class="ar" style="display:none">جميع المنتجات</span></a>
-    <a href="account.html" class="nav-a">👤 <span class="en">My Account</span><span class="ar" style="display:none">حسابي</span></a>
-    <a href="track-order.html" class="nav-a">📦 <span class="en">Track Order</span><span class="ar" style="display:none">تتبع الطلب</span></a>
-    <a href="contact.html" class="nav-a">📞 <span class="en">Contact</span><span class="ar" style="display:none">اتصل بنا</span></a>
-  </div>
-</div></div></nav>
+    <div class="r-main-hdr">
+      <div class="ctr">
+        <a href="index.html" class="r-logo" style="display:flex; align-items:center; gap:10px; text-decoration:none;">
+          <img src="" class="co-logo" style="display:none; max-height:48px;" alt="Coop Discounts Logo">
+          <div style="display:flex; flex-direction:column; justify-content:center;">
+            <div class="r-logo-text" style="color:var(--rd,#ED1C24); font-weight:900; font-size:18px; line-height:1.1; margin-bottom:1px;">COOP DISCOUNTS</div>
+            <div style="color:#374151; font-size:11px; font-weight:800; line-height:1.2; margin-bottom:2px;">Hyper Market</div>
+            <div style="color:#6b7280; font-size:9px; font-weight:600; line-height:1; letter-spacing:0.2px;">Customer Cooperation Society</div>
+          </div>
+        </a>
+
+        <div class="r-search">
+          <input type="text" placeholder="Search for fresh food, electronics..." id="r-search-inp"
+            onkeypress="if(event.key==='Enter'){location.href='shop.html?q='+encodeURIComponent(this.value)}">
+          <button
+            onclick="location.href='shop.html?q='+encodeURIComponent(document.getElementById('r-search-inp').value)">🔍</button>
+        </div>
+
+        <div class="r-actions">
+          <a href="offers.html" class="r-icon-btn light" title="Offers">🏷️</a>
+          <a href="account.html" class="r-icon-btn solid" title="Account">👤</a>
+          <button onclick="openDrw()" class="r-icon-btn solid" title="Cart">
+            🛒<span class="r-cart-badge" id="hCartBadge">0</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="r-bottom-nav">
+      <div class="ctr" style="justify-content: space-between;">
+        <button class="r-cat-btn" onclick="openModal('catMo')">
+          <span style="font-size:18px;margin-top:-2px">⊞</span> <span class="cat-btn-text">All Categories ⌄</span>
+        </button>
+        <button class="r-hamburger" onclick="document.getElementById('rNavLinks').classList.toggle('open')">☰
+          Menu</button>
+        <div class="r-nav-links" id="rNavLinks">
+          <a href="index.html">Home</a>
+          <a href="offers.html" style="display:flex; align-items:center; gap:6px;">
+            Hot Deals
+            <span style="background:#FFF200; color:#111; font-size:11px; font-weight:900; padding:3px 8px; border-radius:12px; letter-spacing:0.5px;">SALE</span>
+          </a>
+          <a href="shop.html">All Products</a>
+          <a href="account.html">My Account</a>
+          <a href="track.html">Track Order</a>
+          <a href="contact.html">Contact</a>
+        </div>
+        <div class="r-nav-badges"
+          style="display:flex; gap:10px; align-items:center; padding-right:10px; flex-shrink:0;">
+          <div
+            style="background:#FFF200; color:#111; padding:4px 12px; border-radius:20px; display:flex; align-items:center; gap:6px; white-space:nowrap; flex-shrink:0;">
+            <span style="font-size:18px;">🚚</span>
+            <div style="display:flex; align-items:center; line-height:1.1;">
+              <span style="font-weight:800; font-size:12px;">Free delivery above 150</span>
+            </div>
+          </div>
+          <div
+            style="background:#10b981; color:#fff; padding:4px 12px; border-radius:20px; display:flex; align-items:center; gap:6px; white-space:nowrap; flex-shrink:0;">
+            <span style="font-size:18px;">⏱️</span>
+            <div style="display:flex; align-items:center; line-height:1.1;">
+              <span style="font-weight:800; font-size:12px;">Express delivery</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
 <!-- Cart Drawer -->
 <div class="cart-drw" id="cDrw" role="dialog" aria-label="Shopping cart">
@@ -181,64 +195,78 @@ function buildHeader(){
 
 function buildFooter(){
   return `
-<section class="nl"><div class="ctr"><div class="nl-in">
-  <div>
-    <h2 style="font-size:22px;font-weight:900;color:#fff;margin-bottom:5px">🎁 <span class="en">Exclusive Deals for You!</span><span class="ar" style="display:none">عروض حصرية لك!</span></h2>
-    <p style="color:rgba(255,255,255,.75);font-size:13px"><span class="en">Subscribe to get the best offers in your inbox</span><span class="ar" style="display:none">اشترك للحصول على أفضل العروض</span></p>
-  </div>
-  <div class="nl-form">
-    <input type="email" class="nl-inp" placeholder="Your email address...">
-    <button class="nl-btn" onclick="toast('Subscribed! 🎉')">Subscribe</button>
-  </div>
-</div></div></section>
-
-<footer><div class="ctr"><div class="ft-grid">
-  <div>
-    <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px">
-      <div style="width:42px;height:42px;background:#ED1C24;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
-        <img class="co-logo" src="" style="width:100%;height:100%;object-fit:contain;display:none" alt="">
-        <span class="logo-fb" style="font-size:20px;background:transparent;width:auto;height:auto;border-radius:0">🛒</span>
+<footer class="r-footer">
+    <div class="ctr">
+      <div class="r-footer-grid">
+        <div class="r-ftr-col">
+          <h4>Shopping Categories</h4>
+          <a href="offers.html">Smart Deals</a>
+          <a href="shop.html">Fresh Food</a>
+          <a href="shop.html">Baby Products</a>
+          <a href="shop.html">Beauty & Personal Care</a>
+          <a href="shop.html">Home, Patio & Kitchen</a>
+          <a href="shop.html">Electronics & Appliances</a>
+        </div>
+        <div class="r-ftr-col">
+          <h4>About Us</h4>
+          <a href="#">About Coop Discounts</a>
+          <a href="#">Corporate Website</a>
+          <a href="#">Careers</a>
+          <a href="#">Branches</a>
+          <a href="#">Projects</a>
+        </div>
+        <div class="r-ftr-col">
+          <h4>My Account</h4>
+          <a href="login.html">Login or Register</a>
+          <a href="wishlist.html">My Wishlist</a>
+          <a href="contact.html">Contact Us</a>
+          <a href="#">Corporate Customer</a>
+          <a href="#">Supplier Portal</a>
+        </div>
+        <div class="r-ftr-col">
+          <h4>Policies</h4>
+          <a href="#">Terms and Conditions</a>
+          <a href="#">Return Policy</a>
+          <a href="#">Privacy Policy</a>
+        </div>
+        <div class="r-ftr-col">
+          <h4>Webstore Queries</h4>
+          <div style="color:#6b7280;line-height:1.6;margin-bottom:16px;">
+            Al Ghandi Complex, Showroom 03<br>
+            Nadd Al Hamar, Dubai, UAE<br>
+            <a href="mailto:info@coop-discounts.com"
+              style="color:#3b82f6;display:inline;margin:0">info@coop-discounts.com</a>
+          </div>
+          <div class="r-ftr-contact">
+            <a href="tel:+971555944719">📞 055 594 4719</a>
+            <a href="https://wa.me/971555944719" class="wa">💬 WhatsApp Us</a>
+          </div>
+          <div style="margin-top:20px;color:#6b7280;font-size:11px;">
+            Mon to Sun from 08:00 to 00:00
+          </div>
+        </div>
       </div>
-      <div>
-        <div style="font-size:14px;font-weight:800;color:#fff">Coop Discounts</div>
-        <div style="font-size:9px;color:#f5c518;font-weight:700;letter-spacing:1.5px;text-transform:uppercase">Hyper Market</div>
+      <div style="padding-top:20px; border-top:1px solid var(--gray-100); margin-top:20px; font-size:11px; color:var(--gray-400); line-height:1.6;">
+        <strong>Popular Searches:</strong> Lowest Prices Dubai | Everyday Low Prices | Best Deals Dubai | Affordable Shopping Dubai | Family Shopping Dubai | Save More Dubai | Budget Shopping Dubai | Best Grocery Prices Dubai
+      </div>
+      <div class="r-ftr-bottom"
+        style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; padding-top:20px; border-top:1px solid var(--gray-200); margin-top:30px;">
+        <div style="color:var(--gray-500); font-weight:600;">
+          &copy; 2026 COOP DISCOUNTS. All Rights Reserved.
+        </div>
+        <div class="r-ftr-partners" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <img src="img/visa-logo-02.png" alt="Visa" style="height:24px; object-fit:contain;">
+          <img src="img/Mastercard.png" alt="Mastercard" style="height:24px; object-fit:contain;">
+          <img src="img/apple pay.png" alt="Apple Pay" style="height:24px; object-fit:contain;">
+          <img src="img/Gpay.png" alt="Google Pay" style="height:24px; object-fit:contain;">
+          <img src="img/tamara.png" alt="Tamara" style="height:24px; object-fit:contain;">
+          <img src="img/Tappy-Logo-PNG.png" alt="Tabby" style="height:24px; object-fit:contain;">
+          <div style="width:1px; height:24px; background:var(--gray-200); margin:0 4px;"></div>
+          <img src="img/SSL.webp" alt="SSL Secure" style="height:24px; object-fit:contain;">
+        </div>
       </div>
     </div>
-    <p style="font-size:12px;line-height:1.8;margin-bottom:14px;color:rgba(255,255,255,.6)">Your trusted hypermarket in Dubai. Fresh products, unbeatable prices — every day.</p>
-    <div style="font-size:11px;display:flex;flex-direction:column;gap:6px">
-      <a href="https://maps.google.com/?q=Al+Ghandi+Complex+Nadd+Al+Hamar+Dubai" target="_blank" style="color:rgba(255,255,255,.6);display:flex;align-items:flex-start;gap:6px">📍 Al Ghandi Complex, Showroom 03, Nadd Al Hamar, Dubai UAE</a>
-      <a href="tel:+971555944719" style="color:rgba(255,255,255,.6);display:flex;align-items:center;gap:6px">📞 055 594 4719</a>
-      <a href="mailto:info@coop-discounts.com" style="color:rgba(255,255,255,.6);display:flex;align-items:center;gap:6px">✉️ info@coop-discounts.com</a>
-      <span style="color:rgba(255,255,255,.6);display:flex;align-items:center;gap:6px">🕐 Daily 8:00 AM – 12:00 AM</span>
-    </div>
-  </div>
-  <div><h4 style="font-size:12px;font-weight:800;color:#fff;margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.08)">Quick Links</h4>
-    <div class="ft-links"><a href="index.html">Home</a><a href="shop.html">Shop All</a><a href="offers.html">Hot Deals</a><a href="account.html">My Account</a><a href="track-order.html">Track Order</a></div></div>
-  <div><h4 style="font-size:12px;font-weight:800;color:#fff;margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.08)">Support</h4>
-    <div class="ft-links">
-      <a href="contact.html">Contact Us</a>
-      <a href="faq.html">FAQs</a>
-      <a href="about.html">About Us</a>
-      <a href="refund-policy.html">Return & Refund Policy</a>
-      <a href="cancellation-policy.html">Cancellation Policy</a>
-    </div>
-  </div>
-  <div><h4 style="font-size:12px;font-weight:800;color:#fff;margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.08)">Legal</h4>
-    <div class="ft-links">
-      <a href="terms-and-conditions.html">Terms & Conditions</a>
-      <a href="privacy-policy.html">Privacy Policy</a>
-      <a href="payment-policy.html">Payment Policy</a>
-      <a href="pricing-and-description.html">Pricing & Product Information</a>
-    </div>
-  </div>
-</div></div>
-<div class="ctr"><div class="ft-bot">
-  <span>© 2025 Coop Discounts – Best Coop Discounts LLC, United Arab Emirates. All rights reserved.</span>
-  <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
-    <span style="font-size:10px;color:rgba(255,255,255,.35)">We accept:</span>
-    <span class="pt">VISA</span><span class="pt">MC</span><span class="pt">AMEX</span><span class="pt">Apple Pay</span><span class="pt">COD</span>
-  </div>
-</div></div></footer>
+  </footer>
 
 <!-- Mobile Bottom Nav — includes Cart with badge -->
 <nav class="mnav" aria-label="Mobile navigation">

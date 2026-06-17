@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sign In – Coop Discounts</title>
-<link rel="stylesheet" href="css/style.css?v=13.0">
+<link rel="stylesheet" href="css/style.css?v=15.1">
 <style>
   body{background:#f3f4f6}
   #tab-auth-shareholder, #tab-auth-regular {
@@ -48,7 +48,7 @@
   <!-- Segmented Main Switcher (Shareholder vs Regular) -->
   <div style="background:var(--gray-100); border-radius:30px; padding:4px; display:flex; margin-bottom:20px; border:1px solid var(--gray-200); box-shadow:var(--sh-xs);">
     <button id="tab-auth-shareholder" onclick="switchAuthMode('shareholder')" class="on" style="flex:1; text-align:center; padding:10px 14px; font-size:13px; font-weight:700; border-radius:26px; border:none; transition:all var(--t); font-family:inherit; cursor:pointer;">Shareholder Login</button>
-    <button id="tab-auth-regular" onclick="switchAuthMode('regular')" style="flex:1; text-align:center; padding:10px 14px; font-size:13px; font-weight:700; border-radius:26px; border:none; transition:all var(--t); font-family:inherit; cursor:pointer;">Regular Login</button>
+    <button id="tab-auth-regular" onclick="switchAuthMode('regular')" style="flex:1; text-align:center; padding:10px 14px; font-size:13px; font-weight:700; border-radius:26px; border:none; transition:all var(--t); font-family:inherit; cursor:pointer;">Non-Shareholder Login</button>
   </div>
 
   <!-- SHAREHOLDER LOGIN -->
@@ -230,7 +230,7 @@
 </section>
 <div id="site-footer"></div>
 <script src="js/api-cache.js?v=1"></script><script src="js/error-logger.js?v=1.0"></script>
-<script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.9"></script><script src="js/layout.js?v=13.0"></script>
+<script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.14"></script><script src="js/layout.js?v=15.1"></script>
 <script src="js/shareholder.js?v=1.0"></script>
 <script>
 const nextPage=new URLSearchParams(location.search).get('next')||'account.html';

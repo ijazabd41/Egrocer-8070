@@ -4,6 +4,14 @@
 const Bar={_el:null,_v:0,_t:null,init(){if(this._el)return;this._el=document.createElement('div');this._el.style.cssText='position:fixed;top:0;left:0;height:3px;background:#ED1C24;z-index:99999;width:0;transition:width .25s;pointer-events:none';document.body.prepend(this._el);},start(){this.init();this._v=0;this._el.style.opacity='1';this._set(10);clearInterval(this._t);this._t=setInterval(()=>{if(this._v<85){this._v+=Math.random()*5;this._set(this._v);}},400);},done(){clearInterval(this._t);this._set(100);setTimeout(()=>{this._el.style.opacity='0';setTimeout(()=>{this._el.style.width='0';this._el.style.opacity='1';},400);},250);},_set(v){this._v=v;if(this._el)this._el.style.width=v+'%';}};
 
 /* ── HELPER FUNCTIONS FOR DELIVERY & DISCOUNTS ────────── */
+function getProdPrice(p) {
+  if (!p) return 0;
+  var ep = parseFloat(p.ecommerce_price); if (!isNaN(ep) && ep > 0) return ep;
+  var epe = parseFloat(p.ecommerce_pricee); if (!isNaN(epe) && epe > 0) return epe;
+  var lp = parseFloat(p.list_price); if (!isNaN(lp) && lp > 0) return lp;
+  var lst = parseFloat(p.lst_price); return isNaN(lst) ? 0 : lst;
+}
+
 function isStorePickupMethod(m){
   if(!m) return false;
   var name=(m.name||'').toLowerCase();
@@ -11,7 +19,7 @@ function isStorePickupMethod(m){
   return /pickup|store|collect|click.?&.?collect|demo/i.test(name)||/pickup|store|collect/i.test(dtype);
 }
 
-function getCartProgressHtml(subtotal) {
+function getCartProgressHtml(subtotal, isCheckout = false) {
   var minProgress = Math.min(100, (subtotal / 100) * 100);
   var freeProgress = Math.min(100, (subtotal / 150) * 100);
   var minReached = subtotal >= 100;
@@ -25,9 +33,16 @@ function getCartProgressHtml(subtotal) {
     ? "You have unlocked FREE delivery 🎉" 
     : "Add AED " + (150 - subtotal).toFixed(2) + " more to unlock free delivery.";
     
-  return `
-    <div class="progress-card" style="background:#fff; border:1.5px solid #e5e7eb; border-radius:14px; padding:16px; margin-bottom:16px; font-family:Inter,sans-serif;">
-      <div style="display:flex; flex-direction:column; gap:14px;">
+  var showFreeDelivery = (typeof selDeliveryKind !== 'undefined' && selDeliveryKind === 'home');
+  var showMinOrder = !isCheckout;
+
+  if (!showFreeDelivery && !showMinOrder) {
+    return '';
+  }
+
+  var minHtml = '';
+  if (showMinOrder) {
+    minHtml = `
         <!-- Minimum Order Progress -->
         <div style="display:flex; flex-direction:column; gap:6px;">
           <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#374151;">
@@ -38,7 +53,12 @@ function getCartProgressHtml(subtotal) {
             <div style="width:${minProgress}%; height:100%; border-radius:50px; background:${minReached ? 'linear-gradient(90deg, #10B981, #34D399)' : 'linear-gradient(90deg, #ED1C24, #ff5c5c)'}; transition:width 0.4s ease-out;"></div>
           </div>
         </div>
-        
+    `;
+  }
+  
+  var freeHtml = '';
+  if (showFreeDelivery) {
+    freeHtml = `
         <!-- Free Delivery Progress -->
         <div style="display:flex; flex-direction:column; gap:6px;">
           <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#374151;">
@@ -49,6 +69,14 @@ function getCartProgressHtml(subtotal) {
             <div style="width:${freeProgress}%; height:100%; border-radius:50px; background:${freeReached ? 'linear-gradient(90deg, #10B981, #34D399)' : 'linear-gradient(90deg, #3B82F6, #60A5FA)'}; transition:width 0.4s ease-out;"></div>
           </div>
         </div>
+    `;
+  }
+  
+  return `
+    <div class="progress-card" style="background:#fff; border:1.5px solid #e5e7eb; border-radius:14px; padding:16px; margin-bottom:16px; font-family:Inter,sans-serif;">
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        ${minHtml}
+        ${freeHtml}
       </div>
     </div>
   `;
@@ -420,7 +448,13 @@ function tick(){
     const btnCls = el.getAttribute('data-btnclass') || 'pc-atc';
     const item = Cart.raw().find(i => i.product_id === pid);
     const qty = item ? item.qty : 0;
-    if (qty > 0) {
+    if (btnCls === 'mini-atc') {
+      if (qty > 0) {
+        el.innerHTML = `<div style="display:flex;background:var(--red, #ED1C24);color:#fff;height:28px"><button onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},-1)" style="flex:1;background:transparent;color:#fff;font-weight:700;border:none;cursor:pointer;font-size:16px;font-family:Montserrat,sans-serif;">−</button><span style="flex:1;text-align:center;font-size:12px;font-weight:800;line-height:28px;">${qty}</span><button onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},1)" style="flex:1;background:transparent;color:#fff;font-weight:700;border:none;cursor:pointer;font-size:16px;font-family:Montserrat,sans-serif;">+</button></div>`;
+      } else {
+        el.innerHTML = `<button class="${btnCls}" onclick="event.preventDefault();event.stopPropagation();addToCart(decodeURIComponent('${pdEnc}'))" style="width:100%;background:var(--red, #ED1C24);color:#fff;border:none;padding:7px;font-size:11px;font-weight:700;cursor:pointer;transition:background .2s;font-family:Montserrat,sans-serif;" onmouseover="this.style.background='#BE161D'" onmouseout="this.style.background='var(--red, #ED1C24)'">Add to Cart</button>`;
+      }
+    } else if (qty > 0) {
       el.innerHTML = dealQtyHtml(pid, qty);
     } else if (btnCls === 'dp-atc') {
       renderDealQtyCtrl(el, pid, pdEnc, btnCls);
@@ -497,7 +531,7 @@ function buildCard(p){
   if(!p?.id)return'';
   const id=p.id;
   const name=(p.name||p.display_name||'').replace(/^\[.*?\]\s*/,'').trim()||'Product';
-  const price=parseFloat(p.ecommerce_price||p.ecommerce_pricee||p.list_price||p.lst_price||0);
+  const price=getProdPrice(p);
   const std=parseFloat(p.standard_price||0);
   // CRITICAL: image_1024 is a PATH like /web/image/product.template/123/image_1024
   // Must prepend /proxy to load it
@@ -646,7 +680,7 @@ async function fetchProductsById(id) {
 
 function cartPayloadFromProduct(p) {
   const pid = p.id;
-  const price = parseFloat(p.ecommerce_price || p.ecommerce_pricee || p.list_price || p.lst_price || 0);
+  const price = getProdPrice(p);
   const qty = p.qty_available !== undefined ? parseFloat(p.qty_available) : -1;
   const name = (p.name || p.display_name || 'Product').replace(/^\[.*?\]\s*/, '').trim();
   const image = p.image_1024 ? API.img(p.image_1024) : API.prodImg(pid);
@@ -713,12 +747,7 @@ function renderDealQtyCtrl(wrap, pid, pdEnc, btnCls) {
 /* ── DEAL CARDS — slider image_ids[] ─────────────────── */
 function buildDealSection(slider, containerId, titleId) {
   if (titleId && slider?.name) {
-    const te = document.getElementById(titleId);
-    if (te) {
-      const icon = te.textContent.slice(0, 2);
-      const cleanName = String(slider.name).replace(/\s*\(Web\s*&\s*Mobile\)\s*/gi, '').trim();
-      te.textContent = icon + ' ' + cleanName;
-    }
+    // Keep the title from HTML to avoid "Be Best Seller" parsing bugs with emojis
   }
   buildDealCards(slider, containerId);
 }
@@ -769,11 +798,18 @@ async function enrichDealCards(items) {
     const p = await resolveProductFromSliderItem(item, prodsMap);
     const pid = p?.id || sliderTemplateId(item);
 
+    const imgWrap = card?.querySelector('.dp-img');
+    const nmEl = card?.querySelector('.dp-nm');
+
     if (!p || !pid) {
       if (priceEl) priceEl.innerHTML = '<span style="color:#9ca3af;font-size:12px">Out of Stock</span>';
-      if (wrap) wrap.innerHTML = '<button type="button" class="dp-atc" disabled style="background:#9ca3af">Out of Stock</button>';
+      if (wrap) wrap.innerHTML = '<button type="button" class="dp-atc" disabled style="background:#cbd5e1;color:#fff;cursor:not-allowed">Out of Stock</button>';
       card?.removeAttribute('data-href');
       navEls?.forEach(n => { n.style.cursor = 'default'; });
+      if (imgWrap && !imgWrap.querySelector('.oos-bdg')) {
+        imgWrap.insertAdjacentHTML('beforeend', '<div class="oos-bdg" style="position:absolute;top:10px;right:10px;background:#64748b;color:#fff;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;z-index:2">Out of Stock</div>');
+        imgWrap.style.position = 'relative';
+      }
       continue;
     }
     if (card && String(card.getAttribute('data-pid')) !== String(pid)) {
@@ -781,17 +817,25 @@ async function enrichDealCards(items) {
       wrap?.setAttribute('data-pid', pid);
     }
 
-    const price = parseFloat(p.ecommerce_price || p.ecommerce_pricee || p.list_price || 0);
+    const price = getProdPrice(p);
     const std = parseFloat(p.standard_price || 0);
     const qty = p.qty_available !== undefined ? parseFloat(p.qty_available) : -1;
     const oos = qty <= 0 && qty !== -1;
     const payload = cartPayloadFromProduct(p);
     const pdEnc = encodeURIComponent(JSON.stringify(payload));
     const imgSrc = payload.image;
-    const imgEl = card?.querySelector('.dp-img img');
+    const imgEl = imgWrap?.querySelector('img');
 
     card?.setAttribute('data-href', `product.html?id=${pid}`);
     navEls?.forEach(n => { n.style.cursor = 'pointer'; });
+    
+    if (nmEl && !nmEl.querySelector('.dp-sku')) {
+      const code = p.barcode || p.default_code;
+      if (code) {
+        nmEl.insertAdjacentHTML('beforeend', `<div class="dp-sku" style="color:#9ca3af;font-size:11px;font-weight:600;margin-top:4px">${code}</div>`);
+      }
+    }
+
     if (priceEl) {
       priceEl.innerHTML = price > 0
         ? `<strong style="color:#a01820">AED ${price.toFixed(2)}</strong>${std > price ? `<span style="color:#9ca3af;text-decoration:line-through;font-size:9px;margin-left:4px">${std.toFixed(2)}</span>` : ''}`
@@ -802,9 +846,15 @@ async function enrichDealCards(items) {
     if (wrap) {
       wrap.setAttribute('data-pdenc', pdEnc);
       if (oos) {
-        wrap.innerHTML = '<button type="button" class="dp-atc" disabled style="background:#9ca3af">Out of Stock</button>';
+        wrap.innerHTML = '<button type="button" class="dp-atc" disabled style="background:#cbd5e1;color:#fff;cursor:not-allowed">Out of Stock</button>';
+        if (imgWrap && !imgWrap.querySelector('.oos-bdg')) {
+          imgWrap.insertAdjacentHTML('beforeend', '<div class="oos-bdg" style="position:absolute;top:10px;right:10px;background:#64748b;color:#fff;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;z-index:2">Out of Stock</div>');
+          imgWrap.style.position = 'relative';
+        }
       } else {
         renderDealQtyCtrl(wrap, pid, pdEnc, 'dp-atc');
+        const bdg = imgWrap?.querySelector('.oos-bdg');
+        if (bdg) bdg.remove();
       }
     }
   }
