@@ -112,20 +112,42 @@
 
   <div id="step2Panel" style="display:none">
 
-  <!-- DELIVERY ADDRESS SELECTOR -->
-  <div class="fs" id="homeAddrSection">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <h3>🏠 Delivery Address</h3>
-      <button onclick="if(window.promptAddressMethod) window.promptAddressMethod('co'); else document.getElementById('coNewAddr').style.display='block'" class="sbtn" style="padding:6px 12px;max-width:max-content;font-size:11px">+ Add New</button>
-    </div>
-    <p style="font-size:11px;color:#6b7280;margin-bottom:12px">Select an address from your Address Book.</p>
+  <!-- ADDRESSES SECTION -->
+  <div class="fs" id="addressesSection">
     
-    <div id="coAddrList" style="display:flex;flex-direction:column;gap:10px;max-height:300px;overflow-y:auto;margin-bottom:14px">
-      <div style="color:#9ca3af;font-size:12px;text-align:center;padding:10px">⏳ Loading addresses...</div>
+    <!-- INVOICE ADDRESS -->
+    <div id="invoiceAddrContainer">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h3>🧾 Invoice Address</h3>
+        <button onclick="if(window.promptAddressMethod) window.promptAddressMethod('co'); else document.getElementById('coNewAddr').style.display='block'" class="sbtn" style="padding:6px 12px;max-width:max-content;font-size:11px">+ Add New</button>
+      </div>
+      <p style="font-size:11px;color:#6b7280;margin-bottom:12px">Select where invoice/billing details should be attached.</p>
+      <div id="coInvoiceAddrList" style="display:flex;flex-direction:column;gap:10px;max-height:250px;overflow-y:auto;margin-bottom:14px">
+        <div style="color:#9ca3af;font-size:12px;text-align:center;padding:10px">⏳ Loading invoice addresses...</div>
+      </div>
+    </div>
+
+    <hr style="border:0;border-top:1px solid #e5e7eb;margin:20px 0">
+
+    <!-- DELIVERY ADDRESS -->
+    <div id="homeAddrContainer">
+      <h3>🏠 Delivery Address</h3>
+      <p style="font-size:11px;color:#6b7280;margin-bottom:12px">Select an address from your Address Book.</p>
+      
+      <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <input type="checkbox" id="sameAsDeliveryBtn" onchange="toggleSameAsDelivery()" style="width:16px;height:16px;cursor:pointer">
+        <label for="sameAsDeliveryBtn" style="font-size:13px;font-weight:600;cursor:pointer">Same as Invoice Address</label>
+      </div>
+      
+      <div id="coAddrList" style="display:flex;flex-direction:column;gap:10px;max-height:300px;overflow-y:auto;margin-bottom:14px">
+        <div style="color:#9ca3af;font-size:12px;text-align:center;padding:10px">⏳ Loading addresses...</div>
+      </div>
+      
+      <div class="fg full" style="margin-top:10px"><label class="fl">Delivery Notes</label><input class="fi" id="notes" placeholder="Leave at door, building gate code..."></div>
     </div>
 
     <!-- NEW ADDRESS FORM (Hidden by default) -->
-    <div id="coNewAddr" style="display:none;background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:14px">
+    <div id="coNewAddr" style="display:none;background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-top:14px">
       <h4 style="font-size:13px;font-weight:800;margin-bottom:10px">Add New Address</h4>
       <div class="fgrid">
         <div class="fg"><label class="fl">Name *</label><input class="fi" id="fn" placeholder="e.g. Home, Office"></div>
@@ -136,26 +158,13 @@
         <div class="fg"><label class="fl">ZIP / Postal Code</label><input class="fi" id="zip" placeholder="00000"></div>
         <div class="fg"><label class="fl">Country</label><select class="fsel" id="country" onchange="if(window.loadStatesForCountry) loadStatesForCountry(this.value, 'state')"><option value="">Loading...</option></select></div>
         <div class="fg"><label class="fl">State / Emirate</label><select class="fsel" id="state"><option value="">Loading...</option></select></div>
-        <div class="fg"><label class="fl">Type</label><select class="fsel" id="addrType"><option value="delivery">Delivery</option><option value="invoice">Invoice</option></select></div>
+        <div class="fg"><label class="fl">Type</label><select class="fsel" id="addrType"><option value="invoice">Invoice</option><option value="delivery">Delivery</option></select></div>
       </div>
       <div id="addrMsg" style="margin-top:8px;font-size:12px;font-weight:600"></div>
       <div style="display:flex;gap:8px;margin-top:12px">
         <button type="button" onclick="saveCheckoutAddress()" class="sbtn" style="padding:9px 16px;max-width:140px">💾 Save</button>
         <button type="button" onclick="document.getElementById('coNewAddr').style.display='none'" style="background:none;border:none;font-weight:700;color:#6b7280;cursor:pointer">Cancel</button>
       </div>
-    </div>
-    <div class="fg full" style="margin-top:10px"><label class="fl">Delivery Notes</label><input class="fi" id="notes" placeholder="Leave at door, building gate code..."></div>
-  </div>
-
-  <div class="fs" id="invoiceAddrSection">
-    <h3>🧾 Invoice Address</h3>
-    <p style="font-size:11px;color:#6b7280;margin-bottom:12px">Select where invoice/billing details should be attached.</p>
-    <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-      <input type="checkbox" id="sameAsDeliveryBtn" onchange="toggleSameAsDelivery()" style="width:16px;height:16px;cursor:pointer">
-      <label for="sameAsDeliveryBtn" style="font-size:13px;font-weight:600;cursor:pointer">Same as Delivery Address</label>
-    </div>
-    <div id="coInvoiceAddrList" style="display:flex;flex-direction:column;gap:10px;max-height:250px;overflow-y:auto">
-      <div style="color:#9ca3af;font-size:12px;text-align:center;padding:10px">⏳ Loading invoice addresses...</div>
     </div>
   </div>
 
@@ -355,15 +364,14 @@ async function goStep(step){
 
 function toggleSameAsDelivery(){
   var cb = document.getElementById('sameAsDeliveryBtn');
-  var list = document.getElementById('coInvoiceAddrList');
+  var list = document.getElementById('coAddrList');
   if(cb && cb.checked){
     list.style.display = 'none';
-    selInvoiceContact = selDeliveryContact;
+    selDeliveryContact = selInvoiceContact;
   } else {
     list.style.display = 'flex';
-    // If they uncheck, try to default back to an invoice type
-    var defaultInv = checkoutAddressesCache.find(function(a){ return a.type==='invoice'; });
-    selInvoiceContact = defaultInv || checkoutAddressesCache[0] || null;
+    var defaultDel = checkoutAddressesCache.find(function(a){ return a.type==='delivery'; });
+    selDeliveryContact = defaultDel || checkoutAddressesCache[0] || null;
     loadCheckoutAddresses();
   }
   checkPlaceOrderBtnState();
@@ -624,8 +632,8 @@ async function selectCheckoutAddress(id, kind){
   if(kind === 'invoice') selInvoiceContact = match;
   else selDeliveryContact = match;
   var cb = document.getElementById('sameAsDeliveryBtn');
-  if(cb && cb.checked && kind === 'delivery') {
-    selInvoiceContact = selDeliveryContact;
+  if(cb && cb.checked && kind === 'invoice') {
+    selDeliveryContact = selInvoiceContact;
   }
   loadCheckoutAddresses();
   checkPlaceOrderBtnState();
@@ -779,8 +787,7 @@ function selDelivery(id,name,kind,method){
 
 function toggleAddressSection(){
   var isStore=(selDeliveryKind==='store');
-  document.getElementById('homeAddrSection').style.display=isStore?'none':'block';
-  document.getElementById('invoiceAddrSection').style.display=isStore?'none':'block';
+  document.getElementById('addressesSection').style.display=isStore?'none':'block';
   document.getElementById('storePickupSection').style.display=isStore?'block':'none';
   if(isStore && selDeliveryMethod){
     var nm=selDeliveryMethod.name||'Coop Discounts Store';
