@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SKYTEC Delivery Workflow</title>
+<style>
+:root{--primary:#6f3d68;--primary2:#875A7B;--bg:#f4f6f9;--card:#fff;--border:#e5e7eb;--text:#111827;--muted:#6b7280;--green:#16a34a;--blue:#2563eb;--orange:#f97316;--red:#dc2626}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.header{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}.header h1{font-size:18px;margin:0}.header small{opacity:.8}.wrap{padding:16px;max-width:1200px;margin:auto}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}select,input,button{border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-family:inherit}button{cursor:pointer;background:var(--primary);color:#fff;font-weight:700;border:none}button.secondary{background:#fff;color:var(--primary);border:1px solid var(--primary)}button.green{background:var(--green)}button.blue{background:var(--blue)}button.orange{background:var(--orange)}button.red{background:var(--red)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}.kpi{background:var(--card);border-radius:12px;padding:14px;border:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,.04)}.kpi b{font-size:24px}.kpi span{display:block;color:var(--muted);font-size:12px;text-transform:uppercase;margin-top:4px}
+.tabs{display:flex;gap:8px;margin:12px 0}.tab{background:#fff;color:var(--primary);border:1px solid var(--primary)}.tab.active{background:var(--primary);color:#fff}.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}.panel-head{background:var(--primary);color:#fff;padding:12px 14px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+.table{width:100%;border-collapse:collapse}.table th,.table td{padding:10px;border-bottom:1px solid var(--border);font-size:13px;text-align:left;vertical-align:top}.table th{background:#fafafa;color:var(--muted);font-size:12px;text-transform:uppercase}
+.badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800}.new{background:#ffedd5;color:#c2410c}.approved{background:#dbeafe;color:#1d4ed8}.ready{background:#cffafe;color:#0e7490}.accepted{background:#ede9fe;color:#6d28d9}.delivered{background:#dcfce7;color:#15803d}.cancelled{background:#fee2e2;color:#b91c1c}.actions{display:flex;gap:6px;flex-wrap:wrap}.empty{text-align:center;color:var(--muted);padding:30px}.err{display:none;background:#fee2e2;color:#991b1b;padding:10px;border-radius:8px;margin-bottom:10px}
+@media(max-width:800px){.kpis{grid-template-columns:repeat(2,1fr)}.table{display:block;overflow-x:auto}.header{display:block}.toolbar{display:block}.toolbar>*{width:100%;margin:4px 0}}
+</style>
+</head>
+<body>
+<div class="header"><div><h1>SKYTEC Delivery Workflow</h1><small>Store Manager / Store Keeper realtime dashboard</small></div><div style="display:flex;gap:10px;"><button style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.5);" onclick="location.href='index.html'">&#x1F3E0; Home</button><button style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.5);" onclick="logoutDashboard()">&#x1F6AA; Logout</button></div></div>
+<div class="wrap">
+<div id="err" class="err"></div>
+<div class="toolbar">
+<select id="role"><option value="store_manager">Store Manager</option><option value="store_keeper">Store Keeper</option><option value="admin">ERP Admin / Delivery Manager</option></select>
+<select id="period"><option value="all">All Time</option><option value="today">Today</option><option value="this_week">This Week</option><option value="this_month">This Month</option></select>
+<input id="limit" type="number" value="25" min="1" max="100" placeholder="limit"/>
+<input id="offset" type="number" value="0" min="0" placeholder="offset"/>
+<input id="sessionId" placeholder="Paste session_id cookie here"/>
+<button onclick="saveSession()">Save Session</button><button class="secondary" onclick="loadDashboard()">Refresh</button>
+</div>
+<div class="kpis"><div class="kpi"><b id="kTotal">0</b><span>Total</span></div><div class="kpi"><b id="kNew">0</b><span>New</span></div><div class="kpi"><b id="kApproved">0</b><span>Approved</span></div><div class="kpi"><b id="kReady">0</b><span>Ready</span></div></div>
+<div class="tabs"><button id="btnList" class="tab active" onclick="setView('list')">List View</button><button id="btnKanban" class="tab" onclick="setView('kanban')">Kanban View</button></div>
+<div class="panel"><div class="panel-head"><span id="queueTitle">Realtime Orders</span><span id="lastRefresh"></span></div><div id="orders"></div></div>
+</div>
+<script>
+const ODOO_URL = 'http://cooperp.freeddns.org:8076';
+let BASE_URL = ODOO_URL;
+if (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || ['3000', '5500', '8000', '8080'].includes(location.port)) {
+  BASE_URL = `http://${location.hostname}:3001/proxy`;
+} else if (location.protocol !== 'file:') {
+  if (location.hostname.includes('cooperp.freeddns.org')) {
+    BASE_URL = location.origin;
+  } else {
+    BASE_URL = location.origin + '/proxy.php';
+  }
+}
+let currentView='list';let currentItems=[];
+function sid(){return localStorage.getItem('odoo_session_id')||document.getElementById('sessionId').value.trim()}
+function saveSession(){localStorage.setItem('odoo_session_id',document.getElementById('sessionId').value.trim());loadDashboard()}
+function logoutDashboard(){localStorage.removeItem('odoo_session_id');localStorage.removeItem('cd_session');localStorage.removeItem('cd_role_code');location.href='login.html';}
+function showErr(m){const e=document.getElementById('err');e.style.display=m?'block':'none';e.textContent=m||''}
+function badge(s){return `<span class="badge ${s||'new'}">${s||'new'}</span>`}
+function val(o,...keys){for(const k of keys){if(o&&o[k]!==undefined&&o[k]!==null&&o[k]!=='')return o[k]}return''}
+async function apiGet(path,params={}){const url=new URL(BASE_URL+path);Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));const res=await fetch(url,{method:'GET',credentials:'include',headers:{'Accept':'application/json','Content-Type':'application/json','Cookie':'session_id='+sid()}});const txt=await res.text();if(txt.trim().startsWith('<'))throw new Error('Odoo returned HTML/login page. Check session_id cookie.');return JSON.parse(txt)}
+async function apiPost(path,body){const res=await fetch(BASE_URL+path,{method:'POST',credentials:'include',headers:{'Accept':'application/json','Content-Type':'application/json','Cookie':'session_id='+sid()},body:JSON.stringify(body)});const txt=await res.text();if(txt.trim().startsWith('<'))throw new Error('Odoo returned HTML/login page. Check session_id cookie.');return JSON.parse(txt)}
+function selectQueue(data){const role=document.getElementById('role').value;if(role==='store_manager')return data.store_manager_queue||[];if(role==='store_keeper')return data.store_keeper_queue||[];return data.workflow_orders||data.recent_orders||[]}
+async function loadDashboard(){showErr('');try{const params={by_AJR:1,period:document.getElementById('period').value,limit:document.getElementById('limit').value,offset:document.getElementById('offset').value};const r=await apiGet('/api/skytec-delivery/dashboard',params);const data=r.data||r;const t=data.totals||{};document.getElementById('kTotal').textContent=t.total||0;document.getElementById('kNew').textContent=t.new||t.pending||0;document.getElementById('kApproved').textContent=t.approved||0;document.getElementById('kReady').textContent=t.ready||0;currentItems=selectQueue(data);document.getElementById('queueTitle').textContent=document.getElementById('role').selectedOptions[0].text+' Queue';document.getElementById('lastRefresh').textContent=new Date().toLocaleTimeString();render()}catch(e){showErr(e.message)}}
+function setView(v){currentView=v;document.getElementById('btnList').classList.toggle('active',v==='list');document.getElementById('btnKanban').classList.toggle('active',v==='kanban');render()}
+function render(){if(!currentItems.length){document.getElementById('orders').innerHTML='<div class="empty">No records found</div>';return}if(currentView==='kanban'){document.getElementById('orders').innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;padding:12px">${currentItems.map(card).join('')}</div>`}else{document.getElementById('orders').innerHTML=`<table class="table"><thead><tr><th>Order</th><th>Customer</th><th>Source</th><th>Status</th><th>Responsible</th><th>Actions</th></tr></thead><tbody>${currentItems.map(row).join('')}</tbody></table>`}}
+function row(o){const state=val(o,'delivery_state','state');return `<tr><td><b>${val(o,'name')}</b><br><small>${val(o,'scheduled_date','create_date')}</small></td><td>${val(o,'partner','customer','partner_name')}<br><small>${val(o,'partner_phone')}</small></td><td>${val(o,'source','delivery_source')}</td><td>${badge(state)}</td><td>${val(o,'store_manager','store_keeper','driver','responsible')||'-'}</td><td><div class="actions">${buttons(o,state)}</div></td></tr>`}
+function card(o){const state=val(o,'delivery_state','state');return `<div class="kpi" style="text-align:left"><b style="font-size:15px">${val(o,'name')}</b><br>${badge(state)}<p><b>Customer:</b> ${val(o,'partner','customer','partner_name')||'-'}</p><p><b>Source:</b> ${val(o,'source','delivery_source')||'-'}</p><p><b>Responsible:</b> ${val(o,'store_manager','store_keeper','driver','responsible')||'-'}</p><div class="actions">${buttons(o,state)}</div></div>`}
+function buttons(o,state){const id=val(o,'id','picking_id');const role=document.getElementById('role').value;let b=`<button class="secondary" onclick="openOdoo(${id})">Open</button>`;if((role==='store_manager'||role==='admin')&&state==='new')b+=`<button class="green" onclick="doAction(${id},'approve',this)">Approve</button>`;if((role==='store_keeper'||role==='admin')&&state==='approved'){b+=`<button class="blue" onclick="doAction(${id},'ready',this)">Mark Ready</button>`;b+=`<button class="orange" onclick="assignDriver(${id},this)">Assign Driver</button>`}if(role==='admin'&&state==='ready')b+=`<button class="green" onclick="doAction(${id},'notify_drivers',this)">Notify Drivers</button>`;if(role==='admin'&&!['delivered','cancelled'].includes(state))b+=`<button class="red" onclick="doAction(${id},'cancel',this)">Cancel</button>`;return b}
+function openOdoo(id){window.open(ODOO_URL+'/web#id='+id+'&model=stock.picking&view_type=form','_blank')}
+function setBtnState(btn,active){if(!btn)return;if(active){btn.dataset.origText=btn.innerHTML;btn.innerHTML='&#x23F3; Wait...';btn.style.opacity='0.6';btn.style.pointerEvents='none'}else{if(btn.dataset.origText)btn.innerHTML=btn.dataset.origText;btn.style.opacity='1';btn.style.pointerEvents='auto'}}
+async function doAction(id,action,btn){setBtnState(btn,true);showErr('');try{const r=await apiPost('/api/skytec-delivery/action?by_AJR=1',{picking_id:id,action:action});console.log('doAction response:',r);if(!r || (r.success !== 1 && r.success !== true && String(r.success) !== '1'))throw new Error(r.message||'Action failed');await loadDashboard()}catch(e){setBtnState(btn,false);showErr(e.message)}}
+async function assignDriver(id,btn){const driverId=prompt('Enter delivery person user id / rider id:');if(!driverId)return;setBtnState(btn,true);showErr('');try{const r=await apiPost('/api/skytec-delivery/action?by_AJR=1',{picking_id:id,action:'assign_driver',driver_id:parseInt(driverId)});console.log('assignDriver response:',r);if(!r || (r.success !== 1 && r.success !== true && String(r.success) !== '1'))throw new Error(r.message||'Assign failed');await loadDashboard()}catch(e){setBtnState(btn,false);showErr(e.message)}}
+setInterval(()=>{if(!document.hidden)loadDashboard()},15000);
+window.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('sessionId').value=localStorage.getItem('odoo_session_id')||'';
+  const roleCode = localStorage.getItem('cd_role_code');
+  if(roleCode) {
+    const roleSelect = document.getElementById('role');
+    if(roleCode === 'store_manager' || roleCode === 'stock_manager') roleSelect.value = 'store_manager';
+    else if(roleCode === 'store_keeper') roleSelect.value = 'store_keeper';
+    else if(roleCode === 'admin' || roleCode === 'company_owner' || roleCode === 'delivery_manager') roleSelect.value = 'admin';
+    if(roleCode !== 'admin' && roleCode !== 'company_owner' && roleCode !== 'delivery_manager') {
+      roleSelect.disabled = true;
+    }
+  }
+  loadDashboard();
+});
+document.getElementById('role').addEventListener('change',loadDashboard);
+</script></body></html>

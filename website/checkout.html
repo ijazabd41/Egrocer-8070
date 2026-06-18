@@ -116,7 +116,7 @@
   <div class="fs" id="homeAddrSection">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <h3>🏠 Delivery Address</h3>
-      <button onclick="document.getElementById('coNewAddr').style.display='block'" class="sbtn" style="padding:6px 12px;max-width:max-content;font-size:11px">+ Add New</button>
+      <button onclick="if(window.promptAddressMethod) window.promptAddressMethod('co'); else document.getElementById('coNewAddr').style.display='block'" class="sbtn" style="padding:6px 12px;max-width:max-content;font-size:11px">+ Add New</button>
     </div>
     <p style="font-size:11px;color:#6b7280;margin-bottom:12px">Select an address from your Address Book.</p>
     
@@ -251,7 +251,7 @@
 </div></section>
 
 <div id="site-footer"></div><script src="js/error-logger.js?v=1.0"></script>
-<script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.14"></script><script src="js/layout.js?v=15.1"></script><script>
+<script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.15"></script><script src="js/layout.js?v=15.1"></script><script>
 var selProvider=22, selProviderName='Cash on Delivery', selCarrierId=1, selCarrierName='Standard delivery', selDeliveryKind='home', selDeliveryMethod=null, discountPromo=0, discountLoyalty=0, appliedPromoCoupon=null, appliedLoyaltyCoupon=null;
 var currentStep=1;
 var checkoutAddressesCache=[];

@@ -409,19 +409,6 @@ footer{background:#141414;color:rgba(255,255,255,.7);padding-top:44px}
 /* --- REDESIGN LAYOUT --- */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
 
-/* Ensure header is always a normal block above the slider */
-#site-header {
-  display: block;
-  position: sticky;
-  top: 0;
-  z-index: 900;
-}
-/* Ensure slider sits below header in stacking order */
-.hero-wrap {
-  position: relative;
-  z-index: 1;
-}
-
     html {
       font-size: 102%;
     }

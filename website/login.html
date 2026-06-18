@@ -250,7 +250,7 @@
 </section>
 <div id="site-footer"></div>
 <script src="js/api-cache.js?v=1"></script><script src="js/error-logger.js?v=1.0"></script>
-<script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.14"></script><script src="js/layout.js?v=15.1"></script>
+<script src="js/api.js?v=8.9"></script><script src="js/app.js?v=8.15"></script><script src="js/layout.js?v=15.1"></script>
 <script src="js/shareholder.js?v=1.0"></script>
 <script>
 const nextPage=new URLSearchParams(location.search).get('next')||'account.html';
@@ -341,11 +341,11 @@ async function doLogin(){
         const theme = localStorage.getItem('cd_theme') || 'web1';
         const map = {
           'company_owner':    theme + '_owner_dashboard.html',
-          'store_manager':    'web_store_manager_delivery.html',
+          'store_manager':    'skytec_delivery_workflow_dashboard.html',
           'delivery_manager': theme + '_delivery_dashboard.html',
           'delivery_boy':     theme + '_delivery_dashboard.html',
-          'stock_manager':    'web_store_manager_delivery.html',
-          'store_keeper':     theme + '_stock_dashboard.html',
+          'stock_manager':    'skytec_delivery_workflow_dashboard.html',
+          'store_keeper':     'skytec_delivery_workflow_dashboard.html',
           'marketing_manager': 'marketing_dashboard.html',
         };
         if (role && map[role]) {

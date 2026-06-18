@@ -985,3 +985,140 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
   }
 });
+
+/* ── AUTOFILL LOCATION & MODAL ───────────────────────── */
+window.promptAddressMethod = function(prefix) {
+  if (document.getElementById('addrPromptOverlay')) return;
+  var overlay = document.createElement('div');
+  overlay.id = 'addrPromptOverlay';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  
+  var modal = document.createElement('div');
+  modal.style.cssText = 'background:#fff;border-radius:16px;padding:30px;max-width:400px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.2);font-family:Montserrat,sans-serif;';
+  
+  var html = '<h3 style="font-size:20px;font-weight:900;margin-bottom:10px;">Add New Address</h3>';
+  html += '<p style="font-size:14px;color:#6b7280;margin-bottom:24px;">How would you like to add your address?</p>';
+  
+  html += '<button id="btnUseLoc" style="width:100%;background:var(--red, #ED1C24);color:#fff;border:none;padding:16px;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;">&#x1F4CD; Use Current Location</button>';
+  
+  html += '<button id="btnManual" style="width:100%;background:#f3f4f6;color:#374151;border:none;padding:16px;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;margin-bottom:16px;">&#x270D;&#xFE0F; Enter Manually</button>';
+  
+  html += '<button id="btnCancelLoc" style="background:none;border:none;color:#9ca3af;font-size:14px;font-weight:700;cursor:pointer;">Cancel</button>';
+  
+  modal.innerHTML = html;
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  
+  function close() {
+    if(overlay.parentNode) overlay.parentNode.removeChild(overlay);
+  }
+  
+  function showForm(p) {
+    if(p === 'co') {
+      var coForm = document.getElementById('coNewAddr');
+      if (coForm) { coForm.style.display='block'; coForm.scrollIntoView({behavior:'smooth',block:'center'}); }
+    } else {
+      var accForm = document.getElementById('newAddressFormSec');
+      if(accForm) { accForm.style.display='block'; accForm.scrollIntoView({behavior:'smooth',block:'center'}); }
+      else if(typeof showNewAddressForm === 'function') showNewAddressForm();
+    }
+  }
+
+  document.getElementById('btnUseLoc').onclick = function() {
+    var btn = this;
+    var origText = btn.innerHTML;
+    btn.innerHTML = '&#x23F3; Locating...';
+    btn.disabled = true;
+    
+    window.autofillLocation(prefix, function(success) {
+      close();
+      showForm(prefix);
+    });
+  };
+  
+  document.getElementById('btnManual').onclick = function() {
+    close();
+    showForm(prefix);
+  };
+  
+  document.getElementById('btnCancelLoc').onclick = close;
+};
+
+window.autofillLocation = function(prefix, callback) {
+  if (!navigator.geolocation) {
+    if(typeof toast === 'function') toast('Geolocation is not supported by your browser', 'err');
+    if (callback) callback(false);
+    return;
+  }
+  
+  navigator.geolocation.getCurrentPosition(async function(pos) {
+    try {
+      var lat = pos.coords.latitude;
+      var lon = pos.coords.longitude;
+      var r = await fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon);
+      var data = await r.json();
+      
+      if (data && data.address) {
+        var addr = data.address;
+        var street = [addr.road, addr.house_number, addr.suburb, addr.neighbourhood].filter(Boolean).join(', ');
+        var city = addr.city || addr.town || addr.village || addr.county || '';
+        var zip = addr.postcode || '';
+        var stateName = addr.state || '';
+        var countryCode = (addr.country_code || '').toUpperCase();
+        
+        var idStreet = prefix === 'acc' ? 'aStreet' : 'addr';
+        var idCity = prefix === 'acc' ? 'aCity' : 'city';
+        var idZip = prefix === 'acc' ? 'aZip' : 'zip';
+        var idCountry = prefix === 'acc' ? 'aCountry' : 'country';
+        var idState = prefix === 'acc' ? 'aState' : 'state';
+        
+        var elStreet = document.getElementById(idStreet);
+        var elCity = document.getElementById(idCity);
+        var elZip = document.getElementById(idZip);
+        var elCountry = document.getElementById(idCountry);
+        
+        if (elStreet) elStreet.value = street;
+        if (elCity) elCity.value = city;
+        if (elZip) elZip.value = zip;
+        
+        if (elCountry && countryCode) {
+           var cOpts = elCountry.options;
+           var matchedCId = null;
+           for(var i=0; i<cOpts.length; i++) {
+             if (cOpts[i].text.toLowerCase() === (addr.country||'').toLowerCase() || 
+                 (countryCode === 'AE' && cOpts[i].text === 'United Arab Emirates')) {
+               elCountry.selectedIndex = i;
+               matchedCId = cOpts[i].value;
+               break;
+             }
+           }
+           if (matchedCId && window.loadStatesForCountry) {
+             await window.loadStatesForCountry(matchedCId, idState);
+             var elState = document.getElementById(idState);
+             if (elState && stateName) {
+               var sOpts = elState.options;
+               for(var j=0; j<sOpts.length; j++) {
+                 if (sOpts[j].text.toLowerCase().includes(stateName.toLowerCase()) || 
+                     stateName.toLowerCase().includes(sOpts[j].text.toLowerCase())) {
+                   elState.selectedIndex = j;
+                   break;
+                 }
+               }
+             }
+           }
+        }
+        if(typeof toast === 'function') toast('Address autofilled from location', 'ok');
+        if (callback) callback(true);
+      } else {
+        if (callback) callback(false);
+      }
+    } catch(e) {
+      if(typeof toast === 'function') toast('Could not fetch address details', 'err');
+      if (callback) callback(false);
+    }
+  }, function(err) {
+    if(typeof toast === 'function') toast('Location access denied or failed', 'err');
+    btn.innerHTML = origText;
+    btn.disabled = false;
+  }, { timeout: 10000 });
+};
