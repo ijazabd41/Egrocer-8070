@@ -1321,7 +1321,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   //       → GET /api/order/{oid}/apply_loyalty_point?reward_id=&cart_id=
   const getLoyaltyCoupons  = pid        => GET('/api/loyalty-coupon', {domain:`[('partner_id','=',${pid})]`});
   const getLoyaltyCouponByCode = code   => GET('/api/loyalty-coupon', {domain:`[('code','=','${(code||'').replace(/'/g,"\\'")}')]`});
-  const getLoyaltyCards    = async ()   => ({ success: 1, data: [] });
+  const getLoyaltyCards    = ()         => GET('/api/loyalty-card');
   const getLoyaltyPrograms = ()         => GET('/api/loyalty-program');
   const getLoyaltyReward   = id         => {
     const uid = myUserId();
