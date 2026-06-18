@@ -570,28 +570,31 @@ async function loadCheckoutAddresses(isLoadMore = false){
         selInvoiceContact = defaultInv || null;
       }
       function addrDetails(a){
-        var fields = [
-          ['Street', [a.street,a.street2].filter(Boolean).join(', ')],
-          ['City', a.city],
-          ['State', Array.isArray(a.state_id)?a.state_id[1]:a.state_id],
-          ['Country', Array.isArray(a.country_id)?a.country_id[1]:a.country_id],
-          ['ZIP', a.zip],
-          ['Phone', a.phone || a.mobile],
-          ['Email', a.email],
-          ['Company', a.company_name || (Array.isArray(a.parent_id)?a.parent_id[1]:'')],
-          ['VAT', a.vat]
-        ].filter(function(x){ return x[1]; });
-        return fields.map(function(f){ return '<div style="font-size:11px;color:#6b7280"><strong style="color:#374151">'+f[0]+':</strong> '+f[1]+'</div>'; }).join('');
+        var parts = [
+          [a.street,a.street2].filter(Boolean).join(' '),
+          a.city,
+          Array.isArray(a.state_id)?a.state_id[1]:a.state_id,
+          Array.isArray(a.country_id)?a.country_id[1]:a.country_id
+        ].filter(Boolean);
+        var cParts = [];
+        if(a.phone || a.mobile) cParts.push('📞 ' + (a.phone || a.mobile));
+        if(a.email) cParts.push('✉️ ' + a.email);
+        var str = parts.join(', ');
+        if(cParts.length) str += ' | ' + cParts.join(' ');
+        return '<div style="font-size:11px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+str+'</div>';
       }
       function card(a, kind){
         var selected = kind==='delivery'
           ? (selDeliveryContact && selDeliveryContact.id===a.id)
           : (selInvoiceContact && selInvoiceContact.id===a.id);
-        var chip = kind==='delivery' ? '🚚 Delivery' : '🧾 Invoice';
-        return '<div class="co-addr-card" onclick="selectCheckoutAddress('+a.id+',\''+kind+'\')" style="cursor:pointer;border:1.5px solid '+(selected?'var(--red)':'#e5e7eb')+';border-radius:10px;padding:12px;background:'+(selected?'#fff5f5':'#f9fafb')+'">' +
-          '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><div style="font-size:11px;font-weight:800;color:var(--red);text-transform:uppercase">'+chip+'</div>'+(selected?'<div style="font-size:10px;font-weight:700;color:#065f46">Selected</div>':'')+'</div>' +
-          '<div style="font-weight:700;font-size:13px;margin-bottom:6px">'+(a.name||'Unnamed address')+'</div>' +
-          addrDetails(a) +
+        var chip = kind==='delivery' ? '🚚' : '🧾';
+        return '<div class="co-addr-card" onclick="selectCheckoutAddress('+a.id+',\''+kind+'\')" style="cursor:pointer;border:1.5px solid '+(selected?'var(--red)':'#e5e7eb')+';border-radius:8px;padding:8px 12px;background:'+(selected?'#fff5f5':'#f9fafb')+';display:flex;align-items:center;gap:12px;margin-bottom:8px">' +
+          '<div style="font-size:18px;">'+chip+'</div>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="font-weight:700;font-size:13px;color:#111;margin-bottom:2px;">'+(a.name||'Unnamed address')+'</div>' +
+            addrDetails(a) +
+          '</div>' +
+          (selected?'<div style="font-size:11px;font-weight:800;color:#065f46;background:#d1fae5;padding:4px 8px;border-radius:4px;flex-shrink:0;">Selected</div>':'') +
         '</div>';
       }
       var deliveryCandidates = checkoutAddressesCache.filter(function(a){ return a.type==='delivery'; });
