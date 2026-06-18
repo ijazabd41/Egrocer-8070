@@ -67,11 +67,12 @@ async function shDoLookup() {
 
   try {
     const r = await API.shareholderLookup(num);
-    // Success lookup
-    const isSuccess = r.success === 1 || r.success === true;
-    const hasData = (r.data && r.data.length > 0) || r.shareholder;
+    // Accept any response format that contains shareholder/partner data
+    const profile = r.shareholder || r.partner || (r.data && r.data[0]) || (r.result && (r.result.shareholder || r.result.partner || (Array.isArray(r.result) ? r.result[0] : null)));
+    const isSuccess = r.success === 1 || r.success === true || !!profile;
+    const hasData = !!profile;
     if (isSuccess && hasData) {
-      shProfileData = r.shareholder || r.data[0];
+      shProfileData = profile;
       shNumber = num;
       
       // Go to Step 2: Show details & CAPTCHA
@@ -79,7 +80,8 @@ async function shDoLookup() {
       shRenderProfileDetails(shProfileData);
       shGenerateCaptcha();
     } else {
-      throw new Error(r.error || r.message || 'Shareholder not found');
+      const errMsg = r.error || r.message || (r.result && (r.result.error || r.result.message)) || 'Shareholder not found';
+      throw new Error(errMsg);
     }
   } catch (e) {
     shShowError('sh-lookup-err', `❌ ${e.message || 'Shareholder not found or server unavailable'}`);
