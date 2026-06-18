@@ -580,8 +580,8 @@ async function loadCheckoutAddresses(isLoadMore = false){
         var addrStr = fields.map(function(f){ return '<span style="color:#6b7280">'+f[0]+':</span> <span style="color:#374151;font-weight:600">'+f[1]+'</span>'; }).join('<span style="color:#d1d5db;margin:0 4px">|</span>');
         
         var cParts = [];
-        if(a.phone || a.mobile) cParts.push('📞 <span style="color:#374151;font-weight:600">' + (a.phone || a.mobile) + '</span>');
-        if(a.email) cParts.push('✉️ <span style="color:#374151;font-weight:600">' + a.email + '</span>');
+        if(a.phone || a.mobile) cParts.push('<span style="color:#6b7280">Phone:</span> <span style="color:#374151;font-weight:600">' + (a.phone || a.mobile) + '</span>');
+        if(a.email) cParts.push('<span style="color:#6b7280">Email:</span> <span style="color:#374151;font-weight:600">' + a.email + '</span>');
         
         var fullStr = addrStr;
         if(cParts.length) fullStr += (addrStr ? '<span style="color:#d1d5db;margin:0 6px">||</span>' : '') + cParts.join('<span style="color:#d1d5db;margin:0 6px">|</span>');
