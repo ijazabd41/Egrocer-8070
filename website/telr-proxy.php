@@ -10,6 +10,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+if (!function_exists('getallheaders')) {
+    function getallheaders() {
+        $headers = [];
+        foreach ($_SERVER as $name => $value) {
+            if (substr($name, 0, 5) == 'HTTP_') {
+                $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+            } else if ($name == "CONTENT_TYPE") {
+                $headers["Content-Type"] = $value;
+            } else if ($name == "CONTENT_LENGTH") {
+                $headers["Content-Length"] = $value;
+            }
+        }
+        return $headers;
+    }
+}
+
 // Safe URL parsing from REQUEST_URI without Apache URL-decoding
 $uri = $_SERVER['REQUEST_URI'];
 $parsedUrl = parse_url($uri);
