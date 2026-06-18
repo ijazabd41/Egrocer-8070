@@ -1178,7 +1178,30 @@ async function placeOrder(){
       var totalAmount = (sub - totalDiscVal + deliveryFeeVal + vatVal).toFixed(2);
 
       // Step 5c: Create Telr session
-      var telrSession = await API.createTelrSession(parseInt(oid), totalAmount, 'AED', 'Order ' + (orderName||oid));
+      var customerInfo = null;
+      var addr = selInvoiceContact || selDeliveryContact;
+      if(addr) {
+        var nameParts = (addr.name || contact.name || '').split(' ');
+        var fname = nameParts[0] || 'Customer';
+        var lname = nameParts.slice(1).join(' ') || 'Customer';
+        var ccode = 'AE';
+        if(Array.isArray(addr.country_id) && addr.country_id[1]) {
+          var cname = addr.country_id[1].toLowerCase();
+          if(cname.includes('arab') || cname.includes('uae')) ccode = 'AE';
+          else if(cname.includes('saudi')) ccode = 'SA';
+        }
+        customerInfo = {
+          ref: contact.id ? String(contact.id) : undefined,
+          email: addr.email || contact.email || 'customer@example.com',
+          name: { forenames: fname, surname: lname },
+          address: {
+            line1: [addr.street, addr.street2].filter(Boolean).join(' ') || 'N/A',
+            city: addr.city || (Array.isArray(addr.state_id)?addr.state_id[1]:'') || 'N/A',
+            country: ccode
+          }
+        };
+      }
+      var telrSession = await API.createTelrSession(parseInt(oid), totalAmount, 'AED', 'Order ' + (orderName||oid), customerInfo);
       log.info('Checkout','Telr → session created',{ref:telrSession.ref,url:telrSession.url});
 
       // Step 5d: Save state for telr-return.html

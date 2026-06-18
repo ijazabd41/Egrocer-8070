@@ -1059,7 +1059,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
    * @param {string} description – e.g. 'Order S00308'
    * @returns {{ ref: string, url: string }} – Telr order ref and redirect URL
    */
-  async function createTelrSession(orderId, amount, currency, description) {
+  async function createTelrSession(orderId, amount, currency, description, customerInfo) {
     Log.info('Telr', 'createSession → start', { orderId, amount, currency });
     const baseUrl = (typeof location !== 'undefined')
       ? location.origin + location.pathname.replace(/[^/]*$/, '')
@@ -1082,6 +1082,10 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
         cancelled: baseUrl + 'telr-return.html?status=cancelled'
       }
     };
+
+    if (customerInfo) {
+      body.customer = customerInfo;
+    }
 
     // Notification/Webhook URL is now configured directly in the Telr dashboard
     // to avoid "Invalid webhook URL" errors for non-HTTPS or custom port URLs.
