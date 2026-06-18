@@ -38,6 +38,14 @@
     border-color: var(--red);
     box-shadow: 0 0 0 3px rgba(228, 30, 38, .1);
   }
+  /* Captcha shared styles */
+  .captcha-box {
+    background: var(--gray-50);
+    border: 1.5px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
 </style>
 </head>
 <body>
@@ -152,8 +160,20 @@
         <div class="fg" style="margin-bottom:12px"><label class="fl">Email or Mobile Number *</label><input class="fi" type="text" id="lg-em" placeholder="email@example.com or 971501234567" autocomplete="username"></div>
         <div class="fg" style="margin-bottom:12px"><label class="fl">Password *</label><input class="fi" type="password" id="lg-pw" placeholder="••••••••" autocomplete="current-password"></div>
         <div style="text-align:right;margin-bottom:12px"><button onclick="switchTab('forgot')" style="background:none;border:none;color:#ED1C24;font-size:12px;font-weight:700;cursor:pointer">Forgot Password?</button></div>
+        
+        <!-- CAPTCHA -->
+        <div class="captcha-box">
+          <label class="fl" style="margin-bottom:8px;display:block;">Security Verification *</label>
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+            <canvas id="lg-captcha-canvas" width="160" height="46" style="border-radius:var(--r-sm);border:1.5px solid var(--gray-200);background:#f3f4f6;cursor:pointer;" onclick="lgGenCaptcha()"></canvas>
+            <button type="button" onclick="lgGenCaptcha()" style="background:none;border:none;color:var(--red);font-size:20px;cursor:pointer;padding:6px;transition:transform var(--t);" onmouseover="this.style.transform='rotate(45deg)'" onmouseout="this.style.transform='rotate(0deg)'" title="Refresh CAPTCHA">🔄</button>
+            <div id="lg-captcha-status" style="font-size:11px;color:var(--gray-500);flex:1;">Enter code to unlock Sign In</div>
+          </div>
+          <input class="fi" id="lg-captcha" placeholder="Enter CAPTCHA code" style="text-transform:uppercase;letter-spacing:2px;font-weight:700;text-align:center;" autocomplete="off" oninput="lgVerifyCaptcha()">
+        </div>
+
         <div id="lg-err" style="display:none;margin-bottom:10px" class="alert alert-err"></div>
-        <button id="lg-btn" onclick="doLogin()" class="sbtn">Sign In →</button>
+        <button id="lg-btn" onclick="doLogin()" class="sbtn" disabled>Sign In →</button>
         <p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:10px">🔒 Your data is encrypted and secure</p>
       </div>
     </div>
@@ -244,10 +264,67 @@ function switchTab(t){
   document.getElementById('tab-register').classList.toggle('on',t==='register');
 }
 
-document.addEventListener('DOMContentLoaded',async()=>{
+document.addEventListener('DOMContentLoaded', async () => {
   initOtpInputs('#otpWrap');
-
+  lgGenCaptcha();
 });
+
+// ── LOGIN CAPTCHA ──────────────────────────────────────
+let _lgCaptcha = '';
+function lgGenCaptcha() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+  _lgCaptcha = code;
+  const canvas = document.getElementById('lg-captcha-canvas');
+  const inp = document.getElementById('lg-captcha');
+  if (inp) inp.value = '';
+  lgVerifyCaptcha();
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#f3f4f6';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  for (let i = 0; i < 4; i++) {
+    ctx.strokeStyle = ['#e41e26','#A8151B','#9ca3af','#374151'][i];
+    ctx.lineWidth = Math.random() * 2 + 1;
+    ctx.beginPath();
+    ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+    ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+    ctx.stroke();
+  }
+  for (let i = 0; i < 30; i++) {
+    ctx.fillStyle = '#9ca3af';
+    ctx.beginPath();
+    ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 2, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+  ctx.font = 'bold 24px Montserrat,sans-serif';
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i < code.length; i++) {
+    ctx.fillStyle = ['#e41e26','#A8151B','#111827','#374151'][Math.floor(Math.random() * 4)];
+    const x = 15 + i * 22 + Math.random() * 4;
+    const y = canvas.height / 2 + (Math.random() * 10 - 5);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate((Math.random() * 40 - 20) * Math.PI / 180);
+    ctx.fillText(code.charAt(i), 0, 0);
+    ctx.restore();
+  }
+}
+function lgVerifyCaptcha() {
+  const val = document.getElementById('lg-captcha')?.value?.trim()?.toUpperCase();
+  const status = document.getElementById('lg-captcha-status');
+  const btn = document.getElementById('lg-btn');
+  if (!status || !btn) return;
+  if (val === _lgCaptcha) {
+    status.innerHTML = '<span style="color:#10b981;font-weight:700;">✓ CAPTCHA completed</span>';
+    btn.disabled = false;
+  } else {
+    status.innerHTML = '<span style="font-size:11px;color:#6b7280;">Enter code to unlock Sign In</span>';
+    btn.disabled = true;
+  }
+}
 
 async function doLogin(){
   const em=document.getElementById('lg-em').value.trim(),pw=document.getElementById('lg-pw').value;

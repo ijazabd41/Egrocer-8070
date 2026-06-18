@@ -364,17 +364,6 @@ footer{background:#141414;color:rgba(255,255,255,.7);padding-top:44px}
 /* ── ADMIN FORBIDDEN FIX ───────────────────────────────────── */
 /* Admin uses no .htaccess — protection is JS-only */
 
-/* ── RTL SUPPORT ───────────────────────────────────────────── */
-[dir="rtl"] .sec-ttl::before{margin-left:0;margin-right:0;order:-1}
-[dir="rtl"] .cat-row,[dir="rtl"] .dscroll,[dir="rtl"] .b-scroll{direction:rtl}
-[dir="rtl"] .hbtn .lbl{font-family:'Cairo','Tajawal',sans-serif}
-
-/* ── RESPONSIVE ────────────────────────────────────────────── */
-@media(max-width:1200px){.pgrid{grid-template-columns:repeat(4,1fr)}}
-@media(max-width:1000px){.shop-lay{grid-template-columns:1fr}.sidebar{position:static}}
-@media(max-width:900px){.det-grid,.acct-lay{grid-template-columns:1fr}.sgrid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:768px){
-  .pgrid{grid-template-columns:repeat(2,1fr)}
   .promo-grid{grid-template-columns:repeat(2,1fr)}
   .ft-grid{grid-template-columns:1fr 1fr}
   .hero-slide img,.hero-fb{height:260px}
@@ -419,6 +408,19 @@ footer{background:#141414;color:rgba(255,255,255,.7);padding-top:44px}
 
 /* --- REDESIGN LAYOUT --- */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+
+/* Ensure header is always a normal block above the slider */
+#site-header {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+}
+/* Ensure slider sits below header in stacking order */
+.hero-wrap {
+  position: relative;
+  z-index: 1;
+}
 
     html {
       font-size: 102%;
