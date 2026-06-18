@@ -151,8 +151,9 @@
     <div id="coNewAddr" style="display:none;background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-top:14px">
       <h4 style="font-size:13px;font-weight:800;margin-bottom:10px">Add New Address</h4>
       <div class="fgrid">
-        <div class="fg"><label class="fl">Name *</label><input class="fi" id="fn" placeholder="e.g. Home, Office"></div>
+        <div class="fg full"><label class="fl">Name *</label><input class="fi" id="fn" placeholder="e.g. Home, Office"></div>
         <div class="fg"><label class="fl">Phone *</label><input class="fi" id="ph" placeholder="+971 55 000 0000" type="tel"></div>
+        <div class="fg"><label class="fl">Email</label><input class="fi" id="em" placeholder="you@example.com" type="email"></div>
         <div class="fg full"><label class="fl">Street / Building *</label><input class="fi" id="addr" placeholder="Building No, Street, Area"></div>
         <div class="fg full"><label class="fl">Street 2 (Apt / Villa)</label><input class="fi" id="addr2" placeholder="Apartment / Villa / Floor"></div>
         <div class="fg"><label class="fl">City</label><input class="fi" id="city" placeholder="Dubai"></div>
@@ -843,6 +844,7 @@ async function saveCheckoutAddress(){
       parent_id: pid,
       name: name,
       phone: phone,
+      email: document.getElementById('em') ? document.getElementById('em').value.trim() : '',
       street: street,
       street2: document.getElementById('addr2').value.trim(),
       city: document.getElementById('city').value.trim(),
