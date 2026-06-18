@@ -570,18 +570,23 @@ async function loadCheckoutAddresses(isLoadMore = false){
         selInvoiceContact = defaultInv || null;
       }
       function addrDetails(a){
-        var parts = [
-          [a.street,a.street2].filter(Boolean).join(' '),
-          a.city,
-          Array.isArray(a.state_id)?a.state_id[1]:a.state_id,
-          Array.isArray(a.country_id)?a.country_id[1]:a.country_id
-        ].filter(Boolean);
+        var fields = [
+          ['Street', [a.street,a.street2].filter(Boolean).join(' ')],
+          ['City', a.city],
+          ['State', Array.isArray(a.state_id)?a.state_id[1]:a.state_id],
+          ['Country', Array.isArray(a.country_id)?a.country_id[1]:a.country_id]
+        ].filter(function(x){ return x[1] && x[1].trim() !== ''; });
+        
+        var addrStr = fields.map(function(f){ return '<span style="color:#6b7280">'+f[0]+':</span> <span style="color:#374151;font-weight:600">'+f[1]+'</span>'; }).join('<span style="color:#d1d5db;margin:0 4px">|</span>');
+        
         var cParts = [];
-        if(a.phone || a.mobile) cParts.push('📞 ' + (a.phone || a.mobile));
-        if(a.email) cParts.push('✉️ ' + a.email);
-        var str = parts.join(', ');
-        if(cParts.length) str += ' | ' + cParts.join(' ');
-        return '<div style="font-size:11px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+str+'</div>';
+        if(a.phone || a.mobile) cParts.push('📞 <span style="color:#374151;font-weight:600">' + (a.phone || a.mobile) + '</span>');
+        if(a.email) cParts.push('✉️ <span style="color:#374151;font-weight:600">' + a.email + '</span>');
+        
+        var fullStr = addrStr;
+        if(cParts.length) fullStr += (addrStr ? '<span style="color:#d1d5db;margin:0 6px">||</span>' : '') + cParts.join('<span style="color:#d1d5db;margin:0 6px">|</span>');
+        
+        return '<div style="font-size:11.5px;color:#6b7280;line-height:1.6;margin-top:2px;">' + (fullStr || '<em>No address details</em>') + '</div>';
       }
       function card(a, kind){
         var selected = kind==='delivery'
