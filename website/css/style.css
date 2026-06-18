@@ -361,9 +361,8 @@ footer{background:#141414;color:rgba(255,255,255,.7);padding-top:44px}
 .tab{padding:11px 22px;font-size:15.4px;font-weight:700;color:var(--gray-500);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all var(--t);border-radius:var(--r-sm) var(--r-sm) 0 0}
 .tab.on,.tab:hover{color:var(--red)}.tab.on{border-bottom-color:var(--red);background:var(--red-light)}
 
-/* ── ADMIN FORBIDDEN FIX ───────────────────────────────────── */
-/* Admin uses no .htaccess — protection is JS-only */
-
+/* ── MOBILE MEDIA QUERIES ───────────────────────────────────── */
+@media(max-width:768px){
   .promo-grid{grid-template-columns:repeat(2,1fr)}
   .ft-grid{grid-template-columns:1fr 1fr}
   .hero-slide img,.hero-fb{height:260px}
