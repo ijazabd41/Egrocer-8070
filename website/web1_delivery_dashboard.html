@@ -191,6 +191,10 @@
 
 <script>
 let currentRole='manager', delOffset=0, ruOffset=0, allDels=[], drivers=[], otpDelId=0, statusChart;
+function checkOk(r){return r&&(r.success===1||r.success===true||String(r.success)==='1'||r.status==='success'||(r.data&&r.data.success===1));}
+window.checkOk=checkOk;
+function showToast(msg,type='success'){let c=document.getElementById('toast-container');if(!c){c=document.createElement('div');c.id='toast-container';c.style.cssText='position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;';document.body.appendChild(c);}const t=document.createElement('div');const isErr=type==='error';t.style.cssText=`background:${isErr?'#FEF2F2':'#F0FDF4'};color:${isErr?'#DC2626':'#16A34A'};border:1px solid ${isErr?'#F87171':'#86EFAC'};padding:12px 20px;border-radius:8px;font-family:Inter,sans-serif;font-size:14px;font-weight:600;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);opacity:0;transform:translateY(-20px);transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);`;t.innerHTML=msg;c.appendChild(t);setTimeout(()=>{t.style.opacity='1';t.style.transform='translateY(0)';},10);setTimeout(()=>{t.style.opacity='0';t.style.transform='translateY(-20px)';setTimeout(()=>t.remove(),300);},3000);}
+window.showToast=showToast;
 
 window.addEventListener('DOMContentLoaded',()=>{
   CdApi.requireLogin();
@@ -234,6 +238,9 @@ function showView(v){
 function loadCurrent(){loadStats();loadCurrentView();}
 
 function loadCurrentView(){
+function ext(v){if(Array.isArray(v)){if(v.length===0)return'';let l=v[v.length-1];if(typeof l==='object'&&l!==null)return l.name||l.display_name||('ID: '+l.id)||'';return l;}return v||'';}
+function extState(v){if(Array.isArray(v)){return{st:v[0]||'',l:v[1]||''};}return{st:v||'',l:v||''};}
+window.ext=ext;window.extState=extState;
   if(currentRole==='manager'){showView('manager');loadManagerView();}
   else{showView('rider-unassigned');loadRiderUnassigned();}
 }
@@ -264,7 +271,7 @@ async function loadDeliveries(domain){
     const params={limit:15,offset:delOffset};
     if(domain) params.domain=domain;
     const r=await (domain?CdApi.allDeliveries(15,delOffset,domain):CdApi.allDeliveries(15,delOffset));
-    const data=r.results||[];
+    const data=(r.results||r.data||[]);
     if(delOffset===0) allDels=data; else allDels=[...allDels,...data];
     setText('del-count',allDels.length+' deliveries'+(r.total?' of '+r.total:''));
     renderDelList(allDels);
@@ -285,16 +292,17 @@ function renderDelList(dels){
   const stateColor={done:'#16A34A',assigned:'#3B82F6',cancel:'#DC2626',confirmed:'#F59E0B'};
   const stateLabel={done:'Delivered',assigned:'Assigned',cancel:'Cancelled',confirmed:'Ready'};
   document.getElementById('del-list').innerHTML=dels.map(d=>{
-    const st=d.state||''; const pid=d.partner_id; const cust=Array.isArray(pid)?pid[pid.length-1]:pid||'Customer';
-    const uid=d.user_id; const driver=Array.isArray(uid)?uid[uid.length-1]:''; const unassigned=!uid||uid===false;
-    const c=stateColor[st]||'#94A3B8'; const l=stateLabel[st]||st;
+    const {st, l:apiLabel}=window.extState(d.state);
+    const cust=window.ext(d.partner_id)||'Customer';
+    const driver=window.ext(d.user_id); const unassigned=!driver;
+    const c=stateColor[st]||'#94A3B8'; const l=apiLabel||stateLabel[st]||st;
     return `<div class="del-row">
       <div class="del-av">${String(cust)[0]?.toUpperCase()||'C'}</div>
       <div style="flex:1">
         <div style="font-size:12px;color:var(--text-soft)">${d.name||''}</div>
         <div style="font-size:14px;font-weight:700">${cust}</div>
         <div style="font-size:11px;color:${unassigned?'#DC2626':'var(--text-mid)'}">
-          ${unassigned?'⚠️ Unassigned':'🚚 '+driver}
+          ${unassigned?'&#x26A0;&#xFE0F; Unassigned':'&#x1F69A; '+driver}
         </div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
@@ -308,7 +316,7 @@ function renderDelList(dels){
 async function loadDrivers(){
   try{
     const r=await CdApi.deliveryPersons();
-    drivers=r.results||[];
+    drivers=(r.results||r.data||[]);
     document.getElementById('driver-list').innerHTML=drivers.length?
       drivers.slice(0,6).map(d=>`<div class="del-row">
         <div class="del-av">${(d.name||'D')[0].toUpperCase()}</div>
@@ -335,7 +343,7 @@ function closeAssign(){document.getElementById('assign-modal').style.display='no
 
 async function doAssign(delId,driverId,driverName){
   const r=await CdApi.assignDelivery(delId,driverId);
-  alert(r.status==='success'?`✅ Assigned to ${driverName}`:r.message||'Error');
+  if(window.checkOk(r)){showToast(`✅ Assigned to ${driverName}`);}else{showToast(r.message||'Error','error');}
   loadDeliveries('');
 }
 
@@ -345,7 +353,7 @@ async function loadRiderUnassigned(){
   ruOffset=0;ruItems=[];
   try{
     const r=await CdApi.riderUnassigned(10,0);
-    ruItems=r.results||[];
+    ruItems=(r.results||r.data||[]);
     renderRU(ruItems);
     document.getElementById('ru-more').style.display=ruItems.length===10?'block':'none';
     ruOffset=ruItems.length;
@@ -353,7 +361,7 @@ async function loadRiderUnassigned(){
 }
 async function loadMoreRU(){
   const r=await CdApi.riderUnassigned(10,ruOffset);
-  const d=r.results||[];
+  const d=(r.results||r.data||[]);
   ruItems=[...ruItems,...d];
   renderRU(ruItems);
   ruOffset+=d.length;
@@ -361,33 +369,33 @@ async function loadMoreRU(){
 }
 function renderRU(items){
   document.getElementById('ru-list').innerHTML=items.map(d=>{
-    const pid=d.partner_id,cust=Array.isArray(pid)?pid[pid.length-1]:pid||'Customer';
+    const cust=window.ext(d.partner_id)||'Customer';
     return `<div class="del-row">
       <div class="del-av">${String(cust)[0]?.toUpperCase()||'C'}</div>
       <div style="flex:1"><div style="font-size:12px;color:var(--text-soft)">${d.name||''}</div><div style="font-size:14px;font-weight:700">${cust}</div></div>
       <button onclick="doAccept(${d.id})" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer">Accept</button>
     </div>`;
-  }).join('')||'<div style="text-align:center;padding:20px;color:var(--text-mid)">🎉 No available deliveries</div>';
+  }).join('')||'<div style="text-align:center;padding:20px;color:var(--text-mid)">&#x1F69A; No available deliveries</div>';
 }
 async function doAccept(id){
   const r=await CdApi.riderAccept(id,CdApi.userId());
-  if(r.id||r.status==='success'){alert('✅ Delivery accepted!');loadRiderUnassigned();}
-  else alert(r.message||'Could not accept');
+  if(window.checkOk(r)){showToast('✅ Delivery accepted!');loadRiderUnassigned();}
+  else{showToast(r.message||'Could not accept','error');}
 }
 
-// Rider — My Deliveries
 async function loadRiderMine(){
   try{
     const r=await CdApi.riderMyDeliveries(CdApi.userId(),15,0);
-    const d=r.results||[];
+    const d=(r.results||r.data||[]);
     document.getElementById('rm-list').innerHTML=d.map(x=>{
-      const pid=x.partner_id,cust=Array.isArray(pid)?pid[pid.length-1]:pid||'Customer';
-      const done=x.state==='done';
+      const cust=window.ext(x.partner_id)||'Customer';
+      const {st}=window.extState(x.state);
+      const done=st==='done';
       return `<div class="del-row" style="cursor:${done?'default':'pointer'}" onclick="${done?'':'openOtp('+x.id+',\''+x.name+'\',\''+cust+'\')'}">
         <div class="del-av" style="background:${done?'#16A34A':'var(--primary)'}">${String(cust)[0]?.toUpperCase()||'C'}</div>
         <div style="flex:1"><div style="font-size:12px;color:var(--text-soft)">${x.name||''}</div><div style="font-size:14px;font-weight:700">${cust}</div></div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-          <span class="pill ${done?'pill-green':'pill-blue'}">${done?'Delivered':'Manage →'}</span>
+          <span class="pill ${done?'pill-green':'pill-blue'}">${done?'Delivered':'Manage &#x3009;'}</span>
         </div>
       </div>`;
     }).join('')||'<div style="text-align:center;padding:20px;color:var(--text-mid)">No deliveries assigned yet</div>';
@@ -431,13 +439,13 @@ async function doSendOtp(){
   document.getElementById('sn2').className='step-num active-n';
   hide('btn-send'); show('btn-resend');
   show('otp-inputs'); document.getElementById('oi0').focus();
-  alert('📧 OTP sent to customer email');
+  showToast('📧 OTP sent to customer email');
 }
 async function doVerifyOtp(){
   const otp=[0,1,2,3,4,5].map(i=>document.getElementById('oi'+i)?.value||'').join('');
   document.getElementById('btn-verify').textContent='Verifying...';
   const r=await CdApi.riderVerifyOtp(otpDelId,otp);
-  const ok=r.success===true||r.status==='success'||r.verified===true;
+  const ok=window.checkOk(r)||r.verified===true;
   if(ok){
     otpVerified=true;
     document.getElementById('step2').className='otp-step done';
@@ -455,19 +463,19 @@ async function doVerifyOtp(){
 async function doMarkDone(){
   document.getElementById('btn-done').textContent='Processing...';
   const r=await CdApi.riderMarkDone(otpDelId,CdApi.userId());
-  const ok=r.success===true||r.state==='done'||r.status==='success';
-  if(ok){alert('🎉 Delivery marked as done!');showView('rider-mine');loadRiderMine();}
-  else{alert(r.message||'Error');document.getElementById('btn-done').textContent='Mark as Delivered ✅';}
+  const ok=window.checkOk(r)||r.state==='done';
+  if(ok){showToast('🎉 Delivery marked as done!');showView('rider-mine');loadRiderMine();}
+  else{showToast(r.message||'Error','error');document.getElementById('btn-done').textContent='Mark as Delivered ✅';}
 }
 async function doCustomerWait(){
   const r=await CdApi.riderCustomerWait(otpDelId,CdApi.userId(),'Customer not available');
-  alert(r.status==='success'||r.message?r.message:'Status updated');
+  showToast(window.checkOk(r)||r.message?r.message||'Status updated':'Status updated', window.checkOk(r)?'success':'error');
 }
 
 async function loadDriverPerf(){
   try{
     const r=await CdApi.deliveryPersons();
-    const drivers=r.results||[];
+    const drivers=(r.results||r.data||[]);
     document.getElementById('dp-body').innerHTML=drivers.length?
       drivers.map(d=>`<tr>
         <td style="font-weight:600">${d.name||''}</td>

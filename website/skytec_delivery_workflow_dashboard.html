@@ -50,7 +50,7 @@ function saveSession(){localStorage.setItem('odoo_session_id',document.getElemen
 function logoutDashboard(){localStorage.removeItem('odoo_session_id');localStorage.removeItem('cd_session');localStorage.removeItem('cd_role_code');location.href='login.html';}
 function showErr(m){const e=document.getElementById('err');e.style.display=m?'block':'none';e.textContent=m||''}
 function badge(s){return `<span class="badge ${s||'new'}">${s||'new'}</span>`}
-function val(o,...keys){for(const k of keys){if(o&&o[k]!==undefined&&o[k]!==null&&o[k]!=='')return o[k]}return''}
+function val(o,...keys){for(const k of keys){if(o&&o[k]!==undefined&&o[k]!==null&&o[k]!=='')return (Array.isArray(o[k])&&o[k].length===2&&typeof o[k][0]==='number')?o[k][1]:o[k]}return''}
 async function apiGet(path,params={}){const url=new URL(BASE_URL+path);Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));const res=await fetch(url,{method:'GET',credentials:'include',headers:{'Accept':'application/json','Content-Type':'application/json','Cookie':'session_id='+sid()}});const txt=await res.text();if(txt.trim().startsWith('<'))throw new Error('Odoo returned HTML/login page. Check session_id cookie.');return JSON.parse(txt)}
 async function apiPost(path,body){const res=await fetch(BASE_URL+path,{method:'POST',credentials:'include',headers:{'Accept':'application/json','Content-Type':'application/json','Cookie':'session_id='+sid()},body:JSON.stringify(body)});const txt=await res.text();if(txt.trim().startsWith('<'))throw new Error('Odoo returned HTML/login page. Check session_id cookie.');return JSON.parse(txt)}
 function selectQueue(data){const role=document.getElementById('role').value;if(role==='store_manager')return data.store_manager_queue||[];if(role==='store_keeper')return data.store_keeper_queue||[];return data.workflow_orders||data.recent_orders||[]}
@@ -63,7 +63,37 @@ function buttons(o,state){const id=val(o,'id','picking_id');const role=document.
 function openOdoo(id){window.open(ODOO_URL+'/web#id='+id+'&model=stock.picking&view_type=form','_blank')}
 function setBtnState(btn,active){if(!btn)return;if(active){btn.dataset.origText=btn.innerHTML;btn.innerHTML='&#x23F3; Wait...';btn.style.opacity='0.6';btn.style.pointerEvents='none'}else{if(btn.dataset.origText)btn.innerHTML=btn.dataset.origText;btn.style.opacity='1';btn.style.pointerEvents='auto'}}
 async function doAction(id,action,btn){setBtnState(btn,true);showErr('');try{const r=await apiPost('/api/skytec-delivery/action?by_AJR=1',{picking_id:id,action:action});console.log('doAction response:',r);if(!r || (r.success !== 1 && r.success !== true && String(r.success) !== '1'))throw new Error(r.message||'Action failed');await loadDashboard()}catch(e){setBtnState(btn,false);showErr(e.message)}}
-async function assignDriver(id,btn){const driverId=prompt('Enter delivery person user id / rider id:');if(!driverId)return;setBtnState(btn,true);showErr('');try{const r=await apiPost('/api/skytec-delivery/action?by_AJR=1',{picking_id:id,action:'assign_driver',driver_id:parseInt(driverId)});console.log('assignDriver response:',r);if(!r || (r.success !== 1 && r.success !== true && String(r.success) !== '1'))throw new Error(r.message||'Assign failed');await loadDashboard()}catch(e){setBtnState(btn,false);showErr(e.message)}}
+let cachedDrivers=null;
+async function assignDriver(id,btn){
+  setBtnState(btn,true);showErr('');
+  try{
+    if(!cachedDrivers){const r=await apiGet('/api/delivery-person?by_AJR=1');cachedDrivers=r.data||r.results||r;}
+    setBtnState(btn,false);
+    const overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+    let html='<div style="background:#fff;padding:20px;border-radius:12px;width:300px;max-width:90%;"><h3 style="margin-top:0;">Select Driver</h3>';
+    const drvs=Array.isArray(cachedDrivers)?cachedDrivers:[];
+    if(drvs.length>0){
+      html+='<select id="driverSelect" style="width:100%;margin-bottom:15px;padding:8px;border-radius:6px;border:1px solid #ccc;">';
+      drvs.forEach(d=>html+=`<option value="${d.id}">${d.name}</option>`);
+      html+='</select><button id="btnConfirmDriver" style="width:100%;background:var(--primary);color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;">Assign</button>';
+    }else{
+      html+='<p>No drivers found.</p>';
+    }
+    html+='<button id="btnCancelDriver" style="width:100%;background:none;color:#666;border:none;padding:10px;margin-top:5px;cursor:pointer;">Cancel</button></div>';
+    overlay.innerHTML=html;document.body.appendChild(overlay);
+    if(document.getElementById('btnConfirmDriver'))document.getElementById('btnConfirmDriver').onclick=async()=>{
+      const driverId=document.getElementById('driverSelect').value;
+      document.body.removeChild(overlay);setBtnState(btn,true);showErr('');
+      try{
+        const r=await apiPost('/api/skytec-delivery/action?by_AJR=1',{picking_id:id,action:'assign_driver',driver_id:parseInt(driverId)});
+        if(!r||(r.success!==1&&r.success!==true&&String(r.success)!=='1'))throw new Error(r.message||'Assign failed');
+        await loadDashboard();
+      }catch(e){setBtnState(btn,false);showErr(e.message);}
+    };
+    document.getElementById('btnCancelDriver').onclick=()=>{document.body.removeChild(overlay);setBtnState(btn,false);};
+  }catch(e){setBtnState(btn,false);showErr('Failed to load drivers: '+e.message);}
+}
 setInterval(()=>{if(!document.hidden)loadDashboard()},15000);
 window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('sessionId').value=localStorage.getItem('odoo_session_id')||'';
