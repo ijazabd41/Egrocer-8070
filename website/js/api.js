@@ -1135,23 +1135,21 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   }
   async function finalizeOrderAfterPayment(orderId, markDoneSucceeded = false) {
     const oid = parseInt(orderId, 10);
-    // If markDone already succeeded, the order IS confirmed and the invoice IS created.
-    // The portal user often can't read the order after state changes to 'sale',
-    // so skip verification to avoid spurious 500/access errors.
+    
+    // Explicitly call createInvoice since markDone doesn't automatically generate it
+    try {
+      await createInvoice(oid);
+      Log.info('Payment', 'createInvoice ✓', { orderId: oid });
+    } catch (e) {
+      Log.warn('Payment', 'createInvoice failed or already invoiced', { orderId: oid, message: e.message });
+    }
+
     if (markDoneSucceeded) {
       Log.info('Payment', 'finalizeOrder — markDone succeeded, skipping verification', { orderId: oid });
       return true;
     }
     const confirmed = await isOrderConfirmed(oid);
-    if (!confirmed) {
-      try {
-        await createInvoice(oid);
-        Log.info('Payment', 'createInvoice ✓', { orderId: oid });
-      } catch (e) {
-        Log.warn('Payment', 'createInvoice failed', { orderId: oid, message: e.message });
-      }
-    }
-    return await isOrderConfirmed(oid);
+    return confirmed ? true : await isOrderConfirmed(oid);
   }
   async function isOrderConfirmed(orderId) {
     try {

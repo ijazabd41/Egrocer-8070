@@ -42,13 +42,16 @@ function parseOdooUrl(urlStr) {
   if (qsStr) {
     qsStr.split('&').forEach(pair => {
       const eqIdx = pair.indexOf('=');
-      if (eqIdx === -1) {
-        searchParams.set(pair, '');
-      } else {
-        const key = pair.slice(0, eqIdx);
-        const val = pair.slice(eqIdx + 1);
-        searchParams.set(key, val);
-      }
+        if (eqIdx === -1) {
+          try { searchParams.set(decodeURIComponent(pair), ''); } 
+          catch(e) { searchParams.set(pair, ''); }
+        } else {
+          let key = pair.slice(0, eqIdx);
+          let val = pair.slice(eqIdx + 1);
+          try { key = decodeURIComponent(key); } catch(e) {}
+          try { val = decodeURIComponent(val.replace(/\+/g, ' ')); } catch(e) {}
+          searchParams.set(key, val);
+        }
     });
   }
   
@@ -160,6 +163,8 @@ http.createServer((req, res) => {
   cors(res, req.headers['origin']);
   if (req.method === 'OPTIONS') { res.statusCode = 204; return res.end(); }
 
+  console.log(`\n--- NEW REQ: ${req.url} ---`);
+
   // Use manual URL parser to handle unescaped characters without throwing
   const reqUrl = parseOdooUrl(req.url);
   const path = reqUrl.pathname;
@@ -238,7 +243,8 @@ http.createServer((req, res) => {
   const qstr = Object.entries(qs).map(([k, v]) => {
     const val = String(v);
     if (ODOO_LITERAL_KEYS.has(k)) return `${encodeURIComponent(k)}=${val}`;
-    return `${encodeURIComponent(k)}=${encodeURIComponent(val)}`;
+    // Fix: Odoo backend fails to decode %40 in new_registration, so we must pass @ unencoded
+    return `${encodeURIComponent(k)}=${encodeURIComponent(val).replace(/%40/g, '@')}`;
   }).join('&');
   const full = qstr ? `${odooPath}?${qstr}` : odooPath;
 
@@ -246,7 +252,7 @@ http.createServer((req, res) => {
   const cookie = req.headers['cookie'] || '';
 
   const tag = isImage(odooPath) ? '🖼️' : '📡';
-  console.log(`[${new Date().toISOString().substr(11,8)}] ${tag} ${req.method} ${odooPath}`);
+  console.log(`[${new Date().toISOString().substr(11,8)}] ${tag} ${req.method} ${full}`);
 
   if (req.method === 'POST') {
     let b = '';

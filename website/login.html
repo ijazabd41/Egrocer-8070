@@ -213,7 +213,7 @@
             <div class="fg"><label class="fl">Confirm Password *</label><input class="fi" type="password" id="rg-pw2" placeholder="Repeat password"></div>
           </div>
           <div id="rg-err" style="display:none;margin-top:10px" class="alert alert-err"></div>
-          <button id="rg-btn" onclick="doRegister()" class="sbtn" style="margin-top:14px">Verify with OTP →</button>
+          <button id="rg-btn" onclick="doRegister()" class="sbtn" style="margin-top:14px">Create Account →</button>
         </div>
 
         <!-- Step 2: OTP Verification -->
@@ -389,16 +389,16 @@ async function doRegister(){
   if(!nm||!ph||!em||!pw){err.textContent='❌ Please fill in all fields';err.style.display='flex';return;}
   if(pw.length<6){err.textContent='❌ Password must be at least 6 characters';err.style.display='flex';return;}
   if(pw!==pw2){err.textContent='❌ Passwords do not match';err.style.display='flex';return;}
-  btn.disabled=true;btn.textContent='⏳ Sending OTP...';
+  
+  btn.disabled=true;btn.textContent='⏳ Creating account...';
   try{
-    _regData={nm,ph,em,pw};
-    const otp=await sendOtp(em);
-    // In production: replace sendOtp with real email API
-    document.getElementById('otp-email-display').textContent=em;
-    document.getElementById('reg-step1').style.display='none';
-    document.getElementById('reg-step2').style.display='block';
-    toast(`OTP sent to ${em} (check console for demo)`,'warn');
-  }catch(e){err.textContent=`❌ ${e.message}`;err.style.display='flex';btn.disabled=false;btn.textContent='Verify with OTP →';}
+    const r=await API.register(nm,em,ph,pw,'web-'+Date.now());
+    if(r.success===1||r.response?.success){
+      document.getElementById('reg-step1').style.display='none';
+      document.getElementById('reg-step3').style.display='block';
+      toast('✅ Account created! Please sign in.');
+    }else{throw new Error(r.message||'Registration failed');}
+  }catch(e){err.textContent=`❌ ${e.message}`;err.style.display='flex';btn.disabled=false;btn.textContent='Create Account →';}
 }
 
 async function verifyRegOtp(){

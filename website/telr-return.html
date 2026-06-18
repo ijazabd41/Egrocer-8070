@@ -120,8 +120,14 @@ document.addEventListener('DOMContentLoaded', async function(){
     }
     markStep('step2','done');
 
-    // Step 3: Invoice generation (handled by markDone/confirmOrderPayment)
+    // Step 3: Explicitly generate Invoice
     markStep('step3','active');
+    try {
+      await API.createInvoice(parseInt(oid));
+      log.info('TelrReturn','createInvoice ✓',{oid:oid});
+    } catch(e) {
+      log.warn('TelrReturn','createInvoice failed or already exists',{message:e.message});
+    }
     await new Promise(function(r){ setTimeout(r, 800); }); // Brief pause for backend processing
     markStep('step3','done');
 
