@@ -115,7 +115,7 @@ input,select,textarea{font-family:inherit}
 .n-badge{background:var(--yellow);color:var(--gray-900);font-size:9.9px;font-weight:800;padding:2px 6px;border-radius:10px;line-height:1}
 
 /* ── CONTAINER ─────────────────────────────────────────────── */
-.ctr{max-width:1800px;margin:0 auto;padding:0 20px}
+.ctr{width:100%;max-width:none;margin:0 auto;padding:0 20px}
 
 /* ── HERO SLIDER ───────────────────────────────────────────── */
 .hero-wrap{position:relative;overflow:hidden;background:#f5f5f5;line-height:0;width:100%}
