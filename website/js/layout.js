@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 });
 
 // Logo slider ID — change this if the Odoo slider record is recreated.
-const LOGO_SLIDER_ID = 12;
+const LOGO_SLIDER_ID = 75;
 
 async function loadLogo(){
   try{
