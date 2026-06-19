@@ -739,8 +739,8 @@ async function loadAddress(isLoadMore = false){
 async function showNewAddressForm(){
   document.getElementById('newAddressFormSec').style.display='block';
   document.getElementById('addrMsg').textContent='';
-  document.getElementById('aName').value='';
-  document.getElementById('aPhone').value='';
+  document.getElementById('aName').value=document.getElementById('pName').value || '';
+  document.getElementById('aPhone').value=document.getElementById('pMobile').value || document.getElementById('pPhone').value || '';
   document.getElementById('aStreet').value='';
   document.getElementById('aStreet2').value='';
   document.getElementById('aCity').value='';
