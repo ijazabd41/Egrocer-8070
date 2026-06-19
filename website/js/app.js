@@ -1014,13 +1014,16 @@ window.promptAddressMethod = function(prefix) {
   }
   
   function showForm(p) {
-    if(p === 'co') {
-      var coForm = document.getElementById('coNewAddr');
-      if (coForm) { coForm.style.display='block'; coForm.scrollIntoView({behavior:'smooth',block:'center'}); }
+    if(typeof showNewAddressForm === 'function') {
+      showNewAddressForm();
     } else {
-      var accForm = document.getElementById('newAddressFormSec');
-      if(accForm) { accForm.style.display='block'; accForm.scrollIntoView({behavior:'smooth',block:'center'}); }
-      else if(typeof showNewAddressForm === 'function') showNewAddressForm();
+      if(p === 'co') {
+        var coForm = document.getElementById('coNewAddr');
+        if (coForm) { coForm.style.display='block'; coForm.scrollIntoView({behavior:'smooth',block:'center'}); }
+      } else {
+        var accForm = document.getElementById('newAddressFormSec');
+        if(accForm) { accForm.style.display='block'; accForm.scrollIntoView({behavior:'smooth',block:'center'}); }
+      }
     }
   }
 
