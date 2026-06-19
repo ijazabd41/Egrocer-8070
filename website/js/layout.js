@@ -148,7 +148,7 @@ function buildHeader(){
           </a>
           <a href="shop.html">All Products</a>
           <a href="account.html">My Account</a>
-          <a href="track.html">Track Order</a>
+          <a href="track-order.html">Track Order</a>
           <a href="contact.html">Contact</a>
         </div>
         <div class="r-nav-badges"
