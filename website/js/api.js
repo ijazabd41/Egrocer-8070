@@ -1610,11 +1610,14 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   // ── COUNTRIES & STATES ────────────────────────────────────────
   const getCountries = ()  => GET('/api/country').then(r => {
     const blocked = ['Iran', 'Cuba', 'North Korea', 'Democratic People\'s Republic of Korea', 'Sudan', 'South Sudan', 'Ukraine', 'Syria', 'Syrian Arab Republic', 'Russian Federation', 'Russia', 'Myanmar', 'Yemen'];
-    if(r.data) r.data = r.data.filter(c => !blocked.some(b => (c.name||'').toLowerCase().includes(b.toLowerCase())));
-    return r;
+    let arr = Array.isArray(r) ? r : (r.data || []);
+    arr = arr.filter(c => !blocked.some(b => (c.name||'').toLowerCase().includes(b.toLowerCase())));
+    return { data: arr };
   });
   const getCountry   = id  => GET(`/api/country/${id}`);
-  const getStates    = (opts={})  => GET('/api/country-state', opts);
+  const getStates    = (opts={})  => GET('/api/country-state', opts).then(r => {
+    return { data: Array.isArray(r) ? r : (r.data || []) };
+  });
 
   // ── RIDER/DELIVERY APIs ───────────────────────────────────────
   const getRiderDeliveries = (limit=10, offset=0) => GET('/api/rider-delivery', { limit, Offset:offset });

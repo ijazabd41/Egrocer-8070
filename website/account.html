@@ -739,8 +739,14 @@ async function loadAddress(isLoadMore = false){
 async function showNewAddressForm(){
   document.getElementById('newAddressFormSec').style.display='block';
   document.getElementById('addrMsg').textContent='';
-  document.getElementById('aName').value=document.getElementById('pName').value || '';
-  document.getElementById('aPhone').value=document.getElementById('pMobile').value || document.getElementById('pPhone').value || '';
+    try {
+      var pR = await API.myProfile();
+      var p = Array.isArray(pR.data) ? pR.data[0] : pR.data;
+      if(p) {
+        document.getElementById('aName').value = p.name || '';
+        document.getElementById('aPhone').value = p.mobile || p.phone || '';
+      }
+    } catch(e) {}
   document.getElementById('aStreet').value='';
   document.getElementById('aStreet2').value='';
   document.getElementById('aCity').value='';
