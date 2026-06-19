@@ -119,7 +119,7 @@
     <div id="homeAddrContainer">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
         <h3>🏠 Delivery Address</h3>
-        <button onclick="if(window.promptAddressMethod) window.promptAddressMethod('co'); else showNewAddressForm()" class="sbtn" style="padding:6px 12px;max-width:max-content;font-size:11px">+ Add New</button>
+        <button onclick="if(window.promptAddressMethod) window.promptAddressMethod('co'); else document.getElementById('coNewAddr').style.display='block'" class="sbtn" style="padding:6px 12px;max-width:max-content;font-size:11px">+ Add New</button>
       </div>
       <p style="font-size:11px;color:#6b7280;margin-bottom:12px">Select an address from your Address Book.</p>
       
@@ -825,29 +825,6 @@ async function pushCarrierToOrder(){
     msg.style.color='#065f46';
   }catch(e){ msg.textContent='❌ Failed to apply carrier: '+e.message; msg.style.color='#ED1C24'; }
 }
-
-async function showNewAddressForm() {
-    document.getElementById('coNewAddr').style.display='block';
-    document.getElementById('addrMsg').textContent='';
-    
-    try {
-      var pR = await API.myProfile();
-      var p = Array.isArray(pR.data) ? pR.data[0] : pR.data;
-      if(p) {
-        document.getElementById('fn').value = p.name || '';
-        document.getElementById('ph').value = p.mobile || p.phone || '';
-      }
-    } catch(e) {}
-
-    document.getElementById('addr').value='';
-    document.getElementById('addr2').value='';
-    document.getElementById('city').value='';
-    document.getElementById('zip').value='';
-    
-    if(document.getElementById('country').options.length <= 1){
-      loadCountriesStates();
-    }
-  }
 
 async function saveCheckoutAddress(){
   var pid = API.myPid(); if(!pid)return;

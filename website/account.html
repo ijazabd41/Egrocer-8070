@@ -739,14 +739,27 @@ async function loadAddress(isLoadMore = false){
 async function showNewAddressForm(){
   document.getElementById('newAddressFormSec').style.display='block';
   document.getElementById('addrMsg').textContent='';
-    try {
-      var pR = await API.myProfile();
-      var p = Array.isArray(pR.data) ? pR.data[0] : pR.data;
-      if(p) {
-        document.getElementById('aName').value = p.name || '';
-        document.getElementById('aPhone').value = p.mobile || p.phone || '';
-      }
-    } catch(e) {}
+  
+  // Auto-fill logic
+  var user = API.me();
+  var defaultName = '';
+  var defaultPhone = '';
+  
+  if (user && user.name) {
+    defaultName = user.name;
+  }
+  
+  try {
+    var r = await API.myProfile();
+    var p = Array.isArray(r.data) ? r.data[0] : r.data;
+    if (p) {
+       defaultPhone = p.phone || p.mobile || '';
+    }
+  } catch(e) {}
+  
+  document.getElementById('aName').value = defaultName;
+  document.getElementById('aPhone').value = defaultPhone;
+  
   document.getElementById('aStreet').value='';
   document.getElementById('aStreet2').value='';
   document.getElementById('aCity').value='';
@@ -757,13 +770,13 @@ async function showNewAddressForm(){
       var cr = await API.getCountries();
       var cSel = document.getElementById('aCountry');
       var countries = cr.data||[];
-      var uae = countries.find(function(c){ return c.code==='AE'||c.name.includes('United Arab Emirates'); });
+      var uae = countries.find(function(c){ return c.code==='AE'||c.name.includes('United Arab Emirates')||c.id===228; });
       cSel.innerHTML='<option value="">Select Country</option>'+countries.map(function(c){ return '<option value="'+c.id+'">'+c.name+'</option>'; }).join('');
       if(uae) cSel.value = uae.id;
       
       var ccId = cSel.value || uae?.id || 228;
       await loadStatesForCountry(ccId, 'aState');
-    }catch(_){}
+    }catch(_){ document.getElementById('aCountry').innerHTML='<option value="228">United Arab Emirates</option>'; }
   }
 }
 
