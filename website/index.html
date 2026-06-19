@@ -21,7 +21,7 @@
     .hero-slide img {
       width: 100%;
       height: auto;
-      aspect-ratio: 3 / 1;
+      aspect-ratio: 1024 / 373;
       object-fit: cover;
       object-position: center;
       display: block;
@@ -210,7 +210,7 @@
       <!-- Placeholder shown while loading -->
       <div class="hero-slide">
         <div
-          style="width:100%;aspect-ratio:3/1;height:auto;background:linear-gradient(135deg,#ED1C24 0%,#BE161D 60%,#7a0f12 100%);display:flex;align-items:center;justify-content:center">
+          style="width:100%;aspect-ratio:1024/373;height:auto;background:linear-gradient(135deg,#ED1C24 0%,#BE161D 60%,#7a0f12 100%);display:flex;align-items:center;justify-content:center">
           <div style="text-align:center;color:#fff">
             <div style="font-size:70.4px;margin-bottom:12px">🛒</div>
             <h1 style="font-size:24px;font-weight:900;font-family:Montserrat,sans-serif;margin-bottom:8px">Coop
@@ -479,12 +479,12 @@
         img.src = imgSrc;
         img.alt = item.name || 'Coop Discounts';
         img.loading = 'eager';
-        img.style.cssText = 'width:100%;aspect-ratio:3/1;object-fit:cover;';
+        img.style.cssText = 'width:100%;aspect-ratio:1024/373;object-fit:cover;';
         img.onerror = function () {
           // Fallback to brand banner if image fails
           this.style.display = 'none';
           var fb = document.createElement('div');
-          fb.style.cssText = 'width:100%;aspect-ratio:3/1;height:auto;background:linear-gradient(135deg,#ED1C24,#BE161D);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center';
+          fb.style.cssText = 'width:100%;aspect-ratio:1024/373;height:auto;background:linear-gradient(135deg,#ED1C24,#BE161D);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center';
           fb.innerHTML = '<div style="font-size:66px;margin-bottom:12px">🛒</div><h2 style="font-size:26.4px;font-weight:900;font-family:Montserrat,sans-serif">Coop Discounts</h2><p style="font-size:14.3px;opacity:.8;margin-top:6px">Hyper Market — Dubai</p>';
           div.appendChild(fb);
         };
