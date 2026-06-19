@@ -43,6 +43,10 @@ function isImage($p) {
 }
 
 $queryString = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
+
+// Fix: Odoo backend fails to decode %40 in email fields, so we must pass @ unencoded
+$queryString = str_replace('%40', '@', $queryString);
+
 if (!isImage($pathInfo)) {
     if (strpos($queryString, 'by_AJR=') === false) {
         if (!empty($queryString)) {
