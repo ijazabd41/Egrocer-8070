@@ -16,7 +16,7 @@
 .sb-item:hover,.sb-item.on{color:#ED1C24;font-weight:700;background:#fef2f2;padding-left:12px}
 .sb-img{width:32px;height:32px;border-radius:6px;overflow:hidden;background:#f3f4f6;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .sb-img img{width:100%;height:100%;object-fit:cover;display:block}
-#shopGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+#shopGrid{display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:11px}
 .mob-filter-btn{display:none;background:#ED1C24;color:#fff;border:none;padding:9px 16px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;align-items:center;gap:5px;font-family:inherit}
 @media(max-width:900px){
   .shop-layout{grid-template-columns:1fr}
