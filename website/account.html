@@ -36,6 +36,11 @@
         <a href="#" onclick="showTab('orders',this)">🛒 My Orders</a>
         <a href="#" onclick="showTab('invoices',this)">🧾 My Invoices</a>
         <a href="#" onclick="showTab('loyalty',this)">⭐ Loyalty & Rewards</a>
+        
+        <a href="#" class="sh-tab" onclick="showTab('certificates',this)" style="display:none; color:var(--red); font-weight:800; background:#fee2e2;">📜 Share Certificates</a>
+        <a href="#" class="sh-tab" onclick="showTab('sh-rewards',this)" style="display:none; color:var(--red); font-weight:800; background:#fee2e2;">🎁 Shareholder Rewards</a>
+        <a href="#" class="sh-tab" onclick="showTab('sh-purchases',this)" style="display:none; color:var(--red); font-weight:800; background:#fee2e2;">🛍️ Share Purchases</a>
+
         <a href="#" onclick="showTab('address',this)">📍 My Address</a>
         <a href="#" onclick="doLogout()" style="color:var(--red)">🚪 Sign Out</a>
       </nav>
@@ -129,6 +134,35 @@
         <div id="loyaltyContent"><div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div></div>
       </div>
 
+      <!-- SHAREHOLDER CERTIFICATES -->
+      <div class="pg-tab" id="tab-certificates">
+        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">📜 Share Certificates</h2>
+        <div id="certificatesContent"><div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div></div>
+      </div>
+
+      <!-- SHAREHOLDER REWARDS -->
+      <div class="pg-tab" id="tab-sh-rewards">
+        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">🎁 Shareholder Rewards</h2>
+        <div id="shRewardsContent"><div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div></div>
+      </div>
+
+      <!-- SHAREHOLDER PURCHASES -->
+      <div class="pg-tab" id="tab-sh-purchases">
+        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">🛍️ Shareholder Purchases</h2>
+        
+        <div class="fs" style="margin-bottom:20px;background:#f9fafb;border:1px dashed #d1d5db;">
+          <h3 style="font-size:14px;font-weight:800;margin-bottom:8px;">Link Past Order</h3>
+          <p style="font-size:12px;color:#6b7280;margin-bottom:12px;">Enter an Order ID (e.g. S10245) to link it to your shareholder account.</p>
+          <div style="display:flex;gap:10px;">
+            <input type="text" id="linkOrderId" class="fi" placeholder="Order ID or Name" style="max-width:250px;">
+            <button onclick="linkShareholderOrder()" class="sbtn" style="max-width:max-content;padding:0 20px;">Link Order</button>
+          </div>
+          <div id="linkOrderMsg" style="font-size:12px;margin-top:8px;font-weight:600;"></div>
+        </div>
+
+        <div id="shPurchasesContent"><div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div></div>
+      </div>
+
       <!-- ADDRESS -->
       <!-- ADDRESS BOOK -->
       <div class="pg-tab" id="tab-address">
@@ -194,6 +228,9 @@ function showTab(name, el){
   else if(name==='loyalty') loadLoyalty();
   else if(name==='address') loadAddress();
   else if(name==='profile') loadProfile();
+  else if(name==='certificates') loadShareholderCertificates();
+  else if(name==='sh-rewards') loadShareholderRewards();
+  else if(name==='sh-purchases') loadShareholderPurchases();
 }
 
 document.addEventListener('DOMContentLoaded', async function(){
@@ -208,6 +245,12 @@ document.addEventListener('DOMContentLoaded', async function(){
     document.getElementById('acctAv').style.cssText = 'background:var(--red);color:#fff;border-radius:50%;width:62px;height:62px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;margin:0 auto 10px;border:3px solid rgba(255,255,255,.3)';
   }
   document.getElementById('stCart').textContent = Cart.count();
+  
+  // Enable Shareholder tabs if applicable
+  if(localStorage.getItem('cd_shareholder_number')) {
+    document.querySelectorAll('.sh-tab').forEach(function(el) { el.style.display = 'block'; });
+  }
+
   await loadDashboard();
   Bar.done();
 });
@@ -392,7 +435,6 @@ async function viewOrderDetail(oid){
     document.getElementById('orderDetailTitle').textContent = 'Order: '+(o.name||'#'+oid);
     var state = Array.isArray(o.state)?o.state[1]:o.state||'Draft';
     var stateKey = Array.isArray(o.state)?o.state[0]:o.state||'draft';
-    // Lines may come back as `order_line` OR `order_lines` depending on backend
     var lines = o.order_line || o.order_lines || [];
     if(lines.length && typeof lines[0] === 'number'){
       try{
@@ -400,7 +442,6 @@ async function viewOrderDetail(oid){
         lines=lr.data||[];
       }catch(e){}
     }
-    // Normalize invoice_ids[] → [{id:..}] OR [12,34] → array of numeric IDs
     var invoiceIds = (Array.isArray(o.invoice_ids)?o.invoice_ids:(o.invoice_ids?[o.invoice_ids]:[]))
       .map(function(x){ return typeof x==='object'?x.id:x; });
     var pickingIds = (Array.isArray(o.picking_ids)?o.picking_ids:(o.picking_ids?[o.picking_ids]:[]))
@@ -447,7 +488,6 @@ async function viewOrderDetail(oid){
           +'<div style="display:flex;justify-content:space-between;font-weight:800;margin-top:6px;font-size:14px"><span>Total</span><span style="color:var(--red-d)">AED '+amtTotal.toFixed(2)+'</span></div>'
         +'</div>'
         +'</div>' : '<div style="text-align:center;padding:14px;color:#9ca3af;font-size:12px">No items found on this order</div>')
-      // Reserve slots so we can fill them after async calls finish
       +'<div id="ord-invoice-'+oid+'" style="margin-top:8px"></div>'
       +'<div id="ord-deliv-'+oid+'" style="margin-top:8px"></div>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'
@@ -455,7 +495,6 @@ async function viewOrderDetail(oid){
       +'</div>';
     cont.innerHTML = summaryHtml;
 
-    // INVOICE block — fetch each invoice by id so we get access_token for the PDF
     var invEl = document.getElementById('ord-invoice-'+oid);
     if(invoiceIds.length){
       invEl.innerHTML='<div style="background:#fffbea;border:1px solid #f5c518;border-radius:10px;padding:12px"><div style="font-size:12px;font-weight:800;margin-bottom:8px">🧾 Invoice ('+invoiceIds.length+')</div><div style="font-size:11px;color:#9ca3af">Loading invoice details...</div></div>';
@@ -496,7 +535,6 @@ async function viewOrderDetail(oid){
       }
     }
 
-    // DELIVERY block — picking_ids → /api/delivery-order/{id}
     var delEl = document.getElementById('ord-deliv-'+oid);
     if(pickingIds.length){
       delEl.innerHTML='<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:10px;padding:12px"><div style="font-size:12px;font-weight:800;margin-bottom:8px">🚚 Delivery</div><div style="font-size:11px;color:#9ca3af">Loading delivery details...</div></div>';
@@ -544,7 +582,6 @@ async function viewOrderDetail(oid){
   }catch(e){ cont.innerHTML='<div style="color:var(--red);font-size:13px">❌ '+e.message+'</div>'; }
 }
 
-// Open the most relevant invoice PDF for an order (used by the Invoice quick-button on the order card)
 async function loadOrderInvoice(oid){
   try{
     var r = await API.getOrder(oid);
@@ -585,7 +622,6 @@ async function loadInvoices(isLoadMore = false){
     var html = invoices.map(function(inv){
       var state = Array.isArray(inv.state)?inv.state[1]:inv.state||'Draft';
       var cls = state.toLowerCase().includes('post')?'os-ok':state.toLowerCase().includes('cancel')?'os-cancel':'os-draft';
-      // PDF URL from access_token OR access_url
       var pdfUrl = inv.access_token ? API.invPdfUrl(inv.id, inv.access_token) : (inv.access_url?API.PX+inv.access_url:'');
       
       var isPickup = (inv.narration || inv.note || '').includes('[STORE PICKUP]') ||
@@ -606,7 +642,6 @@ async function loadInvoices(isLoadMore = false){
         +'<div style="font-size:17px;font-weight:900;color:var(--red-d)">AED '+invTotal.toFixed(2)+'</div>'
         +(inv.amount_residual&&parseFloat(inv.amount_residual)>0?'<div style="font-size:11px;color:#9ca3af">Due: AED '+parseFloat(inv.amount_residual).toFixed(2)+'</div>':'')
         +'</div></div>'
-        // PDF DOWNLOAD BUTTON
         +(pdfUrl?'<div style="margin-top:12px"><a href="'+pdfUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;padding:9px 18px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">📄 Download PDF Invoice</a></div>':'<div style="margin-top:10px;font-size:11px;color:#9ca3af">PDF will be available once invoice is confirmed</div>')
         +'</div>';
     }).join('');
@@ -690,6 +725,91 @@ async function loadLoyalty(){
   }catch(e){ el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">❌ '+e.message+'</div>'; }
 }
 
+// --- SHAREHOLDER FUNCTIONS ---
+async function loadShareholderCertificates() {
+  var c = document.getElementById('certificatesContent');
+  c.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading Certificates...</div>';
+  try {
+    var shNum = localStorage.getItem('cd_shareholder_number');
+    var r = await API.getShareholderCertificates(shNum);
+    var data = r.data || r.result || [];
+    if(!Array.isArray(data)) data = [data];
+    if(!data.length){ c.innerHTML='<div style="padding:40px;text-align:center;color:#6b7280">No certificates found.</div>'; return; }
+    
+    var html = data.map(function(cert){
+      return '<div class="fs" style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">'
+        + '<div><div style="font-weight:800;font-size:14px;">Certificate #'+(cert.name||cert.id)+'</div>'
+        + '<div style="font-size:12px;color:#6b7280;">Shares: '+(cert.num_shares||0)+' | Value: AED '+parseFloat(cert.total_share_value||0).toFixed(2)+'</div></div>'
+        + '</div>';
+    }).join('');
+    c.innerHTML = html;
+  } catch(e) {
+    c.innerHTML = '<div style="padding:20px;color:var(--red);">❌ '+e.message+'</div>';
+  }
+}
+
+async function loadShareholderRewards() {
+  var c = document.getElementById('shRewardsContent');
+  c.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading Rewards...</div>';
+  try {
+    var shNum = localStorage.getItem('cd_shareholder_number');
+    var r = await API.getShareholderRewards(shNum);
+    var data = r.data || r.result || [];
+    if(!Array.isArray(data)) data = [data];
+    if(!data.length){ c.innerHTML='<div style="padding:40px;text-align:center;color:#6b7280">No rewards found.</div>'; return; }
+    
+    var html = data.map(function(rew){
+      return '<div class="fs" style="margin-bottom:12px;">'
+        + '<div style="font-weight:800;font-size:14px;color:var(--red);">'+(rew.name||'Dividend/Reward')+'</div>'
+        + '<div style="font-size:12px;color:#6b7280;margin-top:4px;">Amount: AED '+parseFloat(rew.amount||0).toFixed(2)+' | Date: '+(rew.date||'N/A')+'</div>'
+        + '</div>';
+    }).join('');
+    c.innerHTML = html;
+  } catch(e) {
+    c.innerHTML = '<div style="padding:20px;color:var(--red);">❌ '+e.message+'</div>';
+  }
+}
+
+async function loadShareholderPurchases() {
+  var c = document.getElementById('shPurchasesContent');
+  c.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading Purchases...</div>';
+  try {
+    var shNum = localStorage.getItem('cd_shareholder_number');
+    var r = await API.getShareholderPurchases(shNum);
+    var data = r.data || r.result || [];
+    if(!Array.isArray(data)) data = [data];
+    if(!data.length){ c.innerHTML='<div style="padding:40px;text-align:center;color:#6b7280">No linked purchases found.</div>'; return; }
+    
+    var html = data.map(function(order){
+      var amt = order.amount_total || order.total || 0;
+      return '<div class="fs" style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">'
+        + '<div><div style="font-weight:800;font-size:14px;">'+(order.name||'Order #'+order.id)+'</div>'
+        + '<div style="font-size:12px;color:#6b7280;">Date: '+(order.date_order||'N/A').slice(0,10)+'</div></div>'
+        + '<div style="font-weight:900;color:var(--red-d);">AED '+parseFloat(amt).toFixed(2)+'</div>'
+        + '</div>';
+    }).join('');
+    c.innerHTML = html;
+  } catch(e) {
+    c.innerHTML = '<div style="padding:20px;color:var(--red);">❌ '+e.message+'</div>';
+  }
+}
+
+async function linkShareholderOrder() {
+  var oid = document.getElementById('linkOrderId').value.trim();
+  var msg = document.getElementById('linkOrderMsg');
+  if(!oid) { msg.textContent = 'Please enter an Order ID'; msg.style.color='var(--red)'; return; }
+  msg.textContent = 'Linking...'; msg.style.color='#9ca3af';
+  try {
+    var shNum = localStorage.getItem('cd_shareholder_number');
+    await API.linkShareholderOrder(shNum, oid);
+    msg.textContent = '✅ Order successfully linked!'; msg.style.color='#065f46';
+    document.getElementById('linkOrderId').value = '';
+    setTimeout(loadShareholderPurchases, 1000);
+  } catch(e) {
+    msg.textContent = '❌ '+e.message; msg.style.color='var(--red)';
+  }
+}
+
 var addrOffset = 0;
 var addrLimit = 3;
 async function loadAddress(isLoadMore = false){
@@ -728,7 +848,7 @@ async function loadAddress(isLoadMore = false){
     }
   }catch(e){
     if(!isLoadMore) {
-      container.innerHTML='<div style="color:var(--red);padding:20px;text-align:center;grid-column:1/-1">❌ Failed to load addresses: '+e.message+'</div>';
+      container.innerHTML='<div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">❌ Failed to load addresses: '+e.message+'</div>';
     } else {
       var lmBtn = document.getElementById('addrLoadMoreBtn');
       if(lmBtn) lmBtn.innerHTML = 'Load More (Failed)';
