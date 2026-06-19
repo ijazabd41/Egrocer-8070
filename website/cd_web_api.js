@@ -17,7 +17,7 @@ const CdApi = (() => {
     if (location.port === PROXY_PORT) return '/proxy';
     return `http://localhost:${PROXY_PORT}/proxy`;
   })();
-  const DB   = 'staging-apr17';
+  const DB   = 'production';
 
   // ── Auth helpers ──────────────────────────────────────────
   const session  = () => localStorage.getItem('cd_session_id') || '';

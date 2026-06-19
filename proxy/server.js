@@ -1,7 +1,7 @@
 // Coop Discounts CORS Proxy v2.1 — Handles binary images + session cookies
 // Fixed: CORS origin allowlist, path allowlist, deprecated url.parse → WHATWG URL
 const http = require('http'), https = require('https'), querystring = require('querystring');
-const ODOO = process.env.ODOO_BASE || 'http://cooperp.freeddns.org:8076';
+const ODOO = process.env.ODOO_BASE || 'http://cooperp.freeddns.org:8070';
 const PORT = parseInt(process.env.PORT || '3001');
 
 // ── CORS ORIGIN ALLOWLIST ──────────────────────────────────────────

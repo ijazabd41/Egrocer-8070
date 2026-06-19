@@ -9,8 +9,8 @@
 //   Module:     /api/dashboard/full        (needs module installed)
 
 const CdApi = (() => {
-  const BASE = 'http://cooperp.freeddns.org:8077';
-  const DB   = 'staging-apr17';
+  const BASE = 'http://cooperp.freeddns.org:8070';
+  const DB   = 'production';
 
   // ── Auth helpers ──────────────────────────────────────────
   const session  = () => localStorage.getItem('cd_session_id') || '';

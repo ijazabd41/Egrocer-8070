@@ -33,7 +33,7 @@
 <div class="panel"><div class="panel-head"><span id="queueTitle">Realtime Orders</span><span id="lastRefresh"></span></div><div id="orders"></div></div>
 </div>
 <script>
-const ODOO_URL = 'http://cooperp.freeddns.org:8076';
+const ODOO_URL = 'http://cooperp.freeddns.org:8070';
 let BASE_URL = ODOO_URL;
 if (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || ['3000', '5500', '8000', '8080'].includes(location.port)) {
   BASE_URL = `http://${location.hostname}:3001/proxy`;

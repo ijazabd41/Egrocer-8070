@@ -31,7 +31,7 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
-const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com') => {
+const API = ((_DB='production', SK='cd_session', NOTIFY='eicoopit@gmail.com') => {
   const API_BUILD = '8.6';
 
   // ── PROXY BASE URL ─────────────────────────────────────────────
@@ -507,16 +507,25 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   // Logo:       /api/deal-day-slider/12 → banner_image = path → img(banner_image)
   // Sliders:    /api/deal-day-slider/9  → image_ids[].id → sliderImg(id)
   // Deals etc:  /api/deal-day-slider/{2,1,3,4,5,8} → image_ids[].id
-  const getLogo        = () => GET('/api/deal-day-slider/12');
-  const getHomeSliders = () => GET('/api/deal-day-slider/9');
-  const getDealOfDay   = () => GET('/api/deal-day-slider/2');
-  const getBestSeller  = () => GET('/api/deal-day-slider/1');
-  const getRecommended = () => GET('/api/deal-day-slider/3');
-  const getFeatured    = () => GET('/api/deal-day-slider/4');
-  const getFreshPick   = () => GET('/api/deal-day-slider/5');
-  const getBrands      = () => GET('/api/deal-day-slider/8');
-  const getMobileAppPromo = () => GET('/api/deal-day-slider/12');
-  const getTrustElements  = () => GET('/api/deal-day-slider/13');
+  const getLogo        = () => GET('/api/deal-day-slider/75');
+  const getHomeSliders = () => GET('/api/deal-day-slider/72');
+  const getDealOfDay   = () => GET('/api/deal-day-slider/65');
+  const getBestSeller  = () => GET('/api/deal-day-slider/64');
+  const getRecommended = () => GET('/api/deal-day-slider/66');
+  const getFeatured    = () => GET('/api/deal-day-slider/67');
+  const getFreshPick   = () => GET('/api/deal-day-slider/68');
+  const getBrands      = () => GET('/api/deal-day-slider/78');
+  const getMobileAppPromo = () => GET('/api/deal-day-slider/77');
+  const getTrustElements  = () => GET('/api/deal-day-slider/79');
+  
+  // NEW DEALS ADDED FOR LIVE SERVER
+  const getTrendingDeals = () => GET('/api/deal-day-slider/69');
+  const getAppExclusive = () => GET('/api/deal-day-slider/70');
+  const getEmaratiProducts = () => GET('/api/deal-day-slider/71');
+  const getSplashWelcome = () => GET('/api/deal-day-slider/73');
+  const getMobileMiddleBanners = () => GET('/api/deal-day-slider/74');
+  const getCompanySplashIntro = () => GET('/api/deal-day-slider/76');
+  
   const getAllDeals     = () => GET('/api/deal-day-slider');
   const getDealById    = id  => GET(`/api/deal-day-slider/${id}`);
 

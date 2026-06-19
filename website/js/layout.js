@@ -112,7 +112,7 @@ function buildHeader(){
           <div style="display:flex; flex-direction:column; justify-content:center;">
             <div class="r-logo-text" style="color:var(--rd,#ED1C24); font-weight:900; font-size:18px; line-height:1.1; margin-bottom:1px;">COOP DISCOUNTS</div>
             <div style="color:#374151; font-size:11px; font-weight:800; line-height:1.2; margin-bottom:2px;">Hyper Market</div>
-            <div style="color:#6b7280; font-size:9px; font-weight:600; line-height:1; letter-spacing:0.2px;">Customer Cooperation Society</div>
+            <div style="color:#6b7280; font-size:9px; font-weight:600; line-height:1; letter-spacing:0.2px;">Consumer Cooperative Society</div>
           </div>
         </a>
 
