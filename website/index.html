@@ -20,23 +20,26 @@
 
     .hero-slide img {
       width: 100%;
-      height: 420px;
+      height: auto;
+      aspect-ratio: 3 / 1;
       object-fit: cover;
       object-position: center;
       display: block;
       background: #e8e8e8;
-      margin-top: 0;
+      margin-top: 0.1px;
     }
 
     @media(max-width:768px) {
       .hero-slide img {
-        height: 200px
+        height: auto;
+        aspect-ratio: 16 / 9;
       }
     }
 
     @media(max-width:480px) {
       .hero-slide img {
-        height: 170px
+        height: auto;
+        aspect-ratio: 4 / 3;
       }
     }
 
@@ -84,18 +87,117 @@
     }
 
     /* Redesigned Category Section CSS */
-    .uc-cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; margin-top: 20px; }
-    @media(max-width: 768px) { .uc-cat-grid { grid-template-columns: 1fr; gap: 40px; } }
-    .uc-cat-group { display: flex; flex-direction: column; }
-    .uc-cat-header { position: relative; background: #ED1C24; color: #fff; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 6px; margin-left: 24px; font-weight: 800; font-size:16.5px; box-shadow: 0 4px 6px rgba(237, 28, 36, 0.2); }
-    .uc-cat-header-img { position: absolute; left: -24px; top: 50%; transform: translateY(-50%); width: 54px; height: 54px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px #ED1C24; background: #fff; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-    .uc-cat-header-img img { width: 100%; height: 100%; object-fit: cover; }
-    .uc-subcat-list { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; padding-left: 10px; }
-    .r-subcat-card { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 90px; height: 105px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; text-decoration: none; color: #111; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s; }
-    .r-subcat-card:hover { border-color: #fca5a5; transform: translateY(-2px); }
-    .r-subcat-img { width: 50px; height: 50px; border-radius: 50%; overflow: hidden; margin-bottom: 8px; background: #f9fafb; display: flex; align-items: center; justify-content: center; }
-    .r-subcat-img img { width: 100%; height: 100%; object-fit: cover; }
-    .r-subcat-title { font-size:11px; font-weight: 700; text-align: center; line-height: 1.2; padding: 0 4px; }
+    .uc-cat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+      margin-top: 20px;
+    }
+
+    @media(max-width: 768px) {
+      .uc-cat-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+    }
+
+    .uc-cat-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .uc-cat-header {
+      position: relative;
+      background: #ED1C24;
+      color: #fff;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      margin-left: 24px;
+      font-weight: 800;
+      font-size: 16.5px;
+      box-shadow: 0 4px 6px rgba(237, 28, 36, 0.2);
+    }
+
+    .uc-cat-header-img {
+      position: absolute;
+      left: -24px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 2px #ED1C24;
+      background: #fff;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .uc-cat-header-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .uc-subcat-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+      padding-left: 10px;
+    }
+
+    .r-subcat-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 90px;
+      height: 105px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #111;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+      transition: all 0.2s;
+    }
+
+    .r-subcat-card:hover {
+      border-color: #fca5a5;
+      transform: translateY(-2px);
+    }
+
+    .r-subcat-img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin-bottom: 8px;
+      background: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .r-subcat-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .r-subcat-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.2;
+      padding: 0 4px;
+    }
   </style>
 </head>
 
@@ -108,10 +210,11 @@
       <!-- Placeholder shown while loading -->
       <div class="hero-slide">
         <div
-          style="width:100%;height:420px;background:linear-gradient(135deg,#ED1C24 0%,#BE161D 60%,#7a0f12 100%);display:flex;align-items:center;justify-content:center">
+          style="width:100%;aspect-ratio:3/1;height:auto;background:linear-gradient(135deg,#ED1C24 0%,#BE161D 60%,#7a0f12 100%);display:flex;align-items:center;justify-content:center">
           <div style="text-align:center;color:#fff">
             <div style="font-size:70.4px;margin-bottom:12px">🛒</div>
-            <h1 style="font-size:24px;font-weight:900;font-family:Montserrat,sans-serif;margin-bottom:8px">Coop Discounts
+            <h1 style="font-size:24px;font-weight:900;font-family:Montserrat,sans-serif;margin-bottom:8px">Coop
+              Discounts
             </h1>
             <p style="font-size:15.4px;opacity:.85">Hyper Market — Dubai</p>
             <a href="shop.html"
@@ -153,7 +256,9 @@
         <div class="uc-cat-header" style="margin-bottom:0; justify-content:center; position:relative;">
           <div class="uc-cat-header-img" style="background:#fff; font-size:24px; color:#111;">🛒</div>
           <h2 class="uc-cat-header-title" style="margin:0; font-size:14px;">Shop by Category</h2>
-          <a href="shop.html" style="position:absolute; right:20px; color:#fff; font-size:14.3px; font-weight:700; text-decoration:none; display:flex; align-items:center; gap:4px;">All Categories <span style="font-size:17.6px;">→</span></a>
+          <a href="shop.html"
+            style="position:absolute; right:20px; color:#fff; font-size:14.3px; font-weight:700; text-decoration:none; display:flex; align-items:center; gap:4px;">All
+            Categories <span style="font-size:17.6px;">→</span></a>
         </div>
       </div>
       <div class="cat-row" id="catRow">
@@ -185,7 +290,8 @@
         <div>
           <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-size:24px;">⚡</span>
-            <h2 class="deal-ttl" id="ddTtl" style="font-size:24px; font-weight:800; color:#111; margin:0; line-height:1;">Deal Of The Day</h2>
+            <h2 class="deal-ttl" id="ddTtl"
+              style="font-size:24px; font-weight:800; color:#111; margin:0; line-height:1;">Deal Of The Day</h2>
           </div>
         </div>
       </div>
@@ -203,7 +309,8 @@
     <div class="ctr">
       <div style="text-align:left;margin-bottom:24px">
         <h2 style="font-size:26.4px;font-weight:900;color:#111">💎 Coop Discount Membership Benefit</h2>
-        <p style="color:#6b7280;margin-top:6px;font-size:15.4px">Most cooperative shoppers look for these exclusive perks.
+        <p style="color:#6b7280;margin-top:6px;font-size:15.4px">Most cooperative shoppers look for these exclusive
+          perks.
         </p>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:20px">
@@ -242,7 +349,8 @@
         <div>
           <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-size:24px;">🏆</span>
-            <h2 class="deal-ttl" id="bsTtl" style="font-size:24px; font-weight:800; color:#111; margin:0; line-height:1;">Best Sellers</h2>
+            <h2 class="deal-ttl" id="bsTtl"
+              style="font-size:24px; font-weight:800; color:#111; margin:0; line-height:1;">Best Sellers</h2>
           </div>
         </div>
       </div>
@@ -268,26 +376,34 @@
         <h3 style="font-size:26.4px;font-weight:900;color:#111">Payment Partners</h3>
         <p style="color:#6b7280;margin-top:6px;font-size:15.4px">Your payment information is processed securely.</p>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:stretch;flex-wrap:nowrap;overflow-x:auto;gap:16px;padding-bottom:10px;width:100%;">
-        <div style="flex:1;background:#d1fae5;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
+      <div
+        style="display:flex;justify-content:space-between;align-items:stretch;flex-wrap:nowrap;overflow-x:auto;gap:16px;padding-bottom:10px;width:100%;">
+        <div
+          style="flex:1;background:#d1fae5;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
           <img src="img/SSL.webp" style="max-height:56px;max-width:100%;object-fit:contain" alt="SSL Secure">
         </div>
-        <div style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
+        <div
+          style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
           <img src="img/visa-logo-02.png" style="max-height:46px;max-width:100%;object-fit:contain" alt="VISA">
         </div>
-        <div style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
+        <div
+          style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
           <img src="img/Mastercard.png" style="max-height:52px;max-width:100%;object-fit:contain" alt="Mastercard">
         </div>
-        <div style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
+        <div
+          style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
           <img src="img/apple pay.png" style="max-height:56px;max-width:100%;object-fit:contain" alt="Apple Pay">
         </div>
-        <div style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
+        <div
+          style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
           <img src="img/Gpay.png" style="max-height:56px;max-width:100%;object-fit:contain" alt="G Pay">
         </div>
-        <div style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
+        <div
+          style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
           <img src="img/Tappy-Logo-PNG.png" style="max-height:56px;max-width:100%;object-fit:contain" alt="Tabby">
         </div>
-        <div style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
+        <div
+          style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
           <img src="img/tamara.png" style="max-height:56px;max-width:100%;object-fit:contain" alt="Tamara">
         </div>
       </div>
@@ -300,20 +416,26 @@
       <div style="text-align:left;margin-bottom:20px">
         <h3 style="font-size:22px;font-weight:900;color:#111;letter-spacing:1px">Powered By</h3>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:stretch;flex-wrap:nowrap;overflow-x:auto;gap:16px;padding-bottom:10px;width:100%;">
-        <div style="flex:1;background:#f8f9fa;padding:16px;border-radius:16px;border:1px solid #e5e7eb;font-weight:800;font-size:14px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.02);">
+      <div
+        style="display:flex;justify-content:space-between;align-items:stretch;flex-wrap:nowrap;overflow-x:auto;gap:16px;padding-bottom:10px;width:100%;">
+        <div
+          style="flex:1;background:#f8f9fa;padding:16px;border-radius:16px;border:1px solid #e5e7eb;font-weight:800;font-size:14px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.02);">
           <span style="font-size:24px;">🧠</span> <span>AI Shopping</span>
         </div>
-        <div style="flex:1;background:#f8f9fa;padding:16px;border-radius:16px;border:1px solid #e5e7eb;font-weight:800;font-size:14px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.02);">
+        <div
+          style="flex:1;background:#f8f9fa;padding:16px;border-radius:16px;border:1px solid #e5e7eb;font-weight:800;font-size:14px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.02);">
           <span style="font-size:24px;">🔒</span> <span>Secure Checkout</span>
         </div>
-        <div style="flex:1;background:#f8f9fa;padding:16px;border-radius:16px;border:1px solid #e5e7eb;font-weight:800;font-size:14px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.02);">
+        <div
+          style="flex:1;background:#f8f9fa;padding:16px;border-radius:16px;border:1px solid #e5e7eb;font-weight:800;font-size:14px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.02);">
           <span style="font-size:24px;">📦</span> <span style="line-height:1.2;">Real-Time Inventory</span>
         </div>
-        <div style="flex:1;background:#f8f9fa;padding:16px;border-radius:16px;border:1px solid #e5e7eb;font-weight:800;font-size:14px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.02);">
+        <div
+          style="flex:1;background:#f8f9fa;padding:16px;border-radius:16px;border:1px solid #e5e7eb;font-weight:800;font-size:14px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.02);">
           <span style="font-size:24px;">💡</span> <span>Recommendations</span>
         </div>
-        <div style="flex:1;background:#f8f9fa;padding:16px;border-radius:16px;border:1px solid #e5e7eb;font-weight:800;font-size:14px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.02);">
+        <div
+          style="flex:1;background:#f8f9fa;padding:16px;border-radius:16px;border:1px solid #e5e7eb;font-weight:800;font-size:14px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.02);">
           <span style="font-size:24px;">🚚</span> <span>Fast Tracking</span>
         </div>
       </div>
@@ -357,11 +479,12 @@
         img.src = imgSrc;
         img.alt = item.name || 'Coop Discounts';
         img.loading = 'eager';
+        img.style.cssText = 'width:100%;aspect-ratio:3/1;object-fit:cover;';
         img.onerror = function () {
           // Fallback to brand banner if image fails
           this.style.display = 'none';
           var fb = document.createElement('div');
-          fb.style.cssText = 'width:100%;height:420px;background:linear-gradient(135deg,#ED1C24,#BE161D);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center';
+          fb.style.cssText = 'width:100%;aspect-ratio:3/1;height:auto;background:linear-gradient(135deg,#ED1C24,#BE161D);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center';
           fb.innerHTML = '<div style="font-size:66px;margin-bottom:12px">🛒</div><h2 style="font-size:26.4px;font-weight:900;font-family:Montserrat,sans-serif">Coop Discounts</h2><p style="font-size:14.3px;opacity:.8;margin-top:6px">Hyper Market — Dubai</p>';
           div.appendChild(fb);
         };
@@ -407,7 +530,7 @@
       const oos = qtyAvail <= 0 && qtyAvail !== -1;
       const disc = std > price && std > 0 ? Math.round((1 - price / std) * 100) : 0;
       const pdEnc = encodeURIComponent(JSON.stringify({ product_id: id, variant_id: varId, name, price, image: imgSrc, qty_available: qtyAvail }));
-      
+
       const inCartQty = Cart.raw().find(i => i.product_id === id)?.qty || 0;
 
       return `
@@ -428,19 +551,19 @@
           </div>
 
           <div style="width:100%; border-top:1px solid #f3f4f6;">
-            ${oos ? 
-              `<button disabled style="width:100%;background:#e2e8f0;color:#94a3b8;border:none;padding:7px;font-size:12.1px;font-weight:700">Out of Stock</button>` :
-              `<div class="cd-qty-ctrl" data-pid="${id}" data-pdenc="${pdEnc}" data-btnclass="mini-atc" style="width:100%;">
-                 ${inCartQty > 0 
-                   ? `<div style="display:flex;background:var(--red, #ED1C24);color:#fff;height:28px">
+            ${oos ?
+          `<button disabled style="width:100%;background:#e2e8f0;color:#94a3b8;border:none;padding:7px;font-size:12.1px;font-weight:700">Out of Stock</button>` :
+          `<div class="cd-qty-ctrl" data-pid="${id}" data-pdenc="${pdEnc}" data-btnclass="mini-atc" style="width:100%;">
+                 ${inCartQty > 0
+            ? `<div style="display:flex;background:var(--red, #ED1C24);color:#fff;height:28px">
                         <button onclick="event.preventDefault();Cart.setQty(${id},-1)" style="flex:1;background:transparent;color:#fff;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17.6px;">−</button>
                         <span style="flex:1;text-align:center;font-size:13.2px;font-weight:800;line-height:28px;">${inCartQty}</span>
                         <button onclick="event.preventDefault();Cart.setQty(${id},1)" style="flex:1;background:transparent;color:#fff;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17.6px;">+</button>
                       </div>`
-                   : `<button onclick="event.preventDefault();addToCart(decodeURIComponent('${pdEnc}'))" style="width:100%;background:var(--red, #ED1C24);color:#fff;border:none;padding:7px;font-size:12.1px;font-weight:700;cursor:pointer;transition:background .2s" onmouseover="this.style.background='#BE161D'" onmouseout="this.style.background='var(--red, #ED1C24)'">Add to Cart</button>`
-                 }
+            : `<button onclick="event.preventDefault();addToCart(decodeURIComponent('${pdEnc}'))" style="width:100%;background:var(--red, #ED1C24);color:#fff;border:none;padding:7px;font-size:12.1px;font-weight:700;cursor:pointer;transition:background .2s" onmouseover="this.style.background='#BE161D'" onmouseout="this.style.background='var(--red, #ED1C24)'">Add to Cart</button>`
+          }
                </div>`
-            }
+        }
           </div>
 
         </div>
@@ -474,7 +597,7 @@
       var targetCatNames = ['Roastery', 'Butchery', 'Deli', 'Fresh Vegetables'];
       var targetCats = cats.filter(c => targetCatNames.includes(c.name));
       // Sort them in the requested order
-      targetCats.sort(function(a, b) {
+      targetCats.sort(function (a, b) {
         return targetCatNames.indexOf(a.name) - targetCatNames.indexOf(b.name);
       });
 
@@ -495,27 +618,27 @@
         html += '</div>';
 
         // Fetch products for this category asynchronously
-        API.getCatById(c.id).then(function(res) {
-           var detail = Array.isArray(res.data) ? res.data[0] : res.data;
-           if (detail && detail.product_tmpl_ids && detail.product_tmpl_ids.length > 0) {
-              var pids = detail.product_tmpl_ids.map(function(p){ return typeof p === 'object' ? p.id : p; }).slice(0, 10);
-              return API.getProds({ limit: 10, domain: "[('id','in',[" + pids.join(',') + "])]" });
-           } else {
-              return { data: [] };
-           }
-        }).then(function(res) {
-           var prodsEl = document.getElementById('cat-prods-' + c.id);
-           if (prodsEl) {
-              var validProds = (res.data || []).filter(function (p) { return getProdPrice(p) > 0; });
-              if (validProds.length > 0) {
-                 prodsEl.innerHTML = validProds.map(buildMiniCard).join('');
-              } else {
-                 prodsEl.innerHTML = '<div style="padding:20px;color:#9ca3af;font-size:13.2px;">No products found</div>';
-              }
-           }
-        }).catch(function(err) {
-           var prodsEl = document.getElementById('cat-prods-' + c.id);
-           if (prodsEl) prodsEl.innerHTML = '<div style="padding:20px;color:#9ca3af;font-size:13.2px;">Error loading products</div>';
+        API.getCatById(c.id).then(function (res) {
+          var detail = Array.isArray(res.data) ? res.data[0] : res.data;
+          if (detail && detail.product_tmpl_ids && detail.product_tmpl_ids.length > 0) {
+            var pids = detail.product_tmpl_ids.map(function (p) { return typeof p === 'object' ? p.id : p; }).slice(0, 10);
+            return API.getProds({ limit: 10, domain: "[('id','in',[" + pids.join(',') + "])]" });
+          } else {
+            return { data: [] };
+          }
+        }).then(function (res) {
+          var prodsEl = document.getElementById('cat-prods-' + c.id);
+          if (prodsEl) {
+            var validProds = (res.data || []).filter(function (p) { return getProdPrice(p) > 0; });
+            if (validProds.length > 0) {
+              prodsEl.innerHTML = validProds.map(buildMiniCard).join('');
+            } else {
+              prodsEl.innerHTML = '<div style="padding:20px;color:#9ca3af;font-size:13.2px;">No products found</div>';
+            }
+          }
+        }).catch(function (err) {
+          var prodsEl = document.getElementById('cat-prods-' + c.id);
+          if (prodsEl) prodsEl.innerHTML = '<div style="padding:20px;color:#9ca3af;font-size:13.2px;">Error loading products</div>';
         });
       });
       html += '</div>';
