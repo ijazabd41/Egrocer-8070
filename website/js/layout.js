@@ -138,8 +138,6 @@ function buildHeader(){
         <button class="r-cat-btn" onclick="openModal('catMo')">
           <span style="font-size:18px;margin-top:-2px">⊞</span> <span class="cat-btn-text">All Categories ⌄</span>
         </button>
-        <button class="r-hamburger" onclick="document.getElementById('rNavLinks').classList.toggle('open')">☰
-          Menu</button>
         <div class="r-nav-links" id="rNavLinks">
           <a href="index.html">Home</a>
           <a href="offers.html" style="display:flex; align-items:center; gap:6px;">
@@ -168,6 +166,7 @@ function buildHeader(){
             </div>
           </div>
         </div>
+        <button class="r-hamburger" onclick="document.getElementById('rNavLinks').classList.toggle('open')">☰ Menu</button>
       </div>
     </div>
 

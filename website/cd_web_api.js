@@ -35,7 +35,6 @@ const CdApi = (() => {
   const _get = async (path, params = {}) => {
     const url = new URL(BASE + path, window.location.origin);
     url.searchParams.set('by_AJR', '1');
-    url.searchParams.set('_t', Date.now());
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
     try {
       const res  = await fetch(url, { headers: headers(), credentials: 'include' });
@@ -140,7 +139,7 @@ const CdApi = (() => {
   const riderAccept      = (id, uid)    => _get(`/api/rider-delivery/${id}/update`, {user_id:uid});
   const riderSendOtp     = (id)         => _get(`/api/rider-own-delivery/${id}/regenerate_send_otp`);
   const riderVerifyOtp   = (id, otp)    => _get(`/api/rider-own-delivery/${id}/verify_otp`, {otp});
-  const riderMarkDone    = (id, uid)    => _get(`/api/rider-own-delivery/${id}/mark_done`, {uid});
+  const riderMarkDone    = (id, uid)    => _get(`/api/rider-delivery-done/${id}/update`, {user_id: uid});
   const riderStart       = (id, uid, lat, lng) =>
     _get(`/api/delivery/${id}/start`, {user_id:uid, latitude:lat, longitude:lng});
   const riderCustomerWait= (id, uid, note='') =>

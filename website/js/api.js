@@ -55,7 +55,11 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   // ── SESSION ───────────────────────────────────────────────────
   const sess      = () => { try { return JSON.parse(localStorage.getItem(SK)||'null'); } catch(_){ return null; } };
   const saveSess  = d  => { try { localStorage.setItem(SK, JSON.stringify(d)); } catch(_){} };
-  const clearSess = ()  => { localStorage.removeItem(SK); localStorage.removeItem('cd_oid'); };
+  const clearSess = ()  => { 
+    localStorage.removeItem(SK); 
+    localStorage.removeItem('cd_oid');
+    ['cd_shareholder_number','cd_session_id','cd_user_id','cd_user_name','cd_role_code','cd_role_name'].forEach(k => localStorage.removeItem(k));
+  };
   const loggedIn  = ()  => !!(sess() && sess().uid);
   const me        = ()  => sess();
   const myPid     = ()  => { const s=sess(); if(!s)return null; return Array.isArray(s.partner_id)?s.partner_id[0]:s.partner_id; };
@@ -868,6 +872,9 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
       throw e;
     }
   }
+  
+  const getCustomerOrderStatus = oid => GET('/api/skytec-delivery/customer-order-status', { sale_order_id: oid });
+  const getCustomerOrdersStatus = (pid, limit=25, offset=0) => GET('/api/skytec-delivery/customer-orders-status', { partner_id: pid, limit, offset });
 
   // ── PAYMENT ───────────────────────────────────────────────────
   const getPayProviders = () => GET('/api/payment-provider', {domain:`[('state','in',['enabled','test'])]`});
@@ -1620,7 +1627,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   const getRiderDeliveries = (limit=10, offset=0) => GET('/api/rider-delivery', { limit, Offset:offset });
   const myRiderDeliveries  = (userId, limit=10, offset=0) => GET('/api/rider-own-delivery', { domain:`[('user_id','=',${userId})]`, limit, Offset:offset });
   const acceptRiderDelivery = (id,userId) => GET(`/api/rider-delivery/${id}/update`, { user_id:userId });
-  const markRiderDeliveryDone = (id,userId) => GET(`/api/rider-own-delivery/${id}/mark_done`, { uid:userId });
+  const markRiderDeliveryDone = (id,userId) => GET(`/api/rider-delivery-done/${id}/update`, { uid:userId });
 
   // ── MY ACCOUNT ────────────────────────────────────────────────
   // IMPORTANT: scope orders/invoices to the logged-in customer (partner_id).
@@ -1654,7 +1661,12 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
   const shareholderVerifyOtp = (num, otp) => POST('/api/shareholder/verify_otp', { shareholder_number: num, otp });
   const getShareholderProfile = (num) => POST('/api/shareholder/profile', { shareholder_number: num });
   const updateShareholderProfile = (num, data) => POST('/api/shareholder/update_profile', { shareholder_number: num, ...data });
-  const getShareholderPurchases = (num) => POST('/api/shareholder/purchases', { shareholder_number: num });
+  const getShareholderPurchases = (num, dateFrom, dateTo) => {
+    let payload = { shareholder_number: num };
+    if (dateFrom) payload.date_from = dateFrom;
+    if (dateTo) payload.date_to = dateTo;
+    return POST('/api/shareholder/purchases', payload);
+  };
   const linkShareholderOrder = (num, orderId) => {
     const payload = { shareholder_number: num };
     if (typeof orderId === 'string' && (orderId.startsWith('S') || orderId.includes('-'))) {
@@ -1693,6 +1705,7 @@ const API = ((_DB='staging-apr17', SK='cd_session', NOTIFY='eicoopit@gmail.com')
     getRecIdForVariant, updateCartQty,
     // Delivery
     getDeliveryMethods, updDelivery, getDeliveries, getDelivery,
+    getCustomerOrderStatus, getCustomerOrdersStatus,
     // Payment
     getPayProviders, getPayProvider, sortPaymentProviders, filterCheckoutProviders,
     pickDefaultPaymentProvider, buildPaymentProviderCandidates, prepareOrderForPayment,

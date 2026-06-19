@@ -13,7 +13,7 @@
 .tabs{display:flex;gap:8px;margin:12px 0}.tab{background:#fff;color:var(--primary);border:1px solid var(--primary)}.tab.active{background:var(--primary);color:#fff}.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}.panel-head{background:var(--primary);color:#fff;padding:12px 14px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
 .table{width:100%;border-collapse:collapse}.table th,.table td{padding:10px;border-bottom:1px solid var(--border);font-size:13px;text-align:left;vertical-align:top}.table th{background:#fafafa;color:var(--muted);font-size:12px;text-transform:uppercase}
 .badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800}.new{background:#ffedd5;color:#c2410c}.approved{background:#dbeafe;color:#1d4ed8}.ready{background:#cffafe;color:#0e7490}.accepted{background:#ede9fe;color:#6d28d9}.delivered{background:#dcfce7;color:#15803d}.cancelled{background:#fee2e2;color:#b91c1c}.actions{display:flex;gap:6px;flex-wrap:wrap}.empty{text-align:center;color:var(--muted);padding:30px}.err{display:none;background:#fee2e2;color:#991b1b;padding:10px;border-radius:8px;margin-bottom:10px}
-@media(max-width:800px){.kpis{grid-template-columns:repeat(2,1fr)}.table{display:block;overflow-x:auto}.header{display:block}.toolbar{display:block}.toolbar>*{width:100%;margin:4px 0}}
+@media(max-width:800px){.kpis{grid-template-columns:repeat(2,1fr)}.table{display:block;overflow-x:auto;white-space:nowrap}.header{display:block}.toolbar{display:block}.toolbar>*{width:100%;margin:4px 0}}
 </style>
 </head>
 <body>
@@ -59,9 +59,35 @@ function setView(v){currentView=v;document.getElementById('btnList').classList.t
 function render(){if(!currentItems.length){document.getElementById('orders').innerHTML='<div class="empty">No records found</div>';return}if(currentView==='kanban'){document.getElementById('orders').innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;padding:12px">${currentItems.map(card).join('')}</div>`}else{document.getElementById('orders').innerHTML=`<table class="table"><thead><tr><th>Order</th><th>Customer</th><th>Source</th><th>Status</th><th>Responsible</th><th>Actions</th></tr></thead><tbody>${currentItems.map(row).join('')}</tbody></table>`}}
 function row(o){const state=val(o,'delivery_state','state');return `<tr><td><b>${val(o,'name')}</b><br><small>${val(o,'scheduled_date','create_date')}</small></td><td>${val(o,'partner','customer','partner_name')}<br><small>${val(o,'partner_phone')}</small></td><td>${val(o,'source','delivery_source')}</td><td>${badge(state)}</td><td>${val(o,'store_manager','store_keeper','driver','responsible')||'-'}</td><td><div class="actions">${buttons(o,state)}</div></td></tr>`}
 function card(o){const state=val(o,'delivery_state','state');return `<div class="kpi" style="text-align:left"><b style="font-size:15px">${val(o,'name')}</b><br>${badge(state)}<p><b>Customer:</b> ${val(o,'partner','customer','partner_name')||'-'}</p><p><b>Source:</b> ${val(o,'source','delivery_source')||'-'}</p><p><b>Responsible:</b> ${val(o,'store_manager','store_keeper','driver','responsible')||'-'}</p><div class="actions">${buttons(o,state)}</div></div>`}
-function buttons(o,state){const id=val(o,'id','picking_id');const role=document.getElementById('role').value;let b=`<button class="secondary" onclick="openOdoo(${id})">Open</button>`;if((role==='store_manager'||role==='admin')&&state==='new')b+=`<button class="green" onclick="doAction(${id},'approve',this)">Approve</button>`;if((role==='store_keeper'||role==='admin')&&state==='approved'){b+=`<button class="blue" onclick="doAction(${id},'ready',this)">Mark Ready</button>`;b+=`<button class="orange" onclick="assignDriver(${id},this)">Assign Driver</button>`}if(role==='admin'&&state==='ready')b+=`<button class="green" onclick="doAction(${id},'notify_drivers',this)">Notify Drivers</button>`;if(role==='admin'&&!['delivered','cancelled'].includes(state))b+=`<button class="red" onclick="doAction(${id},'cancel',this)">Cancel</button>`;return b}
+function buttons(o,state){
+  const id=val(o,'id','picking_id');
+  const allowed=o.allowed_actions;
+  let b=`<button class="secondary" onclick="openOdoo(${id})">Open</button>`;
+  
+  if (Array.isArray(allowed)) {
+    if (allowed.includes('approve')) b+=`<button class="green" onclick="doAction(${id},'approve',this)">Approve</button>`;
+    if (allowed.includes('ready')) b+=`<button class="blue" onclick="doAction(${id},'ready',this)">Mark Ready</button>`;
+    if (allowed.includes('assign_driver')) b+=`<button class="orange" onclick="assignDriver(${id},this)">Assign Driver</button>`;
+    if (allowed.includes('notify_drivers')) b+=`<button class="green" onclick="doAction(${id},'notify_drivers',this)">Notify Drivers</button>`;
+    if (allowed.includes('cancel')) b+=`<button class="red" onclick="doAction(${id},'cancel',this)">Cancel</button>`;
+  } else {
+    if (state==='new') b+=`<button class="green" onclick="doAction(${id},'approve',this)">Approve</button>`;
+    else if (state==='approved') {
+      b+=`<button class="blue" onclick="doAction(${id},'ready',this)">Mark Ready</button>`;
+      b+=`<button class="orange" onclick="assignDriver(${id},this)">Assign Driver</button>`;
+    } else if (state==='ready') b+=`<button class="green" onclick="doAction(${id},'notify_drivers',this)">Notify Drivers</button>`;
+  }
+
+  // Always show labels for statuses if applicable
+  if (state==='ready' && (!Array.isArray(allowed) || !allowed.includes('notify_drivers'))) b+=`<span style="font-size:12px;color:var(--muted);margin-left:8px;font-weight:600">Waiting for Driver</span>`;
+  if (state==='accepted') b+=`<span style="font-size:12px;color:var(--primary);margin-left:8px;font-weight:600">Driver Accepted</span>`;
+  if (state==='delivered') b+=`<span style="font-size:12px;color:var(--green);margin-left:8px;font-weight:600">Delivered</span>`;
+  if (state==='cancelled') b+=`<span style="font-size:12px;color:var(--red);margin-left:8px;font-weight:600">Cancelled</span>`;
+
+  return b;
+}
 function openOdoo(id){window.open(ODOO_URL+'/web#id='+id+'&model=stock.picking&view_type=form','_blank')}
-function setBtnState(btn,active){if(!btn)return;if(active){btn.dataset.origText=btn.innerHTML;btn.innerHTML='&#x23F3; Wait...';btn.style.opacity='0.6';btn.style.pointerEvents='none'}else{if(btn.dataset.origText)btn.innerHTML=btn.dataset.origText;btn.style.opacity='1';btn.style.pointerEvents='auto'}}
+function setBtnState(btn,active){if(!btn)return;if(active){btn.dataset.origText=btn.innerHTML;btn.innerHTML='⏳ Wait...';btn.style.opacity='0.6';btn.style.pointerEvents='none'}else{if(btn.dataset.origText)btn.innerHTML=btn.dataset.origText;btn.style.opacity='1';btn.style.pointerEvents='auto'}}
 async function doAction(id,action,btn){setBtnState(btn,true);showErr('');try{const r=await apiPost('/api/skytec-delivery/action?by_AJR=1',{picking_id:id,action:action});console.log('doAction response:',r);if(!r || (r.success !== 1 && r.success !== true && String(r.success) !== '1'))throw new Error(r.message||'Action failed');await loadDashboard()}catch(e){setBtnState(btn,false);showErr(e.message)}}
 let cachedDrivers=null;
 async function assignDriver(id,btn){

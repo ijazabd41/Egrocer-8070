@@ -61,19 +61,12 @@ async function trackOrder(){
     var amtTax = pricing.vat;
     var amtTotal = pricing.total;
 
-    // Progress steps
-    var stepsDone = 0;
-    if(stateKey !== 'draft') stepsDone = 1;
-    if(stateKey === 'sale' || stateKey === 'done') stepsDone = 2;
-    if(pickingIds.length) stepsDone = 3;
-    if(stateKey === 'done' || (pickingIds.length && stepsDone >= 3)) stepsDone = 4;
-
-    var steps = [
-      {l:'Order Placed',ic:'📋',k:'draft'},
-      {l:'Confirmed',ic:'✅',k:'sale'},
-      {l:'Out for Delivery',ic:'🚚',k:'shipping'},
-      {l:'Delivered',ic:'📦',k:'done'}
-    ];
+    // Fetch new status API
+    var custStatus = null;
+    try {
+      var sr = await API.getCustomerOrderStatus(parseInt(oidVal));
+      if (sr && sr.data && sr.data.tracking_steps) custStatus = sr.data;
+    } catch(e){}
 
     var html = '<div class="fs">';
     // Header
@@ -83,20 +76,59 @@ async function trackOrder(){
       +(carrier?'<div style="font-size:12px;color:#6b7280;margin-top:2px">🚚 '+carrier+'</div>':'')
       +'</div>'
       +'<div style="text-align:right">'
-      +'<span class="os '+(stateKey==='done'?'os-ok':stateKey==='cancel'?'os-cancel':'os-proc')+'" style="display:block;margin-bottom:6px">'+state+'</span>'
+      +'<span class="os '+(stateKey==='done'?'os-ok':stateKey==='cancel'?'os-cancel':'os-proc')+'" style="display:block;margin-bottom:6px">'+(custStatus?custStatus.customer_delivery_label:state)+'</span>'
       +'<div style="font-size:18px;font-weight:900;color:var(--red-d)">AED '+amtTotal.toFixed(2)+'</div>'
       +'</div></div>';
 
     // Progress tracker
-    html += '<div style="position:relative;margin-bottom:28px;padding:0 10px">'
-      +'<div style="position:absolute;top:18px;left:calc(10% + 20px);right:calc(10% + 20px);height:3px;background:#e5e7eb;z-index:0"></div>'
-      +'<div style="position:absolute;top:18px;left:calc(10% + 20px);height:3px;background:var(--red);z-index:0;width:'+Math.min(100,((stepsDone-1)/3)*100)+'%;transition:width .5s"></div>'
-      +'<div style="display:flex;justify-content:space-between;position:relative;z-index:1">'
-      +steps.map(function(s,i){ var done=i<stepsDone;
+    var stepsHtml = '';
+    var fillWidth = 0;
+    if (custStatus) {
+      var sList = custStatus.tracking_steps;
+      var lastDoneIdx = 0;
+      sList.forEach(function(s,i){ if(s.done || s.active) lastDoneIdx = i; });
+      fillWidth = sList.length > 1 ? (lastDoneIdx / (sList.length-1)) * 100 : 0;
+      var iconsMap = {
+        order_received: '📋',
+        preparing: '📦',
+        ready_for_pickup: '🏪',
+        out_for_delivery: '🚚',
+        delivered: '✅'
+      };
+      stepsHtml = sList.map(function(s,i){ 
+        var isDone = i <= lastDoneIdx;
+        var ic = iconsMap[s.code] || '○';
+        return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;flex:1">'
+          +'<div style="width:40px;height:40px;border-radius:50%;border:3px solid '+(isDone?'var(--red)':'#e5e7eb')+';background:'+(isDone?'var(--red)':'#fff')+';display:flex;align-items:center;justify-content:center;font-size:17px;transition:all .3s">'+(isDone?ic:'○')+'</div>'
+          +'<div style="font-size:11px;font-weight:700;color:'+(isDone?'var(--red-d)':'#9ca3af')+';max-width:70px">'+s.label+'</div>'
+          +'</div>';
+      }).join('');
+    } else {
+      var stepsDone = 0;
+      if(stateKey !== 'draft') stepsDone = 1;
+      if(stateKey === 'sale' || stateKey === 'done') stepsDone = 2;
+      if(pickingIds.length) stepsDone = 3;
+      if(stateKey === 'done' || (pickingIds.length && stepsDone >= 3)) stepsDone = 4;
+      var steps = [
+        {l:'Order Placed',ic:'📋',k:'draft'},
+        {l:'Confirmed',ic:'✅',k:'sale'},
+        {l:'Out for Delivery',ic:'🚚',k:'shipping'},
+        {l:'Delivered',ic:'📦',k:'done'}
+      ];
+      fillWidth = Math.min(100,((stepsDone-1)/3)*100);
+      stepsHtml = steps.map(function(s,i){ var done=i<stepsDone;
         return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;flex:1">'
           +'<div style="width:40px;height:40px;border-radius:50%;border:3px solid '+(done?'var(--red)':'#e5e7eb')+';background:'+(done?'var(--red)':'#fff')+';display:flex;align-items:center;justify-content:center;font-size:17px;transition:all .3s">'+(done?s.ic:'○')+'</div>'
           +'<div style="font-size:11px;font-weight:700;color:'+(done?'var(--red-d)':'#9ca3af')+';max-width:70px">'+s.l+'</div>'
-          +'</div>';}).join('')
+          +'</div>';
+      }).join('');
+    }
+
+    html += '<div style="position:relative;margin-bottom:28px;padding:0 10px">'
+      +'<div style="position:absolute;top:18px;left:calc(10% + 20px);right:calc(10% + 20px);height:3px;background:#e5e7eb;z-index:0"></div>'
+      +'<div style="position:absolute;top:18px;left:calc(10% + 20px);height:3px;background:var(--red);z-index:0;width:'+fillWidth+'%;transition:width .5s"></div>'
+      +'<div style="display:flex;justify-content:space-between;position:relative;z-index:1">'
+      +stepsHtml
       +'</div></div>';
 
     // Order lines — handle multiple line shapes (product_id as [id,"Name"] OR [{id,name}])

@@ -335,6 +335,7 @@ async function doLogin(){
   try{
     const r=await API.login(em,pw);
     if(r.ok){
+      ['cd_shareholder_number','cd_shareholder_name'].forEach(k => localStorage.removeItem(k));
       toast(`✅ Welcome, ${r.data.name}!`);
       setTimeout(()=>{
         const role = r.data.role_code || localStorage.getItem('cd_role_code');

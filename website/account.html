@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+�<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>My Account â€“ Coop Discounts</title>
+<title>My Account – Coop Discounts</title>
 <link rel="stylesheet" href="css/style.css?v=15.1">
 <style>
 .acct-lay{display:grid;grid-template-columns:250px 1fr;gap:20px;align-items:start}
@@ -24,26 +24,35 @@
   <div class="acct-lay">
 
     <!-- SIDEBAR -->
-    <div class="acct-sb">
-      <div class="acct-usr">
-        <div class="acct-av" id="acctAv"><span id="acctAvLetter">ðŸ‘¤</span></div>
-        <div class="acct-nm" id="acctName">Loading...</div>
-        <div class="acct-em" id="acctEmail"></div>
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      <div class="acct-sb">
+        <div class="acct-usr">
+          <div class="acct-av" id="acctAv"><span id="acctAvLetter">👤</span></div>
+          <div class="acct-nm" id="acctName">Loading...</div>
+          <div class="acct-em" id="acctEmail"></div>
+        </div>
+        <nav class="acct-nav">
+          <a href="#" class="on" onclick="showTab('dashboard',this)">📊 Dashboard</a>
+          <a href="#" onclick="showTab('profile',this)">👤 My Profile</a>
+          <a href="#" onclick="showTab('orders',this)">🛒 My Orders</a>
+          <a href="#" onclick="showTab('invoices',this)">🧾 My Invoices</a>
+          <a href="#" onclick="showTab('loyalty',this)">⭐ Loyalty & Rewards</a>
+          <a href="#" onclick="showTab('address',this)">📍 My Address</a>
+          <div style="margin-top:20px; padding-top:10px; border-top:1px solid #e5e7eb;">
+            <a href="#" onclick="doLogout()" style="color:var(--red)">🚪 Sign Out</a>
+          </div>
+        </nav>
       </div>
-      <nav class="acct-nav">
-        <a href="#" class="on" onclick="showTab('dashboard',this)">ðŸ“Š Dashboard</a>
-        <a href="#" onclick="showTab('profile',this)">ðŸ‘¤ My Profile</a>
-        <a href="#" onclick="showTab('orders',this)">ðŸ›’ My Orders</a>
-        <a href="#" onclick="showTab('invoices',this)">ðŸ§¾ My Invoices</a>
-        <a href="#" onclick="showTab('loyalty',this)">â­ Loyalty & Rewards</a>
-        
-        <a href="#" class="sh-tab" onclick="showTab('certificates',this)" style="display:none; color:var(--red); font-weight:800; background:#fee2e2;">ðŸ“œ Share Certificates</a>
-        <a href="#" class="sh-tab" onclick="showTab('sh-rewards',this)" style="display:none; color:var(--red); font-weight:800; background:#fee2e2;">ðŸŽ Shareholder Rewards</a>
-        <a href="#" class="sh-tab" onclick="showTab('sh-purchases',this)" style="display:none; color:var(--red); font-weight:800; background:#fee2e2;">ðŸ›ï¸ Share Purchases</a>
 
-        <a href="#" onclick="showTab('address',this)">ðŸ“ My Address</a>
-        <a href="#" onclick="doLogout()" style="color:var(--red)">ðŸšª Sign Out</a>
-      </nav>
+      <!-- SHAREHOLDER CARD -->
+      <div class="acct-sb sh-tab" style="display:none; overflow:hidden;">
+        <div style="padding:14px 20px; font-size:12px; font-weight:800; color:#fff; text-transform:uppercase; background:var(--red); letter-spacing:0.5px;">Shareholder Details</div>
+        <nav class="acct-nav">
+          <a href="#" onclick="showTab('certificates',this)" style="color:var(--red); font-weight:800; background:#fee2e2; border-bottom:1px solid #fff;">📜 Certificates</a>
+          <a href="#" onclick="showTab('sh-rewards',this)" style="color:var(--red); font-weight:800; background:#fee2e2; border-bottom:1px solid #fff;">🎁 Rewards</a>
+          <a href="#" onclick="showTab('sh-purchases',this)" style="color:var(--red); font-weight:800; background:#fee2e2;">🛍️ Purchases</a>
+        </nav>
+      </div>
     </div>
 
     <!-- CONTENT -->
@@ -52,32 +61,32 @@
       <!-- DASHBOARD -->
       <div class="pg-tab on" id="tab-dashboard">
         <div class="sgrid">
-          <div class="sc"><div class="sc-n" id="stOrders">â€“</div><div class="sc-l">Orders</div></div>
-          <div class="sc"><div class="sc-n" id="stInvoices">â€“</div><div class="sc-l">Invoices</div></div>
-          <div class="sc"><div class="sc-n" id="stPoints">â€“</div><div class="sc-l">Loyalty Pts</div></div>
-          <div class="sc"><div class="sc-n" id="stCart">â€“</div><div class="sc-l">Cart Items</div></div>
+          <div class="sc"><div class="sc-n" id="stOrders">–</div><div class="sc-l">Orders</div></div>
+          <div class="sc"><div class="sc-n" id="stInvoices">–</div><div class="sc-l">Invoices</div></div>
+          <div class="sc"><div class="sc-n" id="stPoints">–</div><div class="sc-l">Loyalty Pts</div></div>
+          <div class="sc"><div class="sc-n" id="stCart">–</div><div class="sc-l">Cart Items</div></div>
         </div>
         <div class="fs">
-          <h3>ðŸ‘‹ Welcome back, <span id="dashName">â€“</span>!</h3>
+          <h3>👋 Welcome back, <span id="dashName">–</span>!</h3>
           <p style="font-size:13px;color:#6b7280;margin-bottom:16px">Manage your orders, invoices, loyalty rewards and account settings.</p>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <a href="shop.html" style="background:var(--red);color:#fff;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none">ðŸ›ï¸ Continue Shopping</a>
-            <button onclick="showTab('orders',null)" style="background:#f3f4f6;color:#374151;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;border:none;cursor:pointer">ðŸ“¦ My Orders</button>
+            <a href="shop.html" style="background:var(--red);color:#fff;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none">🛍️ Continue Shopping</a>
+            <button onclick="showTab('orders',null)" style="background:#f3f4f6;color:#374151;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;border:none;cursor:pointer">📦 My Orders</button>
           </div>
         </div>
         <div class="fs">
           <h3 style="margin-bottom:14px">Recent Orders</h3>
-          <div id="recentOrders"><div style="color:#9ca3af;font-size:13px;text-align:center;padding:20px">â³ Loading...</div></div>
+          <div id="recentOrders"><div style="color:#9ca3af;font-size:13px;text-align:center;padding:20px">⏳ Loading...</div></div>
         </div>
       </div>
 
       <!-- PROFILE -->
       <div class="pg-tab" id="tab-profile">
         <div class="fs">
-          <h3>ðŸ‘¤ My Profile</h3>
+          <h3>👤 My Profile</h3>
           <div class="fgrid">
             <div class="fg"><label class="fl">Full Name</label><input class="fi" id="pName"></div>
-            <div class="fg"><label class="fl">Arabic Name</label><input class="fi" id="pNameAr" placeholder="Ø§Ù„Ø§Ø³Ù… Ø¨Ø§Ù„Ø¹Ø±Ø¨ÙŠ"></div>
+            <div class="fg"><label class="fl">Arabic Name</label><input class="fi" id="pNameAr" placeholder="الاسم بالعربي"></div>
             <div class="fg"><label class="fl">Email</label><input class="fi" id="pEmail" type="email"></div>
             <div class="fg"><label class="fl">Phone</label><input class="fi" id="pPhone" type="tel"></div>
             <div class="fg"><label class="fl">Mobile</label><input class="fi" id="pMobile" type="tel"></div>
@@ -95,7 +104,7 @@
           </div>
         </div>
         <div class="fs" id="pwdSec" style="display:none">
-          <h3>ðŸ”‘ Change Password</h3>
+          <h3>🔑 Change Password</h3>
           <div class="fgrid" style="max-width:320px">
             <div class="fg full"><label class="fl">New Password</label><input class="fi" id="newPwd" type="password" placeholder="Min 6 characters"></div>
             <div class="fg full"><label class="fl">Confirm Password</label><input class="fi" id="confirmPwd" type="password" placeholder="Re-enter password"></div>
@@ -108,15 +117,15 @@
       <!-- ORDERS -->
       <div class="pg-tab" id="tab-orders">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-          <h2 style="font-size:17px;font-weight:800">ðŸ›’ My Orders</h2>
+          <h2 style="font-size:17px;font-weight:800">🛒 My Orders</h2>
           <a href="shop.html" style="background:var(--red);color:#fff;padding:8px 16px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">+ Shop More</a>
         </div>
-        <div id="ordersTable"><div style="text-align:center;padding:40px;color:#9ca3af">â³ Loading...</div></div>
+        <div id="ordersTable"><div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div></div>
         <!-- ORDER DETAIL DRAWER -->
         <div id="orderDetailEl" style="display:none;background:#fff;border:1.5px solid #e5e7eb;border-radius:16px;padding:22px;margin-top:14px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
             <h3 id="orderDetailTitle" style="font-size:15px;font-weight:800">Order Detail</h3>
-            <button onclick="document.getElementById('orderDetailEl').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280">âœ•</button>
+            <button onclick="document.getElementById('orderDetailEl').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280">✕</button>
           </div>
           <div id="orderDetailContent"></div>
         </div>
@@ -124,61 +133,67 @@
 
       <!-- INVOICES -->
       <div class="pg-tab" id="tab-invoices">
-        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">ðŸ§¾ My Invoices</h2>
-        <div id="invoicesTable"><div style="text-align:center;padding:40px;color:#9ca3af">â³ Loading...</div></div>
+        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">🧾 My Invoices</h2>
+        <div id="invoicesTable"><div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div></div>
       </div>
 
       <!-- LOYALTY -->
       <div class="pg-tab" id="tab-loyalty">
-        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">â­ Loyalty & Rewards</h2>
-        <div id="loyaltyContent"><div style="text-align:center;padding:40px;color:#9ca3af">â³ Loading...</div></div>
+        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">⭐ Loyalty & Rewards</h2>
+        <div id="loyaltyContent"><div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div></div>
       </div>
 
       <!-- SHAREHOLDER CERTIFICATES -->
       <div class="pg-tab" id="tab-certificates">
-        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">ðŸ“œ Share Certificates</h2>
-        <div id="certificatesContent"><div style="text-align:center;padding:40px;color:#9ca3af">â³ Loading...</div></div>
+        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">📜 Share Certificates</h2>
+        <div id="certificatesContent"><div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div></div>
       </div>
 
       <!-- SHAREHOLDER REWARDS -->
       <div class="pg-tab" id="tab-sh-rewards">
-        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">ðŸŽ Shareholder Rewards</h2>
-        <div id="shRewardsContent"><div style="text-align:center;padding:40px;color:#9ca3af">â³ Loading...</div></div>
+        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">🎁 Shareholder Rewards</h2>
+        <div id="shRewardsContent"><div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div></div>
       </div>
 
       <!-- SHAREHOLDER PURCHASES -->
       <div class="pg-tab" id="tab-sh-purchases">
-        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">ðŸ›ï¸ Shareholder Purchases</h2>
+        <h2 style="font-size:17px;font-weight:800;margin-bottom:16px">🛍️ Shareholder Purchases</h2>
         
         <div class="fs" style="margin-bottom:20px;background:#f9fafb;border:1px dashed #d1d5db;">
           <h3 style="font-size:14px;font-weight:800;margin-bottom:8px;">Link Past Order</h3>
           <p style="font-size:12px;color:#6b7280;margin-bottom:12px;">Enter an Order ID (e.g. S10245) to link it to your shareholder account.</p>
-          <div style="display:flex;gap:10px;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
             <input type="text" id="linkOrderId" class="fi" placeholder="Order ID or Name" style="max-width:250px;">
-            <button onclick="linkShareholderOrder()" class="sbtn" style="max-width:max-content;padding:0 20px;">Link Order</button>
+            <button id="shLinkBtn" onclick="linkShareholderOrder()" class="sbtn" style="max-width:max-content;padding:0 20px;">Link Order</button>
           </div>
           <div id="linkOrderMsg" style="font-size:12px;margin-top:8px;font-weight:600;"></div>
         </div>
 
-        <div id="shPurchasesContent"><div style="text-align:center;padding:40px;color:#9ca3af">â³ Loading...</div></div>
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+          <div style="display:flex;align-items:center;gap:6px;"><label style="font-size:12px;color:#6b7280;font-weight:700;">From</label><input type="date" id="shPurchasesFrom" class="fi" style="max-width:140px;padding:8px;font-size:12px;"></div>
+          <div style="display:flex;align-items:center;gap:6px;"><label style="font-size:12px;color:#6b7280;font-weight:700;">To</label><input type="date" id="shPurchasesTo" class="fi" style="max-width:140px;padding:8px;font-size:12px;"></div>
+          <button onclick="loadShareholderPurchases()" class="sbtn" style="padding:8px 16px;font-size:12px;max-width:max-content;">Filter</button>
+        </div>
+
+        <div id="shPurchasesContent"><div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div></div>
       </div>
 
       <!-- ADDRESS -->
       <!-- ADDRESS BOOK -->
       <div class="pg-tab" id="tab-address">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-          <h2 style="font-size:17px;font-weight:800">ðŸ“ Address Book</h2>
+          <h2 style="font-size:17px;font-weight:800">📍 Address Book</h2>
           <button onclick="if(window.promptAddressMethod) window.promptAddressMethod('acc'); else showNewAddressForm()" class="sbtn" style="padding:8px 16px;max-width:max-content;font-size:12px">+ Add New</button>
         </div>
         <div id="addressList" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-          <div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">â³ Loading addresses...</div>
+          <div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">⏳ Loading addresses...</div>
         </div>
         
         <!-- NEW ADDRESS FORM -->
         <div id="newAddressFormSec" class="fs" style="display:none;margin-top:20px;border-top:1.5px solid #e5e7eb;padding-top:20px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <h3>ðŸ  Add New Address</h3>
-            <button onclick="document.getElementById('newAddressFormSec').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer">Ã—</button>
+            <h3>🏠 Add New Address</h3>
+            <button onclick="document.getElementById('newAddressFormSec').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer">×</button>
           </div>
           <div class="fgrid">
             <div class="fg"><label class="fl">Name *</label><input class="fi" id="aName" placeholder="e.g. Home, Office"></div>
@@ -201,7 +216,7 @@
           </div>
           <div id="addrMsg" style="margin-top:8px;font-size:12px;font-weight:600"></div>
           <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-            <button onclick="saveNewAddress()" class="sbtn" style="max-width:220px">ðŸ’¾ Save Address</button>
+            <button onclick="saveNewAddress()" class="sbtn" style="max-width:220px">💾 Save Address</button>
           </div>
         </div>
       </div>
@@ -278,7 +293,7 @@ async function loadDashboard(){
         +'<span style="font-weight:800;color:var(--red-d)">AED '+parseFloat(o.amount_total||0).toFixed(2)+'</span>'
         +'<button onclick="showTab(\'orders\',null);viewOrderDetail('+o.id+')" style="background:var(--red);color:#fff;border:none;padding:5px 11px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer">Details</button>'
         +'</div></div></div>';
-    }).join('') : '<div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px">No orders yet. <a href="shop.html" style="color:var(--red);font-weight:700">Start shopping â†’</a></div>';
+    }).join('') : '<div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px">No orders yet. <a href="shop.html" style="color:var(--red);font-weight:700">Start shopping →</a></div>';
   }catch(e){ document.getElementById('recentOrders').innerHTML='<div style="color:var(--red);font-size:13px">Could not load orders</div>'; }
 }
 
@@ -308,10 +323,10 @@ async function saveProfile(){
   var mobile = document.getElementById('pMobile').value.trim();
   var rx = /^(?:\+971|00971|0)?(?:5[0124568]|[234679])\d{7}$/;
   if(phone && !rx.test(phone.replace(/\s+/g,''))) {
-    msg.className='alert alert-err'; msg.textContent='âŒ Please enter a valid UAE phone number'; msg.style.display='flex'; return;
+    msg.className='alert alert-err'; msg.textContent='❌ Please enter a valid UAE phone number'; msg.style.display='flex'; return;
   }
   if(mobile && !rx.test(mobile.replace(/\s+/g,''))) {
-    msg.className='alert alert-err'; msg.textContent='âŒ Please enter a valid UAE mobile number'; msg.style.display='flex'; return;
+    msg.className='alert alert-err'; msg.textContent='❌ Please enter a valid UAE mobile number'; msg.style.display='flex'; return;
   }
   try{
     await API.updContact(pid, {
@@ -329,9 +344,9 @@ async function saveProfile(){
     document.querySelectorAll('.u-name').forEach(function(e){ e.textContent=nm.split(' ')[0]; });
     document.getElementById('acctName').textContent = nm;
     var sess=API.sess(); if(sess){ sess.name=nm; API.saveSess(sess); }
-    msg.className='alert alert-ok'; msg.textContent='âœ… Profile saved!'; msg.style.display='flex';
+    msg.className='alert alert-ok'; msg.textContent='✅ Profile saved!'; msg.style.display='flex';
     setTimeout(function(){ msg.style.display='none'; }, 3000);
-  }catch(e){ msg.className='alert alert-err'; msg.textContent='âŒ '+e.message; msg.style.display='flex'; }
+  }catch(e){ msg.className='alert alert-err'; msg.textContent='❌ '+e.message; msg.style.display='flex'; }
 }
 
 async function changePwd(){
@@ -342,13 +357,13 @@ async function changePwd(){
   if(pw !== cpw){ msg.textContent='Passwords do not match'; msg.style.color='var(--red)'; return; }
   try{ 
     await API.updatePassword(API.myUserId(), pw); 
-    msg.textContent='âœ… Password updated!'; 
+    msg.textContent='✅ Password updated!'; 
     msg.style.color='#065f46'; 
     document.getElementById('newPwd').value=''; 
     document.getElementById('confirmPwd').value=''; 
     setTimeout(() => { document.getElementById('pwdSec').style.display='none'; msg.textContent=''; }, 2500);
   }
-  catch(e){ msg.textContent='âŒ '+e.message; msg.style.color='var(--red)'; }
+  catch(e){ msg.textContent='❌ '+e.message; msg.style.color='var(--red)'; }
 }
 
 var ordersOffset = 0;
@@ -359,22 +374,34 @@ async function loadOrders(isLoadMore = false){
   if(!isLoadMore) {
     ordersOffset = 0;
     ordersCache = [];
-    el.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af">â³ Loading...</div>';
+    el.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div>';
   } else {
     var lb = document.getElementById('ordersLoadBtn');
-    if(lb) lb.textContent = 'â³ Loading...';
+    if(lb) lb.textContent = '⏳ Loading...';
   }
   try{
+    var pid = API.myPid();
     var r = await API.myOrders({limit: ordersLimit, offset: ordersOffset});
     var orders = r.data||[];
+    
+    var statusMap = {};
+    if (pid) {
+      try {
+        var statusRes = await API.getCustomerOrdersStatus(pid, ordersLimit, ordersOffset);
+        if (statusRes && statusRes.data && statusRes.data.results) {
+          statusRes.data.results.forEach(s => { statusMap[s.sale_order_id] = s.customer_delivery_label || s.customer_delivery_status; });
+        }
+      } catch(e){}
+    }
+    
     ordersCache = ordersCache.concat(orders);
     if(!ordersCache.length){
-      el.innerHTML='<div style="text-align:center;padding:52px 20px"><div style="font-size:52px;margin-bottom:14px">ðŸ“¦</div><h3 style="font-weight:800;color:#374151">No orders yet</h3><a href="shop.html" style="color:var(--red);font-weight:700;text-decoration:none;font-size:13px">Start shopping â†’</a></div>';
+      el.innerHTML='<div style="text-align:center;padding:52px 20px"><div style="font-size:52px;margin-bottom:14px">📦</div><h3 style="font-weight:800;color:#374151">No orders yet</h3><a href="shop.html" style="color:var(--red);font-weight:700;text-decoration:none;font-size:13px">Start shopping →</a></div>';
       return;
     }
     var html = orders.map(function(o){
-      var state = Array.isArray(o.state)?o.state[1]:o.state||'Draft';
       var stateKey = Array.isArray(o.state)?o.state[0]:o.state||'draft';
+      var state = statusMap[o.id] || (Array.isArray(o.state)?o.state[1]:o.state||'Draft');
       var cls = stateKey==='sale'||stateKey==='done'?'os-ok':stateKey==='cancel'?'os-cancel':'os-draft';
       var hasInvoice = Array.isArray(o.invoice_ids)?o.invoice_ids.length>0:!!o.invoice_ids;
       var hasDelivery = Array.isArray(o.picking_ids)?o.picking_ids.length>0:!!o.picking_ids;
@@ -398,10 +425,10 @@ async function loadOrders(isLoadMore = false){
         +'<div style="font-size:17px;font-weight:900;color:var(--red-d)">AED '+totalVal.toFixed(2)+'</div>'
         +'</div></div>'
         +'<div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap;align-items:center">'
-        +'<button onclick="viewOrderDetail('+o.id+')" style="background:var(--red);color:#fff;border:none;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer">ðŸ“‹ View Details</button>'
-        +'<a href="track-order.html?oid='+o.id+'" style="background:#f3f4f6;color:#374151;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;text-decoration:none">ðŸ“ Track</a>'
-        +(hasInvoice?'<button onclick="loadOrderInvoice('+o.id+')" style="background:#f0fdf4;color:#065f46;border:1px solid #6ee7b7;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer">ðŸ§¾ Invoice</button>':'')
-        +(hasDelivery?'<span style="font-size:10px;background:#e0e7ff;color:#3730a3;padding:3px 8px;border-radius:6px;font-weight:700">ðŸšš Shipped</span>':'')
+        +'<button onclick="viewOrderDetail('+o.id+')" style="background:var(--red);color:#fff;border:none;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer">📋 View Details</button>'
+        +'<a href="track-order.html?oid='+o.id+'" style="background:#f3f4f6;color:#374151;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;text-decoration:none">📍 Track</a>'
+        +(hasInvoice?'<button onclick="loadOrderInvoice('+o.id+')" style="background:#f0fdf4;color:#065f46;border:1px solid #6ee7b7;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer">🧾 Invoice</button>':'')
+        +(hasDelivery?'<span style="font-size:10px;background:#e0e7ff;color:#3730a3;padding:3px 8px;border-radius:6px;font-weight:700">🚚 Shipped</span>':'')
         +'</div></div>';
     }).join('');
     
@@ -417,7 +444,7 @@ async function loadOrders(isLoadMore = false){
       el.innerHTML += '<div id="ordersLoadWrapper" style="text-align:center;padding:10px;"><button id="ordersLoadBtn" onclick="loadOrders(true)" style="background:#fff;border:1px solid var(--red);color:var(--red);padding:8px 16px;border-radius:50px;font-weight:700;cursor:pointer">Load More</button></div>';
     }
   }catch(e){
-    if(!isLoadMore) el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">âŒ '+e.message+'</div>';
+    if(!isLoadMore) el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">❌ '+e.message+'</div>';
     else { var lb = document.getElementById('ordersLoadBtn'); if(lb) lb.textContent = 'Failed'; }
   }
 }
@@ -427,7 +454,7 @@ async function viewOrderDetail(oid){
   var cont = document.getElementById('orderDetailContent');
   el.style.display='block';
   el.scrollIntoView({behavior:'smooth',block:'start'});
-  cont.innerHTML='<div style="text-align:center;padding:20px;color:#9ca3af">â³ Loading order #'+oid+'...</div>';
+  cont.innerHTML='<div style="text-align:center;padding:20px;color:#9ca3af">⏳ Loading order #'+oid+'...</div>';
   try{
     var r = await API.getOrder(oid);
     var o = Array.isArray(r.data)?r.data[0]:r.data;
@@ -460,15 +487,15 @@ async function viewOrderDetail(oid){
       +'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Status</div><span class="os '+(stateKey==='sale'||stateKey==='done'?'os-ok':stateKey==='cancel'?'os-cancel':'os-draft')+'">'+state+'</span></div>'
       +'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Date</div><div style="font-size:12px">'+(o.date_order||'').slice(0,16)+'</div></div>'
       +'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Total</div><div style="font-weight:900;color:var(--red-d);font-size:16px">AED '+amtTotal.toFixed(2)+'</div></div>'
-      +(carrier?'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Delivery Method</div><div style="font-size:12px">ðŸšš '+carrier+'</div></div>':'')
+      +(carrier?'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Delivery Method</div><div style="font-size:12px">🚚 '+carrier+'</div></div>':'')
       +(partner?'<div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:3px">Customer</div><div style="font-size:12px">'+partner+'</div></div>':'')
       +'</div>'
-      +(o.note?'<div style="font-size:11px;color:#6b7280;margin-bottom:12px;padding:10px;background:#f9fafb;border-radius:8px;line-height:1.5"><strong>ðŸ“ Delivery Note:</strong><br>'+o.note+'</div>':'')
+      +(o.note?'<div style="font-size:11px;color:#6b7280;margin-bottom:12px;padding:10px;background:#f9fafb;border-radius:8px;line-height:1.5"><strong>📝 Delivery Note:</strong><br>'+o.note+'</div>':'')
       +(pricing.regularLines.length?'<div style="border-top:1.5px solid #f3f4f6;padding-top:12px;margin-bottom:12px">'
         +'<div style="font-size:12px;font-weight:800;margin-bottom:8px">Order Items ('+pricing.regularLines.length+')</div>'
         +pricing.regularLines.map(function(l){
-          var pnm=(Array.isArray(l.product_id)?l.product_id[1]:l.name||l.display_name||'â€“');
-          if(typeof pnm==='object'&&pnm) pnm = pnm.name || pnm.display_name || 'â€“';
+          var pnm=(Array.isArray(l.product_id)?l.product_id[1]:l.name||l.display_name||'–');
+          if(typeof pnm==='object'&&pnm) pnm = pnm.name || pnm.display_name || '–';
           pnm = (pnm||'').replace(/^\[.*?\]\s*/,'').trim();
           var qty = parseFloat(l.product_uom_qty || l.qty || 1);
           var unit = parseFloat(l.price_unit || 0);
@@ -476,7 +503,7 @@ async function viewOrderDetail(oid){
           if(!sub) sub = qty * unit;
           return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f9fafb;gap:8px">'
             +'<div style="flex:1"><div style="font-size:12px;font-weight:700">'+pnm+'</div>'
-            +'<div style="font-size:10px;color:#9ca3af">Qty: '+qty+' Ã— AED '+unit.toFixed(2)+'</div></div>'
+            +'<div style="font-size:10px;color:#9ca3af">Qty: '+qty+' × AED '+unit.toFixed(2)+'</div></div>'
             +'<div style="font-weight:700;color:var(--red-d);font-size:13px">AED '+sub.toFixed(2)+'</div>'
             +'</div>';}).join('')
         +'<div style="margin-top:10px;padding-top:10px;border-top:1.5px solid #e5e7eb;font-size:12px">'
@@ -491,13 +518,13 @@ async function viewOrderDetail(oid){
       +'<div id="ord-invoice-'+oid+'" style="margin-top:8px"></div>'
       +'<div id="ord-deliv-'+oid+'" style="margin-top:8px"></div>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'
-      +'<a href="track-order.html?oid='+oid+'" style="background:#f3f4f6;color:#374151;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;text-decoration:none">ðŸ“ Track Delivery</a>'
+      +'<a href="track-order.html?oid='+oid+'" style="background:#f3f4f6;color:#374151;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;text-decoration:none">📍 Track Delivery</a>'
       +'</div>';
     cont.innerHTML = summaryHtml;
 
     var invEl = document.getElementById('ord-invoice-'+oid);
     if(invoiceIds.length){
-      invEl.innerHTML='<div style="background:#fffbea;border:1px solid #f5c518;border-radius:10px;padding:12px"><div style="font-size:12px;font-weight:800;margin-bottom:8px">ðŸ§¾ Invoice ('+invoiceIds.length+')</div><div style="font-size:11px;color:#9ca3af">Loading invoice details...</div></div>';
+      invEl.innerHTML='<div style="background:#fffbea;border:1px solid #f5c518;border-radius:10px;padding:12px"><div style="font-size:12px;font-weight:800;margin-bottom:8px">🧾 Invoice ('+invoiceIds.length+')</div><div style="font-size:11px;color:#9ca3af">Loading invoice details...</div></div>';
       try{
         var invHtml='';
         for(var i=0;i<invoiceIds.length;i++){
@@ -513,21 +540,21 @@ async function viewOrderDetail(oid){
             invHtml += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;flex-wrap:wrap">'
               +'<div><div style="font-size:13px;font-weight:800">'+(inv.name||'Invoice #'+inv.id)+'</div>'
               +'<div style="font-size:10px;color:#6b7280">Invoice ID: <strong>'+inv.id+'</strong></div>'
-              +'<div style="font-size:10px;color:#6b7280">Date: '+(inv.invoice_date||inv.date||'').slice(0,10)+(inv.invoice_date_due?' Â· Due: '+(inv.invoice_date_due||'').slice(0,10):'')+'</div>'
+              +'<div style="font-size:10px;color:#6b7280">Date: '+(inv.invoice_date||inv.date||'').slice(0,10)+(inv.invoice_date_due?' · Due: '+(inv.invoice_date_due||'').slice(0,10):'')+'</div>'
               +'</div>'
               +'<div style="text-align:right">'
               +'<span class="os '+(istate.toLowerCase().includes('post')?'os-ok':istate.toLowerCase().includes('cancel')?'os-cancel':'os-draft')+'" style="display:block;margin-bottom:4px">'+istate+'</span>'
               +'<div style="font-weight:800;color:var(--red-d);font-size:13px">AED '+invTotal.toFixed(2)+'</div>'
               +(inv.amount_residual&&parseFloat(inv.amount_residual)>0?'<div style="font-size:10px;color:#9ca3af">Due: AED '+parseFloat(inv.amount_residual).toFixed(2)+'</div>':'')
               +'</div>'
-              +(pdfUrl?'<div style="width:100%;margin-top:6px"><a href="'+pdfUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:var(--red);color:#fff;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;text-decoration:none">ðŸ“„ Get Invoice PDF</a></div>':'<div style="width:100%;margin-top:6px;font-size:10px;color:#9ca3af">PDF available once invoice is posted</div>')
+              +(pdfUrl?'<div style="width:100%;margin-top:6px"><a href="'+pdfUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:var(--red);color:#fff;padding:7px 14px;border-radius:8px;font-weight:700;font-size:11px;text-decoration:none">📄 Get Invoice PDF</a></div>':'<div style="width:100%;margin-top:6px;font-size:10px;color:#9ca3af">PDF available once invoice is posted</div>')
               +'</div>';
           }catch(_){
-            invHtml += '<div style="padding:6px 0;font-size:11px;color:#9ca3af">Invoice #'+iid+' â€” could not load details</div>';
+            invHtml += '<div style="padding:6px 0;font-size:11px;color:#9ca3af">Invoice #'+iid+' — could not load details</div>';
           }
         }
         invEl.innerHTML = '<div style="background:#fffbea;border:1px solid #f5c518;border-radius:10px;padding:12px">'
-          +'<div style="font-size:12px;font-weight:800;margin-bottom:8px">ðŸ§¾ Invoice'+(invoiceIds.length>1?'s':'')+' ('+invoiceIds.length+')</div>'
+          +'<div style="font-size:12px;font-weight:800;margin-bottom:8px">🧾 Invoice'+(invoiceIds.length>1?'s':'')+' ('+invoiceIds.length+')</div>'
           + (invHtml||'<div style="font-size:11px;color:#9ca3af">No invoice details</div>')
           +'</div>';
       }catch(e){
@@ -537,7 +564,7 @@ async function viewOrderDetail(oid){
 
     var delEl = document.getElementById('ord-deliv-'+oid);
     if(pickingIds.length){
-      delEl.innerHTML='<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:10px;padding:12px"><div style="font-size:12px;font-weight:800;margin-bottom:8px">ðŸšš Delivery</div><div style="font-size:11px;color:#9ca3af">Loading delivery details...</div></div>';
+      delEl.innerHTML='<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:10px;padding:12px"><div style="font-size:12px;font-weight:800;margin-bottom:8px">🚚 Delivery</div><div style="font-size:11px;color:#9ca3af">Loading delivery details...</div></div>';
       try{
         var delHtml='';
         for(var j=0;j<pickingIds.length;j++){
@@ -564,22 +591,22 @@ async function viewOrderDetail(oid){
               +(del.scheduled_date?'<div style="font-size:11px;color:#6b7280">Scheduled: '+(del.scheduled_date||'').slice(0,16)+'</div>':'')
               +(del.date_done?'<div style="font-size:11px;color:#6b7280">Delivered: '+(del.date_done||'').slice(0,16)+'</div>':'')
               +(del.origin?'<div style="font-size:11px;color:#6b7280">Source: '+del.origin+'</div>':'')
-              +(mapUrl?'<a href="'+mapUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:6px;background:#fff;border:1px solid #93c5fd;color:#1e40af;padding:5px 10px;border-radius:6px;font-weight:700;font-size:10px;text-decoration:none;margin-right:6px">ðŸ“ Map Directions</a>':'')
-              +(trackUrl?'<a href="'+trackUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:6px;background:#1e40af;border:1px solid #1e40af;color:#fff;padding:5px 10px;border-radius:6px;font-weight:700;font-size:10px;text-decoration:none">ðŸšš Track Shipment</a>':'')
+              +(mapUrl?'<a href="'+mapUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:6px;background:#fff;border:1px solid #93c5fd;color:#1e40af;padding:5px 10px;border-radius:6px;font-weight:700;font-size:10px;text-decoration:none;margin-right:6px">📍 Map Directions</a>':'')
+              +(trackUrl?'<a href="'+trackUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:6px;background:#1e40af;border:1px solid #1e40af;color:#fff;padding:5px 10px;border-radius:6px;font-weight:700;font-size:10px;text-decoration:none">🚚 Track Shipment</a>':'')
               +'</div>';
           }catch(_){
-            delHtml += '<div style="padding:6px 0;font-size:11px;color:#9ca3af">Picking #'+pid2+' â€” could not load</div>';
+            delHtml += '<div style="padding:6px 0;font-size:11px;color:#9ca3af">Picking #'+pid2+' — could not load</div>';
           }
         }
         delEl.innerHTML = '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:10px;padding:12px">'
-          +'<div style="font-size:12px;font-weight:800;margin-bottom:8px">ðŸšš Delivery'+(pickingIds.length>1?' Shipments':'')+' ('+pickingIds.length+')</div>'
+          +'<div style="font-size:12px;font-weight:800;margin-bottom:8px">🚚 Delivery'+(pickingIds.length>1?' Shipments':'')+' ('+pickingIds.length+')</div>'
           + (delHtml||'<div style="font-size:11px;color:#9ca3af">No delivery details</div>')
           +'</div>';
       }catch(e){
         delEl.innerHTML='<div style="font-size:11px;color:var(--red)">Delivery load failed: '+e.message+'</div>';
       }
     }
-  }catch(e){ cont.innerHTML='<div style="color:var(--red);font-size:13px">âŒ '+e.message+'</div>'; }
+  }catch(e){ cont.innerHTML='<div style="color:var(--red);font-size:13px">❌ '+e.message+'</div>'; }
 }
 
 async function loadOrderInvoice(oid){
@@ -594,8 +621,8 @@ async function loadOrderInvoice(oid){
     if(!inv){ toast('Invoice details unavailable','warn'); return; }
     var pdfUrl = inv.access_token?API.invPdfUrl(inv.id, inv.access_token):(inv.access_url?API.PX+inv.access_url:'');
     if(pdfUrl){ window.open(pdfUrl, '_blank'); }
-    else{ toast('Invoice PDF not available yet â€” invoice must be posted','warn'); }
-  }catch(e){ toast('âŒ '+e.message,'err'); }
+    else{ toast('Invoice PDF not available yet — invoice must be posted','warn'); }
+  }catch(e){ toast('❌ '+e.message,'err'); }
 }
 
 var invoicesOffset = 0;
@@ -606,17 +633,17 @@ async function loadInvoices(isLoadMore = false){
   if(!isLoadMore) {
     invoicesOffset = 0;
     invoicesCache = [];
-    el.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af">â³ Loading...</div>';
+    el.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div>';
   } else {
     var lb = document.getElementById('invoicesLoadBtn');
-    if(lb) lb.textContent = 'â³ Loading...';
+    if(lb) lb.textContent = '⏳ Loading...';
   }
   try{
     var r = await API.myInvoices({limit: invoicesLimit, offset: invoicesOffset});
     var invoices = r.data||[];
     invoicesCache = invoicesCache.concat(invoices);
     if(!invoicesCache.length){
-      el.innerHTML='<div style="text-align:center;padding:52px 20px"><div style="font-size:52px;margin-bottom:14px">ðŸ§¾</div><h3 style="font-weight:800;color:#374151">No invoices yet</h3></div>';
+      el.innerHTML='<div style="text-align:center;padding:52px 20px"><div style="font-size:52px;margin-bottom:14px">🧾</div><h3 style="font-weight:800;color:#374151">No invoices yet</h3></div>';
       return;
     }
     var html = invoices.map(function(inv){
@@ -642,7 +669,7 @@ async function loadInvoices(isLoadMore = false){
         +'<div style="font-size:17px;font-weight:900;color:var(--red-d)">AED '+invTotal.toFixed(2)+'</div>'
         +(inv.amount_residual&&parseFloat(inv.amount_residual)>0?'<div style="font-size:11px;color:#9ca3af">Due: AED '+parseFloat(inv.amount_residual).toFixed(2)+'</div>':'')
         +'</div></div>'
-        +(pdfUrl?'<div style="margin-top:12px"><a href="'+pdfUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;padding:9px 18px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">ðŸ“„ Download PDF Invoice</a></div>':'<div style="margin-top:10px;font-size:11px;color:#9ca3af">PDF will be available once invoice is confirmed</div>')
+        +(pdfUrl?'<div style="margin-top:12px"><a href="'+pdfUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;padding:9px 18px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">📄 Download PDF Invoice</a></div>':'<div style="margin-top:10px;font-size:11px;color:#9ca3af">PDF will be available once invoice is confirmed</div>')
         +'</div>';
     }).join('');
     
@@ -658,14 +685,14 @@ async function loadInvoices(isLoadMore = false){
       el.innerHTML += '<div id="invoicesLoadWrapper" style="text-align:center;padding:10px;"><button id="invoicesLoadBtn" onclick="loadInvoices(true)" style="background:#fff;border:1px solid var(--red);color:var(--red);padding:8px 16px;border-radius:50px;font-weight:700;cursor:pointer">Load More</button></div>';
     }
   }catch(e){
-    if(!isLoadMore) el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">âŒ '+e.message+'</div>';
+    if(!isLoadMore) el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">❌ '+e.message+'</div>';
     else { var lb = document.getElementById('invoicesLoadBtn'); if(lb) lb.textContent = 'Failed'; }
   }
 }
 
 async function loadLoyalty(){
   var el = document.getElementById('loyaltyContent');
-  el.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af">â³ Loading...</div>';
+  el.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading...</div>';
   try{
     var bal = await API.getLoyaltyBalance();
     var coupons = bal.coupons||[];
@@ -681,7 +708,7 @@ async function loadLoyalty(){
     }
 
     if(coupons.length){
-      html+='<div style="font-size:14px;font-weight:800;margin:16px 0 10px">ðŸŽ Your Loyalty Coupons</div>';
+      html+='<div style="font-size:14px;font-weight:800;margin:16px 0 10px">🎁 Your Loyalty Coupons</div>';
       for(var i=0;i<coupons.length;i++){
         var c = coupons[i];
         var progName = c.program_id&&c.program_id.length?c.program_id[0].name:'Loyalty Program';
@@ -695,8 +722,8 @@ async function loadLoyalty(){
               var desc = rw.description||'Loyalty reward';
               var disc = parseFloat(rw.discount||0);
               var mode = Array.isArray(rw.discount_mode)?rw.discount_mode[0]:rw.discount_mode;
-              if(disc>0 && mode==='per_point') rewardLabel = desc+' â€” '+disc+' AED per point redeemed';
-              else if(disc>0) rewardLabel = desc+' â€” discount available';
+              if(disc>0 && mode==='per_point') rewardLabel = desc+' — '+disc+' AED per point redeemed';
+              else if(disc>0) rewardLabel = desc+' — discount available';
               else rewardLabel = desc;
             }
           }catch(_){}
@@ -713,45 +740,86 @@ async function loadLoyalty(){
           +'</div>'
           +'<span style="background:var(--red-l);color:var(--red);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:800;flex-shrink:0">ACTIVE</span>'
           +'</div>'
-          +(code?'<a href="javascript:void(0)" onclick="if(Cart.count()===0){ toast(\'Your cart is empty\', \'warn\'); return; } location.href=\'checkout.html?coupon='+encodeURIComponent(code)+'\';" style="display:inline-block;margin-top:10px;background:var(--red);color:#fff;padding:8px 16px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">Use at Checkout â†’</a>':'')
-          +'</div>';
+          +(code?'<a href="javascript:void(0)" onclick="if(Cart.count()===0){ toast(\'Your cart is empty\', \'warn\'); return; } location.href=\'checkout.html?coupon='+encodeURIComponent(code)+'\';" style="display:inline-block;margin-top:10px;background:var(--red);color:#fff;padding:8px 16px;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none">Use at Checkout →</a>':'')
+              +'</div>';
       }
     }
 
     if(!cards.length&&!coupons.length){
-      html='<div style="text-align:center;padding:52px 20px"><div style="font-size:52px;margin-bottom:14px">â­</div><h3 style="font-weight:800;color:#374151;margin-bottom:8px">No rewards yet</h3><p style="font-size:13px;color:#9ca3af;margin-bottom:16px">Shop more to earn loyalty points and unlock rewards!</p><a href="shop.html" style="color:var(--red);font-weight:700;text-decoration:none;font-size:13px">Shop Now â†’</a></div>';
+      html='<div style="text-align:center;padding:52px 20px"><div style="font-size:52px;margin-bottom:14px">⭐</div><h3 style="font-weight:800;color:#374151;margin-bottom:8px">No rewards yet</h3><p style="font-size:13px;color:#9ca3af;margin-bottom:16px">Shop more to earn loyalty points and unlock rewards!</p><a href="shop.html" style="color:var(--red);font-weight:700;text-decoration:none;font-size:13px">Shop Now →</a></div>';
+    }
+    el.innerHTML = html;
+  }catch(e){ el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">❌ '+e.message+'</div>'; }
+}
+
+async function downloadCertificate(shNum, lang) {
+  try {
+    toast('Generating certificate...', 'info');
+    var sessionToken = localStorage.getItem('cd_session') || localStorage.getItem('session_id') || '';
+    
+    // Step 1: Generate Certificate
+    var genUrl = API.PX + '/api/shareholder/generate_certificate';
+    var genHeaders = { 'Content-Type': 'application/json' };
+    if (sessionToken) genHeaders['X-Session-Token'] = sessionToken;
+    try {
+      await fetch(genUrl, {
+        method: 'POST',
+        headers: genHeaders,
+        body: JSON.stringify({ shareholder_number: shNum, language: lang })
+      });
+    } catch(err) {
+      console.warn('Generate certificate warning:', err);
+    }
+
+    toast('Downloading certificate...', 'info');
+    var url = API.PX + '/api/shareholder/certificate/download?shareholder_number=' + encodeURIComponent(shNum) + '&lang=' + lang;
+    var headers = {};
+    if (sessionToken) headers['X-Session-Token'] = sessionToken;
+    var res = await fetch(url, { headers: headers });
+    if (!res.ok) {
+      var errTxt = await res.text();
+      throw new Error('HTTP ' + res.status + ': ' + errTxt.substring(0, 50));
+    }
+    var blob = new Blob([await res.arrayBuffer()], { type: 'application/pdf' });
+    var objUrl = window.URL.createObjectURL(blob);
+    window.open(objUrl, '_blank');
+    setTimeout(() => window.URL.revokeObjectURL(objUrl), 5000);
+  } catch(e) {
+    alert('Download Error: ' + e.message);
+    toast('Error: ' + e.message, 'error');
   }
 }
 
-// --- SHAREHOLDER FUNCTIONS ---
 async function loadShareholderCertificates() {
   var c = document.getElementById('certificatesContent');
   c.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading Certificates...</div>';
   try {
     var shNum = localStorage.getItem('cd_shareholder_number');
+    if (!shNum) throw new Error('Shareholder number not found in session');
     var r = await API.getShareholderCertificates(shNum);
-    var data = r.certificates || (r.result && r.result.certificates) || r.data || r.result || [];
+    var data = r?.certificates || r?.result?.certificates || r?.data || r?.result || [];
     if(!Array.isArray(data)) data = [data];
     if(!data.length || (data.length === 1 && !data[0].share_id && !data[0].id)){ c.innerHTML='<div style="padding:40px;text-align:center;color:#6b7280">No certificates found.</div>'; return; }
     
     var html = data.map(function(cert){
+      if(!cert) return '';
       var certNum = cert.certificate_number || cert.reference || cert.name || cert.id || 'N/A';
       var shares = cert.number_of_shares || cert.num_shares || 0;
       var val = cert.total_value || cert.total_share_value || 0;
       
       var btns = '';
-      if(cert.download_url_eic26_en) btns += '<a href="'+cert.download_url_eic26_en+'" target="_blank" class="sbtn" style="padding:6px 12px;font-size:11px;min-width:auto;">EN PDF</a>';
-      if(cert.download_url_eic26_ar) btns += '<a href="'+cert.download_url_eic26_ar+'" target="_blank" class="sbtn" style="padding:6px 12px;font-size:11px;min-width:auto;background:#374151;">AR PDF</a>';
+      btns += '<a href="javascript:void(0)" onclick="downloadCertificate(\''+shNum+'\', \'en\')" class="sbtn" style="padding:6px 12px;font-size:11px;min-width:auto;">EN PDF</a>';
+      btns += '<a href="javascript:void(0)" onclick="downloadCertificate(\''+shNum+'\', \'ar\')" class="sbtn" style="padding:6px 12px;font-size:11px;min-width:auto;background:#374151;">AR PDF</a>';
       
       return '<div class="fs" style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">'
         + '<div><div style="font-weight:800;font-size:14px;">Certificate #'+certNum+'</div>'
-        + '<div style="font-size:12px;color:#6b7280;">Shares: '+parseFloat(shares).toLocaleString()+' | Value: AED '+parseFloat(val).toLocaleString()+'</div></div>'
-        + '<div style="display:flex;gap:6px;">'+btns+'</div>'
+        + '<div style="font-size:12px;color:#6b7280;margin-top:2px;">Shares: '+parseFloat(shares).toLocaleString()+' | Value: AED '+parseFloat(val).toLocaleString()+'</div></div>'
+        + (btns ? '<div style="display:flex;gap:6px;">'+btns+'</div>' : '')
         + '</div>';
     }).join('');
     c.innerHTML = html;
   } catch(e) {
-    c.innerHTML = '<div style="padding:20px;color:var(--red);">❌ '+e.message+'</div>';
+    c.innerHTML = '<div style="padding:20px;color:var(--red);">❌ '+(e.message || 'Failed to load certificates')+'</div>';
   }
 }
 
@@ -760,20 +828,41 @@ async function loadShareholderRewards() {
   c.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading Rewards...</div>';
   try {
     var shNum = localStorage.getItem('cd_shareholder_number');
+    if (!shNum) throw new Error('Shareholder number not found in session');
     var r = await API.getShareholderRewards(shNum);
-    var data = r.rewards || (r.result && r.result.rewards) || r.data || r.result || [];
+    var data = r?.rewards || r?.result?.rewards || r?.data || r?.result || [];
     if(!Array.isArray(data)) data = [data];
-    if(!data.length || (data.length === 1 && !data[0].id && !data[0].name)){ c.innerHTML='<div style="padding:40px;text-align:center;color:#6b7280">No rewards found.</div>'; return; }
+    
+    var totalPts = r?.total_points ?? r?.balance ?? r?.result?.total_points ?? null;
+    var totalBalanceHtml = '';
+    if (totalPts !== null) {
+      totalBalanceHtml = '<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:12px;padding:16px;margin-bottom:16px;text-align:center;">'
+        + '<div style="font-size:12px;color:#b91c1c;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Total Reward Balance</div>'
+        + '<div style="font-size:28px;font-weight:900;color:var(--red);">' + parseFloat(totalPts).toLocaleString() + '</div>'
+        + '</div>';
+    }
+
+    if(!data.length || (data.length === 1 && !data[0].id && !data[0].name)){ 
+      c.innerHTML = totalBalanceHtml + '<div style="padding:40px;text-align:center;color:#6b7280">No rewards found.</div>'; 
+      return; 
+    }
     
     var html = data.map(function(rew){
-      return '<div class="fs" style="margin-bottom:12px;">'
-        + '<div style="font-weight:800;font-size:14px;color:var(--red);">'+(rew.name||'Dividend/Reward')+'</div>'
-        + '<div style="font-size:12px;color:#6b7280;margin-top:4px;">Amount: AED '+parseFloat(rew.amount||0).toLocaleString()+' | Date: '+(rew.date||'N/A')+'</div>'
+      if(!rew) return '';
+      var name = rew?.name || 'Dividend/Reward';
+      var amt = parseFloat(rew?.amount ?? 0);
+      var points = rew?.points ?? null;
+      var date = rew?.date ? String(rew.date).slice(0,10) : 'N/A';
+      return '<div class="fs" style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">'
+        + '<div><div style="font-weight:800;font-size:14px;color:var(--red);">'+name+'</div>'
+        + '<div style="font-size:12px;color:#6b7280;margin-top:2px;">Date: '+date+(points !== null ? ' | Points: '+parseFloat(points).toLocaleString() : '')+'</div></div>'
+        + '<div style="font-weight:900;color:var(--gray-900);">AED '+amt.toLocaleString()+'</div>'
         + '</div>';
     }).join('');
-    c.innerHTML = html;
+    
+    c.innerHTML = totalBalanceHtml + html;
   } catch(e) {
-    c.innerHTML = '<div style="padding:20px;color:var(--red);">❌ '+e.message+'</div>';
+    c.innerHTML = '<div style="padding:20px;color:var(--red);">❌ '+(e.message || 'Failed to load rewards')+'</div>';
   }
 }
 
@@ -782,38 +871,85 @@ async function loadShareholderPurchases() {
   c.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af">⏳ Loading Purchases...</div>';
   try {
     var shNum = localStorage.getItem('cd_shareholder_number');
-    var r = await API.getShareholderPurchases(shNum);
-    var data = r.purchases || (r.result && r.result.purchases) || r.orders || r.data || r.result || [];
+    if (!shNum) throw new Error('Shareholder number not found in session');
+    
+    var dFrom = document.getElementById('shPurchasesFrom')?.value;
+    var dTo = document.getElementById('shPurchasesTo')?.value;
+    
+    var r = await API.getShareholderPurchases(shNum, dFrom, dTo);
+    var data = r?.purchases || r?.result?.purchases || r?.orders || r?.data || r?.result || [];
     if(!Array.isArray(data)) data = [data];
-    if(!data.length || (data.length === 1 && !data[0].id && !data[0].name)){ c.innerHTML='<div style="padding:40px;text-align:center;color:#6b7280">No linked purchases found.</div>'; return; }
+    
+    var totalAmt = parseFloat(r?.total_amount ?? r?.result?.total_amount ?? 0);
+    if (totalAmt === 0 && data.length > 0) {
+      totalAmt = data.reduce((sum, order) => sum + parseFloat(order?.amount_total || order?.total || order?.amount || 0), 0);
+    }
+    var totalOrders = parseInt(r?.total_orders ?? r?.result?.total_orders ?? data.length);
+    var summaryHtml = '';
+    
+    if (totalAmt > 0 || totalOrders > 0) {
+      summaryHtml = '<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">'
+        + '<div><div style="font-size:11px;color:#b91c1c;font-weight:700;text-transform:uppercase;">Total Purchases</div>'
+        + '<div style="font-size:12px;color:#991b1b;margin-top:2px;font-weight:600;">'+totalOrders+' Orders</div></div>'
+        + '<div style="font-size:20px;font-weight:900;color:var(--red);">AED ' + totalAmt.toLocaleString() + '</div>'
+        + '</div>';
+    }
+
+    if(!data.length || (data.length === 1 && !data[0].id && !data[0].name)){ 
+      c.innerHTML = summaryHtml + '<div style="padding:40px;text-align:center;color:#6b7280">No linked purchases found.</div>'; 
+      return; 
+    }
     
     var html = data.map(function(order){
-      var amt = order.amount_total || order.total || 0;
-      return '<div class="fs" style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">'
-        + '<div><div style="font-weight:800;font-size:14px;">'+(order.name||'Order #'+order.id)+'</div>'
-        + '<div style="font-size:12px;color:#6b7280;">Date: '+(order.date_order||'N/A').slice(0,10)+'</div></div>'
-        + '<div style="font-weight:900;color:var(--red-d);">AED '+parseFloat(amt).toLocaleString()+'</div>'
+      if(!order) return '';
+      var amt = parseFloat(order?.amount_total || order?.total || order?.amount || 0);
+      var name = order?.name || order?.order_name || 'Order #'+(order?.id || 'Unknown');
+      var d = order?.date_order || order?.date || '';
+      return '<div class="fs" style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">'
+        + '<div><div style="font-weight:800;font-size:14px;">'+name+'</div>'
+        + '<div style="font-size:12px;color:#6b7280;margin-top:2px;">Date: '+(d ? String(d).slice(0,10) : 'N/A')+'</div></div>'
+        + '<div style="font-weight:900;color:var(--red-d);">AED '+amt.toLocaleString()+'</div>'
         + '</div>';
     }).join('');
-    c.innerHTML = html;
+    
+    c.innerHTML = summaryHtml + html;
   } catch(e) {
-    c.innerHTML = '<div style="padding:20px;color:var(--red);">❌ '+e.message+'</div>';
+    c.innerHTML = '<div style="padding:20px;color:var(--red);">❌ '+(e.message || 'Failed to load purchases')+'</div>';
   }
 }
 
 async function linkShareholderOrder() {
-  var oid = document.getElementById('linkOrderId').value.trim();
+  var btn = document.getElementById('shLinkBtn') || event.currentTarget;
+  var oid = document.getElementById('linkOrderId')?.value?.trim();
   var msg = document.getElementById('linkOrderMsg');
+  
+  if(!msg) return;
   if(!oid) { msg.textContent = 'Please enter an Order ID'; msg.style.color='var(--red)'; return; }
-  msg.textContent = 'Linking...'; msg.style.color='#9ca3af';
+  
+  msg.textContent = '⏳ Linking order...'; msg.style.color='#9ca3af';
+  if(btn) btn.disabled = true;
+
   try {
     var shNum = localStorage.getItem('cd_shareholder_number');
-    await API.linkShareholderOrder(shNum, oid);
-    msg.textContent = 'âœ… Order successfully linked!'; msg.style.color='#065f46';
+    if (!shNum) throw new Error('Shareholder session not found');
+    
+    var r = await API.linkShareholderOrder(shNum, oid);
+    
+    if(r && r.error) throw new Error(r.error);
+    if(r && r.result && r.result.error) throw new Error(r.result.error);
+    if(r && r.success === 0) throw new Error(r.message || r.error || 'Failed to link order');
+    
+    msg.textContent = '✅ Order successfully linked!'; msg.style.color='#065f46';
     document.getElementById('linkOrderId').value = '';
-    setTimeout(loadShareholderPurchases, 1000);
+    
+    setTimeout(function() {
+      msg.textContent = '';
+      loadShareholderPurchases();
+    }, 1500);
   } catch(e) {
-    msg.textContent = 'âŒ '+e.message; msg.style.color='var(--red)';
+    msg.textContent = '❌ '+(e.message || 'Failed to link order'); msg.style.color='var(--red)';
+  } finally {
+    if(btn) btn.disabled = false;
   }
 }
 
@@ -823,10 +959,10 @@ async function loadAddress(isLoadMore = false){
   var container = document.getElementById('addressList');
   if(!isLoadMore) {
     addrOffset = 0;
-    container.innerHTML='<div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">â³ Loading addresses...</div>';
+    container.innerHTML='<div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">⏳ Loading addresses...</div>';
   } else {
     var lmBtn = document.getElementById('addrLoadMoreBtn');
-    if(lmBtn) lmBtn.innerHTML = 'â³ Loading...';
+    if(lmBtn) lmBtn.innerHTML = '⏳ Loading...';
   }
   var pid = API.myPid(); if(!pid)return;
   try{
@@ -834,10 +970,10 @@ async function loadAddress(isLoadMore = false){
     var addrs = r.data||[];
     var html = addrs.length ? addrs.map(a => {
       return '<div style="border:1px solid #e5e7eb;border-radius:12px;padding:16px;background:#f9fafb">' +
-        '<div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;margin-bottom:8px">' + (a.type==='delivery'?'ðŸšš Delivery':a.type==='invoice'?'ðŸ§¾ Invoice':'Contact') + '</div>' +
+        '<div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;margin-bottom:8px">' + (a.type==='delivery'?'🚚 Delivery':a.type==='invoice'?'🧾 Invoice':'Contact') + '</div>' +
         '<div style="font-weight:700;margin-bottom:4px">' + (a.name||'') + '</div>' +
         '<div style="font-size:12px;color:#6b7280">' + [a.street,a.street2,a.city,a.zip].filter(Boolean).join(', ') + '</div>' +
-        '<div style="font-size:12px;color:#6b7280;margin-top:4px">' + (a.phone?'ðŸ“ž '+a.phone:'') + '</div>' +
+        '<div style="font-size:12px;color:#6b7280;margin-top:4px">' + (a.phone?'📞 '+a.phone:'') + '</div>' +
       '</div>';
     }).join('') : (!isLoadMore ? '<div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">No addresses found. Add a new delivery or invoice address!</div>' : '');
     
@@ -855,7 +991,7 @@ async function loadAddress(isLoadMore = false){
     }
   }catch(e){
     if(!isLoadMore) {
-      container.innerHTML='<div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">âŒ Failed to load addresses: '+e.message+'</div>';
+      container.innerHTML='<div style="color:#9ca3af;padding:20px;text-align:center;grid-column:1/-1">❌ Failed to load addresses: '+e.message+'</div>';
     } else {
       var lmBtn = document.getElementById('addrLoadMoreBtn');
       if(lmBtn) lmBtn.innerHTML = 'Load More (Failed)';
@@ -926,12 +1062,12 @@ async function saveNewAddress(){
   var name = document.getElementById('aName').value.trim();
   var street = document.getElementById('aStreet').value.trim();
   var phone = document.getElementById('aPhone').value.trim();
-  if(!name || !street){ msg.textContent='âŒ Name and Street are required'; msg.style.color='var(--red)'; return; }
+  if(!name || !street){ msg.textContent='❌ Name and Street are required'; msg.style.color='var(--red)'; return; }
   if(phone && !/^(?:\+971|00971|0)?(?:5[0124568]|[234679])\d{7}$/.test(phone.replace(/\s+/g,''))) {
-    msg.textContent='âŒ Please enter a valid UAE phone number'; msg.style.color='var(--red)'; return;
+    msg.textContent='❌ Please enter a valid UAE phone number'; msg.style.color='var(--red)'; return;
   }
   
-  msg.textContent='â³ Saving...'; msg.style.color='#9ca3af';
+  msg.textContent='⏳ Saving...'; msg.style.color='#9ca3af';
   try {
     var payload = {
       parent_id: pid,
@@ -946,13 +1082,13 @@ async function saveNewAddress(){
       state_id: document.getElementById('aState').value
     };
     await API.addAddress(payload);
-    msg.textContent='âœ… Address created successfully!'; msg.style.color='#065f46';
+    msg.textContent='✅ Address created successfully!'; msg.style.color='#065f46';
     setTimeout(() => {
       document.getElementById('newAddressFormSec').style.display='none';
       loadAddress();
     }, 1000);
   }catch(e){
-    msg.textContent='âŒ '+e.message; msg.style.color='var(--red)';
+    msg.textContent='❌ '+e.message; msg.style.color='var(--red)';
   }
 }
 

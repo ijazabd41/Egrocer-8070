@@ -445,7 +445,9 @@ async function doVerifyOtp(){
   const otp=[0,1,2,3,4,5].map(i=>document.getElementById('oi'+i)?.value||'').join('');
   document.getElementById('btn-verify').textContent='Verifying...';
   const r=await CdApi.riderVerifyOtp(otpDelId,otp);
-  const ok=r.success===true||r.status==='success'||r.verified===true;
+  let ok = false;
+  if (r && r.response && r.response[0] && r.response[0].hasOwnProperty('is_valid_otp')) ok = r.response[0].is_valid_otp === true;
+  else if (r) ok = r.success === true || r.success === 1 || String(r.success) === '1' || r.verified === true;
   if(ok){
     otpVerified=true;
     document.getElementById('step2').className='otp-step done';
