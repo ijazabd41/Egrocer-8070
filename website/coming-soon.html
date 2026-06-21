@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+  <meta name="theme-color" content="#ED1C24">
+  <title>Coming Soon - Coop Discounts</title>
+  <meta name="description" content="Coop Discounts Hyper Market is launching something new. Stay tuned!">
+  <link rel="stylesheet" href="css/style.css?v=13.0">
+  <link id="favicon" rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
+  <style>
+    body {
+      background: #f8f9fa;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .cs-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    .cs-logo-container {
+      margin-bottom: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    /* Logo loaded from API */
+    .co-logo {
+      max-height: 80px;
+      display: none; /* hidden until loaded by JS */
+    }
+    /* Fallback Logo */
+    .fallback-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .fallback-text {
+      text-align: center;
+    }
+    .fallback-title {
+      color: #ED1C24;
+      font-weight: 900;
+      font-size: 32px;
+      line-height: 1.1;
+      font-family: Montserrat, sans-serif;
+    }
+    .fallback-sub {
+      color: #111;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .cs-title {
+      font-size: 48px;
+      font-weight: 900;
+      color: #111;
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+    .cs-desc {
+      font-size: 18px;
+      color: #6b7280;
+      max-width: 550px;
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+    
+    .cs-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #ED1C24;
+      color: #fff;
+      padding: 16px 36px;
+      border-radius: 50px;
+      font-weight: 800;
+      font-size: 16px;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.2s;
+      box-shadow: 0 4px 12px rgba(237, 28, 36, 0.2);
+    }
+    .cs-btn:hover {
+      background: #BE161D;
+      transform: translateY(-2px);
+    }
+    
+    .social-links {
+      display: flex;
+      gap: 16px;
+      margin-top: 50px;
+    }
+    .social-link {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #111;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: 1px solid #eee;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .social-link:hover {
+      transform: translateY(-3px);
+      border-color: #ED1C24;
+      color: #ED1C24;
+    }
+    
+    @media (max-width: 768px) {
+      .cs-title { font-size: 36px; }
+      .cs-desc { font-size: 16px; padding: 0 10px; }
+      .fallback-title { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cs-wrap">
+    
+    <!-- Logo Container -->
+    <div class="cs-logo-container" style="flex-direction: column; gap: 4px; margin-bottom: 30px;">
+      <img src="" class="co-logo" alt="Coop Discounts Logo">
+      
+      <div class="fallback-logo" id="fallback-logo">
+        <div class="fallback-text">
+          <div class="fallback-title">COOP DISCOUNTS</div>
+          <div class="fallback-sub">Hyper Market</div>
+        </div>
+      </div>
+      
+      <div style="color:#6b7280; font-weight:600; font-size:14px; letter-spacing:2px; text-transform:uppercase; margin-top:4px;">
+        Consumer Co-operative Society
+      </div>
+    </div>
+    
+    <h1 class="cs-title">Something Awesome is Coming Soon!</h1>
+    <p class="cs-desc">We are working hard to bring you the best deals and an unforgettable shopping experience. Stay tuned!</p>
+    
+  </div>
+
+  <script src="js/api.js?v=8.8"></script>
+  <script>
+    // Try to load the official logo from API, just like layout.js
+    document.addEventListener('DOMContentLoaded', function() {
+      // Show loader line if Bar is available
+      if (typeof Bar !== 'undefined' && Bar.start) Bar.start();
+      
+      const LOGO_SLIDER_ID = 12; // Standard logo ID in this project
+      if (typeof API !== 'undefined' && API.getDealById) {
+        API.getDealById(LOGO_SLIDER_ID).then(r => {
+          if (r && r.data && r.data[0] && r.data[0].banner_image) {
+            const imgSrc = API.img(r.data[0].banner_image);
+            const logoImg = document.querySelector('.co-logo');
+            logoImg.src = imgSrc;
+            logoImg.onload = function() {
+              logoImg.style.display = 'block';
+              document.getElementById('fallback-logo').style.display = 'none';
+            };
+          }
+        }).catch(e => console.warn('Logo load error:', e))
+          .finally(() => {
+            if (typeof Bar !== 'undefined' && Bar.done) Bar.done();
+          });
+      } else {
+        if (typeof Bar !== 'undefined' && Bar.done) Bar.done();
+      }
+    });
+  </script>
+</body>
+</html>
