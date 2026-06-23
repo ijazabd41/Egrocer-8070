@@ -1,9 +1,9 @@
-/* Coop Discounts App v6 Ã¢â‚¬â€ Session, Cart, OTP, Images all fixed */
+/* Coop Discounts App v6 — Session, Cart, OTP, Images all fixed */
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ PROGRESS BAR Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ── PROGRESS BAR ─────────────────────────────────────── */
 const Bar={_el:null,_v:0,_t:null,init(){if(this._el)return;this._el=document.createElement('div');this._el.style.cssText='position:fixed;top:0;left:0;height:3px;background:#ED1C24;z-index:99999;width:0;transition:width .25s;pointer-events:none';document.body.prepend(this._el);},start(){this.init();this._v=0;this._el.style.opacity='1';this._set(10);clearInterval(this._t);this._t=setInterval(()=>{if(this._v<85){this._v+=Math.random()*5;this._set(this._v);}},400);},done(){clearInterval(this._t);this._set(100);setTimeout(()=>{this._el.style.opacity='0';setTimeout(()=>{this._el.style.width='0';this._el.style.opacity='1';},400);},250);},_set(v){this._v=v;if(this._el)this._el.style.width=v+'%';}};
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ HELPER FUNCTIONS FOR DELIVERY & DISCOUNTS Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ── HELPER FUNCTIONS FOR DELIVERY & DISCOUNTS ────────── */
 function getProdPrice(p) {
   if (!p) return 0;
   var ep = parseFloat(p.ecommerce_price); if (!isNaN(ep) && ep > 0) return ep;
@@ -20,14 +20,15 @@ function isStorePickupMethod(m){
 }
 
 function getCartProgressHtml(subtotal, isCheckout = false) {
-  var minProgress = Math.min(100, (subtotal / 100) * 100);
+  var minAmt = typeof window._cd_min_order_amount !== 'undefined' ? window._cd_min_order_amount : 100;
+  var minProgress = Math.min(100, (subtotal / minAmt) * 100);
   var freeProgress = Math.min(100, (subtotal / 150) * 100);
-  var minReached = subtotal >= 100;
+  var minReached = subtotal >= minAmt;
   var freeReached = subtotal >= 150;
   
   var minMsg = minReached 
     ? "Minimum order reached ✓" 
-    : "Add AED " + (100 - subtotal).toFixed(2) + " more to reach minimum order.";
+    : "Add AED " + (minAmt - subtotal).toFixed(2) + " more to reach minimum order.";
     
   var freeMsg = freeReached 
     ? "You have unlocked FREE delivery 🎉" 
@@ -46,7 +47,7 @@ function getCartProgressHtml(subtotal, isCheckout = false) {
         <!-- Minimum Order Progress -->
         <div style="display:flex; flex-direction:column; gap:6px;">
           <div style="display:flex; justify-content:space-between; font-size:13.2px; font-weight:700; color:#374151;">
-            <span>Minimum Order (AED 100)</span>
+            <span>Minimum Order (AED `+minAmt+`)</span>
             <span style="color:${minReached ? '#10B981' : '#ED1C24'}">${minMsg}</span>
           </div>
           <div style="background:#e5e7eb; border-radius:50px; height:8px; overflow:hidden; position:relative;">
@@ -180,12 +181,12 @@ function recalculateInvoicePrices(inv, isPickup) {
   };
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ SKELETONS Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ── SKELETONS ────────────────────────────────────────── */
 function skelRow(n=6,h=190){return Array(n).fill(0).map(()=>`<div style="min-width:140px;height:${h}px;border-radius:12px;flex-shrink:0" class="skel"></div>`).join('');}
 function skelGrid(n=8,h=290){return Array(n).fill(0).map(()=>`<div style="height:${h}px" class="skel"></div>`).join('');}
 function skelCats(n=8){return Array(n).fill(0).map(()=>`<div style="min-width:88px;height:112px;border-radius:18px;flex-shrink:0" class="skel"></div>`).join('');}
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ CART Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ── CART ─────────────────────────────────────────────── */
 const Cart=(()=>{
   const CK='cd_cart',OK='cd_oid',PK='cd_placed_oid',PLK='cd_placed_oids';
   const L=()=>(typeof API!=='undefined'&&API.log)?API.log:{debug(){},info(){},warn(){},error(){}};
@@ -217,7 +218,7 @@ const Cart=(()=>{
   const count=()=>raw().reduce((s,i)=>s+i.qty,0);
   const total=()=>raw().reduce((s,i)=>s+(i.price*i.qty),0);
 
-  // Ã¢â€â‚¬Ã¢â€â‚¬ Mutex lock to prevent duplicate order creation from rapid clicks Ã¢â€â‚¬Ã¢â€â‚¬
+  // ── Mutex lock to prevent duplicate order creation from rapid clicks ──
   let _ensureOrderLock = null;
   let _reusableOid = null;
 
@@ -336,7 +337,7 @@ const Cart=(()=>{
           return oid;
         }
       }catch(_){}
-      L().error('Cart','syncToOrder ✖',{orderId:oid,message:lastErr.message});
+      L().error('Cart','syncToOrder ✗',{orderId:oid,message:lastErr.message});
       throw new Error('Could not add cart items to your order. '+(lastErr.message||''));
     }
     L().info('Cart','syncToOrder ✓',{orderId:oid,itemCount:items.length});
@@ -350,38 +351,55 @@ const Cart=(()=>{
     sv(items);
   }
   async function add(prod){
-    if(prod.qty_available<=0 && prod.qty_available!==-1){toast('Ã¢ÂÅ’ Out of stock','err');return;}
+    if(prod.qty_available<=0 && prod.qty_available!==-1){toast('❌ Out of stock','err');return;}
     const items=raw();const ex=items.find(i=>i.product_id===prod.product_id);
     if(ex){
       ex.qty++;sv(items);
       L().info('Cart','add qty+1',{product_id:prod.product_id,variant_id:ex.variant_id||ex.product_id,qty:ex.qty});
-      const ordId=await ensureOrder();
-      const vid=ex.variant_id||ex.product_id;
-      if(ordId&&vid){
-        try{
-          const r=await API.updateCartQty(parseInt(ordId),vid,ex.qty);
-          if(r.recId){ex.line_id=r.recId;sv(items);}
-        }catch(e){
-          L().warn('Cart','add update failed, retry create',{orderId:ordId,variantId:vid,message:e.message});
-          delete ex.line_id;sv(items);
+      if(!API.loggedIn()) {
+        const vid=ex.variant_id||ex.product_id;
+        if(vid){
+          if(!API.mySessionId()) await API.initGuestSession();
+          try{ await API.updateGuestCartQty(vid, ex.qty); }catch(e){L().error('Cart','guest add qty update failed',e.message);}
+        }
+      } else {
+        const ordId=await ensureOrder();
+        const vid=ex.variant_id||ex.product_id;
+        if(ordId&&vid){
           try{
-            const r=await API.addLine(parseInt(ordId),vid,ex.qty);
-            if(r.data?.rec_id){ex.line_id=r.data.rec_id;sv(items);}
-          }catch(e2){L().error('Cart','add retry failed',{orderId:ordId,variantId:vid,message:e2.message});}
+            const r=await API.updateCartQty(parseInt(ordId),vid,ex.qty);
+            if(r.recId){ex.line_id=r.recId;sv(items);}
+          }catch(e){
+            L().warn('Cart','add update failed, retry create',{orderId:ordId,variantId:vid,message:e.message});
+            delete ex.line_id;sv(items);
+            try{
+              const r=await API.addLine(parseInt(ordId),vid,ex.qty);
+              if(r.data?.rec_id){ex.line_id=r.data.rec_id;sv(items);}
+            }catch(e2){L().error('Cart','add retry failed',{orderId:ordId,variantId:vid,message:e2.message});}
+          }
         }
       }
     }else{
       L().info('Cart','add new item',{product_id:prod.product_id,variant_id:prod.variant_id||prod.product_id,name:prod.name});
-      let lineId=null;const ordId=await ensureOrder();
-      const vid=prod.variant_id||prod.product_id;
-      if(ordId&&vid){
-        try{const r=await API.addLine(parseInt(ordId),vid,1);lineId=r.data?.rec_id||null;}catch(e){L().error('Cart','add line failed',{orderId:ordId,variantId:vid,message:e.message});}
-      }
-      if(ordId&&lineId){
-        try{const qr=await API.getLineQty(lineId);const bq=qr.data?.product_uom_qty||qr.data?.qty||1;if(bq!==1){const ix=items.findIndex(i=>i.product_id===prod.product_id);if(ix>-1){items[ix].qty=bq;sv(items);}}}catch(_){}
+      let lineId=null;
+      if(!API.loggedIn()) {
+        const vid=prod.variant_id||prod.product_id;
+        if(vid){
+          if(!API.mySessionId()) await API.initGuestSession();
+          try{ await API.addGuestCartItem(prod.product_id, vid, 1); }catch(e){L().error('Cart','guest add new item failed',e.message);}
+        }
+      } else {
+        const ordId=await ensureOrder();
+        const vid=prod.variant_id||prod.product_id;
+        if(ordId&&vid){
+          try{const r=await API.addLine(parseInt(ordId),vid,1);lineId=r.data?.rec_id||null;}catch(e){L().error('Cart','add line failed',{orderId:ordId,variantId:vid,message:e.message});}
+        }
+        if(ordId&&lineId){
+          try{const qr=await API.getLineQty(lineId);const bq=qr.data?.product_uom_qty||qr.data?.qty||1;if(bq!==1){const ix=items.findIndex(i=>i.product_id===prod.product_id);if(ix>-1){items[ix].qty=bq;sv(items);}}}catch(_){}
+        }
       }
       items.push({...prod,qty:1,line_id:lineId});sv(items);
-      L().info('Cart','add ✓',{orderId:ordId,lineId,cartCount:count()});
+      L().info('Cart','add ✓',{lineId,cartCount:count()});
     }
     tick();renderDrawer();toast('✅ Added to cart');
   }
@@ -392,12 +410,14 @@ const Cart=(()=>{
     sv(next);
     const o=oid();
     const vid=item?.variant_id||item?.product_id;
-    if(o&&vid){
+    if(!API.loggedIn() && vid) {
+      API.updateGuestCartQty(vid, 0).catch(()=>{});
+    } else if(o&&vid){
       API.updateCartQty(parseInt(o),vid,0).catch(()=>{
         if(item?.line_id) API.rmLines(parseInt(o),[item.line_id]).catch(()=>{});
       });
     }
-    if(!next.length){ coid(); L().debug('Cart','cart empty Ã¢â‚¬â€ cleared oid'); }
+    if(!next.length){ coid(); L().debug('Cart','cart empty — cleared oid'); }
     tick();renderDrawer();
   }
   async function setQty(pid,delta){
@@ -406,10 +426,16 @@ const Cart=(()=>{
     if(item.qty===0){remove(pid);return;}
     sv(items);
     const ordId2=oid();
-    if(ordId2&&item.variant_id){
+    if(!API.loggedIn() && item.variant_id) {
+      try {
+        await API.updateGuestCartQty(item.variant_id, item.qty);
+      } catch (e) {
+        L().warn('Cart','guest setQty sync failed',{product_id:pid,qty:item.qty,message:e.message});
+      }
+    } else if(ordId2&&item.variant_id){
       try{
         const r=await API.updateCartQty(parseInt(ordId2),item.variant_id||item.product_id,item.qty);
-        if(r.recId){item.line_id=r.recId;sv(items);}
+        if(r.recId){ex.line_id=r.recId;sv(items);}
       }catch(e){
         delete item.line_id;sv(items);
         L().warn('Cart','setQty sync failed',{product_id:pid,qty:item.qty,message:e.message});
@@ -421,7 +447,7 @@ const Cart=(()=>{
   return{raw,sv,oid,soid,coid,wasPlaced,markPlaced,clearLineIds,count,total,add,remove,setQty,clear,ensureOrder,syncToOrder};
 })();
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ TICK: Update ALL cart badges Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ── TICK: Update ALL cart badges ─────────────────────── */
 function tick(){
   const c=Cart.count();
   // Desktop badge in header
@@ -443,7 +469,7 @@ function tick(){
   document.querySelectorAll('.cd-qty-ctrl').forEach(el => {
     const pid = parseInt(el.getAttribute('data-pid'), 10);
     const pdEnc = el.getAttribute('data-pdenc') || '';
-    // Deal cards are populated asynchronously Ã¢â‚¬â€ don't replace until ready.
+    // Deal cards are populated asynchronously — don't replace until ready.
     if (!pdEnc) return;
     const btnCls = el.getAttribute('data-btnclass') || 'pc-atc';
     const item = Cart.raw().find(i => i.product_id === pid);
@@ -464,7 +490,7 @@ function tick(){
   });
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ CART DRAWER Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ── CART DRAWER ──────────────────────────────────────── */
 function openDrw(){document.getElementById('cDrw')?.classList.add('open');document.getElementById('cOv').style.display='block';renderDrawer();}
 function closeDrw(){document.getElementById('cDrw')?.classList.remove('open');document.getElementById('cOv').style.display='none';}
 
@@ -478,9 +504,10 @@ function renderDrawer(){
   }
   
   const t=Cart.total();
+  const minAmt = typeof window._cd_min_order_amount !== 'undefined' ? window._cd_min_order_amount : 100;
   const progressHtml = getCartProgressHtml(t);
-  const minWarningHtml = t < 100 
-    ? `<div style="background:#fef2f2;border:1.5px solid #ED1C24;border-radius:8px;padding:8px 12px;font-size:12.7px;font-weight:700;color:#ED1C24;margin-bottom:10px;text-align:center;">Ã¢Å¡Â Ã¯Â¸Â Minimum order amount is AED 100.</div>` 
+  const minWarningHtml = t < minAmt 
+    ? `<div style="background:#fef2f2;border:1.5px solid #ED1C24;border-radius:8px;padding:8px 12px;font-size:12.7px;font-weight:700;color:#ED1C24;margin-bottom:10px;text-align:center;">⚠️ Minimum order amount is AED `+minAmt+`.</div>` 
     : '';
 
   body.innerHTML=progressHtml + minWarningHtml + items.map(it=>`
@@ -501,9 +528,9 @@ function renderDrawer(){
     </div>`).join('');
     
   if(ftr){
-    const checkoutBtnHtml = t >= 100
+    const checkoutBtnHtml = t >= minAmt
       ? `<a href="javascript:void(0)" onclick="if(Cart.count()===0){ toast('Your cart is empty', 'warn'); return; } closeDrw(); location.href='checkout.html';" style="display:block;text-align:center;background:#ED1C24;color:#fff;padding:12px;border-radius:8px;font-weight:800;font-size:15.4px;text-decoration:none">Checkout →</a>`
-      : `<a href="javascript:void(0)" style="display:block;text-align:center;background:#d1d5db;color:#9ca3af;padding:12px;border-radius:8px;font-weight:800;font-size:15.4px;text-decoration:none;cursor:not-allowed;" onclick="toast('Minimum order amount is AED 100', 'warn');">Checkout →</a>`;
+      : `<a href="javascript:void(0)" style="display:block;text-align:center;background:#d1d5db;color:#9ca3af;padding:12px;border-radius:8px;font-weight:800;font-size:15.4px;text-decoration:none;cursor:not-allowed;" onclick="toast('Minimum order amount is AED `+minAmt+`', 'warn');">Checkout →</a>`;
       
     ftr.innerHTML=`
       <div style="display:flex;justify-content:space-between;font-size:16.5px;font-weight:800;margin-bottom:12px"><span>Total</span><span style="color:#a01820">AED ${t.toFixed(2)}</span></div>
@@ -512,7 +539,7 @@ function renderDrawer(){
   }
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ TOAST Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ── TOAST ────────────────────────────────────────────── */
 let _tt;
 function toast(msg,type='ok'){
   let el=document.getElementById('cd-toast');
@@ -526,7 +553,7 @@ function toast(msg,type='ok'){
 function openModal(id){document.getElementById(id)?.classList.add('open');}
 function closeModal(id){document.getElementById(id)?.classList.remove('open');}
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ PRODUCT CARD Ã¢â‚¬â€ correct image handling Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ── PRODUCT CARD — correct image handling ────────────── */
 function buildCard(p){
   if(!p?.id)return'';
   const id=p.id;
@@ -557,6 +584,7 @@ function buildCard(p){
     <div class="pc-body">
       <a href="product.html?id=${id}" class="pc-nm">${name}</a>
       ${p.barcode?`<div class="pc-bc">${p.barcode}</div>`:''}
+      ${p.description_sale?`<div class="pc-desc" style="font-size:11px;color:#6b7280;margin:4px 0;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${p.description_sale}</div>`:''}
       <div class="pc-prices">
         <span class="pc-price">AED ${price.toFixed(2)}</span>
         ${disc>0?`<span class="pc-was">AED ${std.toFixed(2)}</span><span class="pc-save">-${disc}%</span>`:''}
@@ -700,13 +728,6 @@ async function addToCart(json) {
   catch (_) { toast('Could not add to cart', 'err'); return; }
   if (!payload?.product_id) { toast('Could not add to cart', 'err'); return; }
 
-  if (!API.loggedIn()) {
-    localStorage.setItem('pending_cart_add', JSON.stringify(payload));
-    toast('Please sign in to add to cart', 'warn');
-    setTimeout(() => { location.href = 'login.html?next=' + encodeURIComponent(location.pathname.split('/').pop() || 'index.html'); }, 800);
-    return;
-  }
-
   try {
     const p = await resolveProductForCart(payload.product_id);
     if (!p) {
@@ -744,7 +765,7 @@ function renderDealQtyCtrl(wrap, pid, pdEnc, btnCls) {
   wrap.innerHTML = `<button type="button" class="${btnCls}" onclick="event.preventDefault();event.stopPropagation();addToCart(decodeURIComponent('${pdEnc}'))">🛒 Add to Cart</button>`;
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ DEAL CARDS Ã¢â‚¬â€ slider image_ids[] Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ── DEAL CARDS — slider image_ids[] ─────────────────── */
 function buildDealSection(slider, containerId, titleId) {
   if (titleId && slider?.name) {
     // Keep the title from HTML to avoid "Be Best Seller" parsing bugs with emojis
@@ -834,6 +855,9 @@ async function enrichDealCards(items) {
       if (code) {
         nmEl.insertAdjacentHTML('beforeend', `<div class="dp-sku" style="color:#9ca3af;font-size:12.1px;font-weight:600;margin-top:4px">${code}</div>`);
       }
+      if (p.description_sale && !nmEl.querySelector('.dp-desc')) {
+        nmEl.insertAdjacentHTML('beforeend', `<div class="dp-desc" style="color:#6b7280;font-size:11px;font-weight:400;margin-top:4px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${p.description_sale}</div>`);
+      }
     }
 
     if (priceEl) {
@@ -874,13 +898,13 @@ function initDealCardInteractions() {
   });
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ WISHLIST Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ── WISHLIST ─────────────────────────────────────────── */
 const WL={
   get(){return JSON.parse(localStorage.getItem('cd_wl')||'[]');},
-  toggle(id,name){const wl=this.get();const i=wl.findIndex(x=>x.id===id);if(i>-1){wl.splice(i,1);toast('Removed ♡');}else{wl.push({id,name});toast('Saved Ã¢ÂÂ¤Ã¯Â¸Â');}localStorage.setItem('cd_wl',JSON.stringify(wl));}
+  toggle(id,name){const wl=this.get();const i=wl.findIndex(x=>x.id===id);if(i>-1){wl.splice(i,1);toast('Removed ♡');}else{wl.push({id,name});toast('Saved ❤️');}localStorage.setItem('cd_wl',JSON.stringify(wl));}
 };
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ SESSION / HEADER USER STATE Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ── SESSION / HEADER USER STATE ─────────────────────── */
 function updateHeaderUser(){
   const user=API.me();
   if(user?.uid){
@@ -901,7 +925,7 @@ function updateHeaderUser(){
 }
 
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ COUNTDOWN Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ── COUNTDOWN ────────────────────────────────────────── */
 let _cdI;
 function startCD(ms){
   clearInterval(_cdI);
@@ -909,7 +933,7 @@ function startCD(ms){
   upd();_cdI=setInterval(upd,1000);
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ LANGUAGE Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ── LANGUAGE ─────────────────────────────────────────── */
 function toggleLang(){const curr=localStorage.getItem('cd_lang')||'en';applyLang(curr==='en'?'ar':'en');}
 function applyLang(lang){
   document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
@@ -919,7 +943,7 @@ function applyLang(lang){
   document.querySelectorAll('.lang-lbl').forEach(e=>e.textContent=lang==='ar'?'English':'العربية');
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ OTP HELPERS Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ── OTP HELPERS ──────────────────────────────────────── */
 function initOtpInputs(containerSel){
   const inputs=[...document.querySelectorAll(`${containerSel} .otp-inp`)];
   inputs.forEach((inp,i)=>{
@@ -931,10 +955,10 @@ function initOtpInputs(containerSel){
 function getOtp(containerSel){return[...document.querySelectorAll(`${containerSel} .otp-inp`)].map(i=>i.value).join('');}
 
 // Simulate OTP send (replace with real email service)
-// Ã¢Å¡Â Ã¯Â¸Â  WARNING: Simulated OTP Ã¢â‚¬â€ NOT production-safe.
+// ⚠️  WARNING: Simulated OTP — NOT production-safe.
 // Replace with a real email/SMS API (e.g. SendGrid, Twilio) before going live.
 async function sendOtp(email){
-  console.warn('[OTP] Using simulated OTP Ã¢â‚¬â€ NOT suitable for production. Integrate a real email/SMS provider.');
+  console.warn('[OTP] Using simulated OTP — NOT suitable for production. Integrate a real email/SMS provider.');
   const otp=Math.floor(100000+Math.random()*900000).toString();
   sessionStorage.setItem('_otp_'+email.replace(/[^a-z0-9]/gi,'_'),otp);
   sessionStorage.setItem('_otp_ts',Date.now().toString());
@@ -942,14 +966,14 @@ async function sendOtp(email){
   return otp;
 }
 function verifyOtp(email,input){
-  console.warn('[OTP] Using simulated OTP verification Ã¢â‚¬â€ NOT suitable for production.');
+  console.warn('[OTP] Using simulated OTP verification — NOT suitable for production.');
   const stored=sessionStorage.getItem('_otp_'+email.replace(/[^a-z0-9]/gi,'_'));
   const ts=parseInt(sessionStorage.getItem('_otp_ts')||'0');
   if(Date.now()-ts>600000)return false; // 10 min expiry
   return stored&&stored===input;
 }
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ GLOBAL INIT Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ── GLOBAL INIT ──────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded',()=>{
   initDealCardInteractions();
   // Inject skeleton CSS
@@ -986,7 +1010,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
 });
 
-/* Ã¢â€â‚¬Ã¢â€â‚¬ AUTOFILL LOCATION & MODAL Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
+/* ── AUTOFILL LOCATION & MODAL ───────────────────────── */
 window.promptAddressMethod = function(prefix) {
   if (document.getElementById('addrPromptOverlay')) return;
   var overlay = document.createElement('div');
