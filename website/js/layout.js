@@ -16,28 +16,15 @@ const LOGO_SLIDER_ID = 12;
 
 async function loadLogo(){
   try{
-    let d = null;
-    try {
-      const r = await API.getDealById(LOGO_SLIDER_ID);
-      d = r.data?.[0];
-    } catch(_) {
-      // Primary ID failed — search all sliders for one with a banner_image
-      console.warn(`Logo slider ID ${LOGO_SLIDER_ID} not found, searching all sliders…`);
-      try {
-        const all = await API.getAllDeals();
-        const sliders = all.data || [];
-        d = sliders.find(s => s.banner_image);
-      } catch(_) {}
-    }
-    // Logo is at banner_image field → PATH → prepend /proxy
-    if(d?.banner_image){
-      const src=API.img(d.banner_image);
-      document.querySelectorAll('.co-logo').forEach(img=>{
-        img.src=src;img.style.display='block';
-        img.onload=()=>{document.querySelectorAll('.r-logo-icon').forEach(e=>e.style.display='none');};
-        img.onerror=()=>img.style.display='none';
-      });
-    }
+    const src = API.img('/web/image/res.company/1/logo');
+    document.querySelectorAll('.co-logo').forEach(img=>{
+      img.src=src;
+      img.style.display='block';
+      img.onload=()=>{
+        document.querySelectorAll('.r-logo-icon').forEach(e=>e.style.display='none');
+      };
+      img.onerror=()=>img.style.display='none';
+    });
   }catch(_){}
 }
 

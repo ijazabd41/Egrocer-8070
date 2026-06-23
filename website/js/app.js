@@ -850,13 +850,15 @@ async function enrichDealCards(items) {
     card?.setAttribute('data-href', `product.html?id=${pid}`);
     navEls?.forEach(n => { n.style.cursor = 'pointer'; });
     
-    if (nmEl && !nmEl.querySelector('.dp-sku')) {
+    if (nmEl) {
+      const parent = nmEl.parentNode;
       const code = p.barcode || p.default_code;
-      if (code) {
-        nmEl.insertAdjacentHTML('beforeend', `<div class="dp-sku" style="color:#9ca3af;font-size:12.1px;font-weight:600;margin-top:4px">${code}</div>`);
+      if (code && !parent.querySelector('.dp-sku')) {
+        nmEl.insertAdjacentHTML('afterend', `<div class="dp-sku" style="color:#9ca3af;font-size:11px;font-weight:600;margin-top:0px;margin-bottom:4px;padding:0 14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${code}">${code}</div>`);
       }
-      if (p.description_sale && !nmEl.querySelector('.dp-desc')) {
-        nmEl.insertAdjacentHTML('beforeend', `<div class="dp-desc" style="color:#6b7280;font-size:11px;font-weight:400;margin-top:4px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${p.description_sale}</div>`);
+      if (p.description_sale && !parent.querySelector('.dp-desc')) {
+        const target = parent.querySelector('.dp-sku') || nmEl;
+        target.insertAdjacentHTML('afterend', `<div class="dp-desc" style="color:#6b7280;font-size:11px;font-weight:400;margin-top:0px;margin-bottom:4px;padding:0 14px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${p.description_sale}</div>`);
       }
     }
 
