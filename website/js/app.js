@@ -368,9 +368,11 @@ const Cart=(()=>{
     sv(items);
   }
   async function add(prod){
-    if(prod.qty_available<=0 && prod.qty_available!==-1){toast('❌ Out of stock','err');return;}
+    const avail = typeof prod.qty_available === 'number' ? prod.qty_available : (typeof prod.free_qty === 'number' ? prod.free_qty : -1);
+    if(avail <= 0 && avail !== -1){toast('❌ Out of stock','err');return;}
     const items=raw();const ex=items.find(i=>i.product_id===prod.product_id);
     if(ex){
+      if(avail !== -1 && ex.qty >= avail) { toast('❌ Cannot add more than available stock ('+avail+')', 'err'); return; }
       ex.qty++;sv(items);
       L().info('Cart','add qty+1',{product_id:prod.product_id,variant_id:ex.variant_id||ex.product_id,qty:ex.qty});
       if(!API.loggedIn()) {
@@ -439,6 +441,13 @@ const Cart=(()=>{
   }
   async function setQty(pid,delta){
     const items=raw(),item=items.find(i=>i.product_id===pid);if(!item)return;
+    if (delta > 0) {
+      const avail = typeof item.qty_available === 'number' ? item.qty_available : (typeof item.free_qty === 'number' ? item.free_qty : -1);
+      if (avail !== -1 && item.qty >= avail) {
+         if(typeof toast==='function') toast('❌ Cannot add more than available stock ('+avail+')', 'err');
+         return;
+      }
+    }
     item.qty=Math.max(0,item.qty+delta);
     if(item.qty===0){remove(pid);return;}
     sv(items);

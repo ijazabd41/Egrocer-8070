@@ -752,7 +752,11 @@ const API = ((_DB='production', SK='cd_session', NOTIFY='eicoopit@gmail.com') =>
 
   // qty flow: GET order → match variant_id → extract rec_id → GET update → GET qty
   // Postman: GET /api/order-line/{rec_id}/update?by_AJR=1&product_uom_qty={qty}
-  const updLine  = (recId, qty) => GET(`/api/order-line/${recId}/update`, {product_uom_qty:qty});
+  const updLine  = (recId, qty, price=null) => {
+    let payload = {product_uom_qty:qty};
+    if (price !== null) payload.price_unit = price;
+    return GET(`/api/order-line/${recId}/update`, payload);
+  };
   const rmLines  = (oid, ids)              => GET(`/api/order/${oid}/remove_card_item`, {line_ids:`[${ids.join(',')}]`});
   const getLines = oid                     => GET('/api/order-line', {domain:`[('order_id','=',${oid})]`});
   const getLine  = lid                     => GET(`/api/order-line/${lid}`);
@@ -770,12 +774,12 @@ const API = ((_DB='production', SK='cd_session', NOTIFY='eicoopit@gmail.com') =>
   }
 
   /** Create or update a line (avoids HTTP 400 from duplicate create). */
-  async function upsertOrderLine(orderId, variantId, qty = 1) {
+  async function upsertOrderLine(orderId, variantId, qty = 1, price = null) {
     const oid = parseInt(orderId, 10);
     const vid = parseInt(variantId, 10);
     if (!oid || !vid) throw new Error('Invalid order or product');
     const q = Math.max(1, qty || 1);
-    Log.debug('OrderLine', 'upsert → start', { orderId: oid, variantId: vid, qty: q });
+    Log.debug('OrderLine', 'upsert → start', { orderId: oid, variantId: vid, qty: q, price });
 
     let recId = await getRecIdForVariant(oid, vid);
     if (recId && !(await lineBelongsToOrder(recId, oid))) {
@@ -794,11 +798,13 @@ const API = ((_DB='production', SK='cd_session', NOTIFY='eicoopit@gmail.com') =>
     }
 
     try {
-      const d = await GET('/api/order-line/create', { order_id: oid, product_id: vid });
+      const payload = { order_id: oid, product_id: vid };
+      if (price !== null) payload.price_unit = price;
+      const d = await GET('/api/order-line/create', payload);
       recId = d.data?.rec_id;
       if (!recId) throw new Error(d.data?.message || d.message || 'Line create failed');
-      if (q > 1) await updLine(recId, q).catch(() => {});
-      Log.info('OrderLine', 'create ✓', { orderId: oid, variantId: vid, recId, qty: q });
+      if (q > 1 || price !== null) await updLine(recId, q, price).catch(() => {});
+      Log.info('OrderLine', 'create ✓', { orderId: oid, variantId: vid, recId, qty: q, price });
       return { rec_id: recId };
     } catch (e) {
       recId = await getRecIdForVariant(oid, vid);
@@ -812,8 +818,8 @@ const API = ((_DB='production', SK='cd_session', NOTIFY='eicoopit@gmail.com') =>
     }
   }
 
-  async function addLine(oid, variantId, qty = 1) {
-    const r = await upsertOrderLine(oid, variantId, qty);
+  async function addLine(oid, variantId, qty = 1, price = null) {
+    const r = await upsertOrderLine(oid, variantId, qty, price);
     return { success: 1, data: { rec_id: r.rec_id, message: 'record create successfully' } };
   }
 

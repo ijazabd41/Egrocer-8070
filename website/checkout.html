@@ -807,7 +807,12 @@ function renderSummary(){
   var items=Cart.raw(), sub=Cart.total();
   
   // 1. Calculate pickup discount (dynamic percentage of subtotal from backend margin)
-  var pRate = (selDeliveryMethod && typeof selDeliveryMethod.margin !== 'undefined') ? parseFloat(selDeliveryMethod.margin || 0) : 0.0;
+  var pRate = 0;
+  if (selDeliveryMethod) {
+    if (typeof selDeliveryMethod.margin !== 'undefined' && selDeliveryMethod.margin > 0) pRate = parseFloat(selDeliveryMethod.margin);
+    else if (selDeliveryKind === 'store' && selDeliveryMethod.fixed_price < 0) pRate = Math.abs(parseFloat(selDeliveryMethod.fixed_price));
+    else if (selDeliveryKind === 'store') pRate = 5.0; // fallback
+  }
   var pickupDisc = parseFloat((sub * (pRate / 100)).toFixed(2));
   
   // 2. Calculate delivery fee
@@ -849,7 +854,6 @@ function renderSummary(){
       pickupDiscAmt.textContent = '–AED ' + pickupDisc.toFixed(2);
       var labelSpan = pickupDiscRow.querySelector('span:first-child');
       if (labelSpan) {
-        var pRate = (selDeliveryMethod && typeof selDeliveryMethod.margin !== 'undefined') ? parseFloat(selDeliveryMethod.margin || 0) : 0.0;
         labelSpan.textContent = '🏪 Store Pickup Discount (' + pRate + '%)';
       }
     } else {
@@ -953,8 +957,14 @@ async function pushCarrierToOrder(){
   if(!oid){ msg.textContent='ℹ️ Add an item to cart to apply the delivery method'; msg.style.color='#92400e'; return; }
   try{
     var sub = Cart.total();
-    var pRate = (selDeliveryMethod && typeof selDeliveryMethod.margin !== 'undefined') ? parseFloat(selDeliveryMethod.margin || 0) : 0.0;
+    var pRate = 0;
+    if (selDeliveryMethod) {
+      if (typeof selDeliveryMethod.margin !== 'undefined' && selDeliveryMethod.margin > 0) pRate = parseFloat(selDeliveryMethod.margin);
+      else if (selDeliveryKind === 'store' && selDeliveryMethod.fixed_price < 0) pRate = Math.abs(parseFloat(selDeliveryMethod.fixed_price));
+      else if (selDeliveryKind === 'store') pRate = 5.0;
+    }
     var pDisc = parseFloat((sub * (pRate / 100)).toFixed(2));
+    var delFee = (selDeliveryKind === 'store' || sub >= 150) ? 0 : (selDeliveryMethod ? parseFloat(selDeliveryMethod.fixed_price || 0) : 15);
     var pType = 'percent';
 
     await API.updDelivery(parseInt(oid), selCarrierId, {
@@ -962,6 +972,16 @@ async function pushCarrierToOrder(){
       discount_rate: pRate,
       discount_type: pType
     });
+    
+    // Also pass it as a product in the order (qty = 1) with calculated amount
+    if (selDeliveryMethod && selDeliveryMethod.product_id) {
+       var prodId = Array.isArray(selDeliveryMethod.product_id) ? selDeliveryMethod.product_id[0] : selDeliveryMethod.product_id;
+       var amount = selDeliveryKind === 'store' ? -pDisc : delFee;
+       try {
+         await API.addLine(parseInt(oid), prodId, 1, amount);
+       } catch(e) { console.warn("Failed to add delivery product line", e); }
+    }
+
     msg.textContent='✅ '+selCarrierName+' applied to your order';
     msg.style.color='#065f46';
   }catch(e){ msg.textContent='❌ Failed to apply carrier: '+e.message; msg.style.color='#ED1C24'; }
