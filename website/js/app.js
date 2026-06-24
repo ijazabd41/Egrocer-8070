@@ -131,9 +131,22 @@ function recalculateOrderPrices(o, lines) {
   }, 0);
 
   var pickupDiscount = 0;
+  var pickupDiscountRate = 0;
   if (isPickup) {
-    var match = (o.note || '').match(/Store Pickup Discount \(5%\):\s*-AED\s*([\d.]+)/i);
-    pickupDiscount = match ? parseFloat(match[1]) : parseFloat((itemsSubtotal * 0.05).toFixed(2));
+    var match = (o.note || '').match(/Store Pickup Discount \((\d+(?:\.\d+)?)\%\):\s*-AED\s*([\d.]+)/i);
+    if (match) {
+      pickupDiscountRate = parseFloat(match[1]);
+      pickupDiscount = parseFloat(match[2]);
+    } else {
+      var oldMatch = (o.note || '').match(/Store Pickup Discount \(5%\):\s*-AED\s*([\d.]+)/i);
+      if (oldMatch) {
+        pickupDiscountRate = 5.0;
+        pickupDiscount = parseFloat(oldMatch[1]);
+      } else {
+        pickupDiscountRate = parseFloat(o.discount_rate || 0);
+        pickupDiscount = parseFloat(o.amount_discount || (itemsSubtotal * (pickupDiscountRate / 100)).toFixed(2));
+      }
+    }
   }
 
   var netTaxable = Math.max(0, itemsSubtotal - promoDiscount - pickupDiscount + delFee);
@@ -150,18 +163,20 @@ function recalculateOrderPrices(o, lines) {
     promoDiscount: promoDiscount,
     delFee: delFee,
     pickupDiscount: pickupDiscount,
+    pickupDiscountRate: pickupDiscountRate,
     vat: vat,
     total: total
   };
 }
 
-function recalculateInvoicePrices(inv, isPickup) {
+function recalculateInvoicePrices(inv, isPickup, discountRate) {
   var invSub = parseFloat(inv.amount_untaxed || 0);
   var invTotal = parseFloat(inv.amount_total || 0);
   var invTax = parseFloat(inv.amount_tax || 0);
   
   if (isPickup) {
-    var invPickupDisc = parseFloat((invSub * 0.05).toFixed(2));
+    var rate = typeof discountRate !== 'undefined' ? discountRate : parseFloat(inv.discount_rate || 5.0);
+    var invPickupDisc = parseFloat(inv.amount_discount || (invSub * (rate / 100)).toFixed(2));
     var invNet = Math.max(0, invSub - invPickupDisc);
     var invVat = parseFloat((invNet * 0.05).toFixed(2));
     var invNewTotal = invSub - invPickupDisc + invVat;
@@ -169,7 +184,8 @@ function recalculateInvoicePrices(inv, isPickup) {
       subtotal: invSub,
       pickupDiscount: invPickupDisc,
       vat: invVat,
-      total: invNewTotal
+      total: invNewTotal,
+      discountRate: rate
     };
   }
   
@@ -177,7 +193,8 @@ function recalculateInvoicePrices(inv, isPickup) {
     subtotal: invSub,
     pickupDiscount: 0,
     vat: invTax,
-    total: invTotal
+    total: invTotal,
+    discountRate: 0
   };
 }
 

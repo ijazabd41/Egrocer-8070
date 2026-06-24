@@ -133,17 +133,17 @@ const CdApi = (() => {
   const deliveryPersons = () => _get('/api/delivery-person');
 
   // ── RIDER APIs (ALWAYS WORK) ─────────────────────────────
-  const riderUnassigned  = (limit=10, offset=0) => _get('/api/rider-delivery', {limit, offset});
+  const riderUnassigned  = (limit=10, offset=0) => _get('/api/rider-delivery', {limit, offset, domain:'[("user_id","=",False),("state","not in",["done","cancel"])]'});
   const riderMyDeliveries= (uid, limit=10, offset=0) =>
-    _get('/api/rider-own-delivery', {domain:`[('user_id','=',${uid})]`, limit, offset});
+    _get('/api/rider-delivery', {domain:`[("user_id","=",${uid}),("state","not in",["done","cancel"])]`, limit, offset});
   const riderAccept      = (id, uid)    => _get(`/api/rider-delivery/${id}/update`, {user_id:uid});
-  const riderSendOtp     = (id)         => _get(`/api/rider-own-delivery/${id}/regenerate_send_otp`);
-  const riderVerifyOtp   = (id, otp)    => _get(`/api/rider-own-delivery/${id}/verify_otp`, {otp});
-  const riderMarkDone    = (id)         => _get(`/api/rider-own-delivery/${id}/mark_done`, {by_AJR: 1});
+  const riderSendOtp     = (id)         => _get(`/api/rider-delivery/${id}/regenerate_send_otp`);
+  const riderVerifyOtp   = (id, otp)    => _get(`/api/rider-delivery/${id}/verify_otp`, {otp});
+  const riderMarkDone    = (id)         => _get(`/api/rider-delivery/${id}/mark_done`, {by_AJR: 1});
   const riderStart       = (id, uid, lat, lng) =>
-    _get(`/api/delivery/${id}/start`, {user_id:uid, latitude:lat, longitude:lng});
+    _get(`/api/rider-delivery/${id}/update`, {user_id: uid, rider_latitude: lat, rider_longitude: lng});
   const riderCustomerWait= (id, uid, note='') =>
-    _get(`/api/delivery/${id}/customer-wait`, {user_id:uid, note});
+    _get(`/api/rider-delivery/${id}/update`, {user_id: uid, delivery_notes: note});
   const assignDelivery   = (id, assignTo) =>
     _get(`/api/delivery/${id}/assign`, {assign_to:assignTo});
 

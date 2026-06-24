@@ -857,6 +857,9 @@ const API = ((_DB='production', SK='cd_session', NOTIFY='eicoopit@gmail.com') =>
     const p = { carrier_id:cid, origin:'COOPDISCOUNT-WEB' };
     if (opts.partner_shipping_id) p.partner_shipping_id = opts.partner_shipping_id;
     if (opts.partner_invoice_id) p.partner_invoice_id = opts.partner_invoice_id;
+    if (opts.amount_discount !== undefined) p.amount_discount = opts.amount_discount;
+    if (opts.discount_rate !== undefined) p.discount_rate = opts.discount_rate;
+    if (opts.discount_type !== undefined) p.discount_type = opts.discount_type;
     return GET(`/api/order/${oid}/update`, p);
   };
   const getDeliveries = (p={}) => GET('/api/delivery-order', p);
@@ -1609,7 +1612,11 @@ const API = ((_DB='production', SK='cd_session', NOTIFY='eicoopit@gmail.com') =>
     await updContact(pid, addressFields);
     // 2. If we have an order & carrier, update the order with carrier_id (delivery method)
     if (orderId && carrierId) {
-      await updDelivery(parseInt(orderId), parseInt(carrierId));
+      await updDelivery(parseInt(orderId), parseInt(carrierId), {
+        amount_discount: 0,
+        discount_rate: 0.0,
+        discount_type: 'percent'
+      });
     }
     return { ok: true, pid, orderId, carrierId };
   }

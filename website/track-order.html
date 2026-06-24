@@ -155,7 +155,7 @@ async function trackOrder(){
             +'</div>';}).join('')
         + (amtSub||amtTax ? '<div style="margin-top:10px;padding-top:10px;border-top:1.5px solid #e5e7eb;font-size:12px">'
             +'<div style="display:flex;justify-content:space-between;color:#6b7280"><span>Subtotal</span><span>AED '+amtSub.toFixed(2)+'</span></div>'
-            +(pricing.isPickup?'<div style="display:flex;justify-content:space-between;color:#16a34a;margin-top:3px"><span>Store Pickup Discount (5%)</span><span>-AED '+pricing.pickupDiscount.toFixed(2)+'</span></div>':'')
+            +(pricing.isPickup?'<div style="display:flex;justify-content:space-between;color:#16a34a;margin-top:3px"><span>Store Pickup Discount ('+pricing.pickupDiscountRate+'%)</span><span>-AED '+pricing.pickupDiscount.toFixed(2)+'</span></div>':'')
             +(pricing.promoDiscount>0?'<div style="display:flex;justify-content:space-between;color:#16a34a;margin-top:3px"><span>Discount</span><span>-AED '+pricing.promoDiscount.toFixed(2)+'</span></div>':'')
             +(pricing.delFee>0?'<div style="display:flex;justify-content:space-between;color:#6b7280;margin-top:3px"><span>Delivery Fee</span><span>AED '+pricing.delFee.toFixed(2)+'</span></div>':'')
             +(amtTax?'<div style="display:flex;justify-content:space-between;color:#6b7280;margin-top:3px"><span>VAT (5%)</span><span>AED '+amtTax.toFixed(2)+'</span></div>':'')
@@ -182,7 +182,7 @@ async function trackOrder(){
           if(!inv) continue;
           var istate = Array.isArray(inv.state)?inv.state[1]:inv.state||'Draft';
           var pdfUrl = inv.access_token ? API.invPdfUrl(inv.id, inv.access_token) : (inv.access_url?API.PX+inv.access_url:'');
-          var invPrices = recalculateInvoicePrices(inv, pricing.isPickup);
+          var invPrices = recalculateInvoicePrices(inv, pricing.isPickup, pricing.pickupDiscountRate);
           var invTotal = invPrices.total;
           invHtml += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid #f3f4f6">'
             +'<div><div style="font-size:14px;font-weight:800">'+(inv.name||'Invoice #'+inv.id)+'</div>'

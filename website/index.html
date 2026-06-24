@@ -56,7 +56,7 @@
     .cat-chip-img img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       display: block
     }
 
@@ -108,40 +108,217 @@
 
     .uc-cat-header {
       position: relative;
-      background: #ED1C24;
       color: #fff;
-      height: 44px;
+      height: 110px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      border-radius: 6px;
-      margin-left: 24px;
-      font-weight: 800;
-      font-size: 16.5px;
-      box-shadow: 0 4px 6px rgba(237, 28, 36, 0.2);
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom: 16px;
+      padding: 0 24px 0 130px;
+      border-radius: 16px;
+      z-index: 2;
     }
 
+    .uc-cat-header-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--red, #e41e26) 0%, var(--red-dark, #A8151B) 100%);
+      border-radius: 16px;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .uc-cat-header-bg::before {
+      content: '';
+      position: absolute;
+      left: -20px;
+      top: -60px;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .uc-cat-header-bg::after {
+      content: '';
+      position: absolute;
+      right: -40px;
+      bottom: -60px;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: rgba(255, 242, 0, 0.06);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Single logo image for Shop by Category header */
     .uc-cat-header-img {
       position: absolute;
-      left: -24px;
+      left: 12px;
       top: 50%;
       transform: translateY(-50%);
-      width: 54px;
-      height: 54px;
+      width: 86px;
+      height: 86px;
       border-radius: 50%;
-      border: 3px solid #fff;
-      box-shadow: 0 0 0 2px #ED1C24;
+      border: 4px solid #fff;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
       background: #fff;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
+      z-index: 3;
     }
 
     .uc-cat-header-img img {
+      width: 62%;
+      height: 62%;
+      object-fit: contain;
+    }
+
+    /* 3-image overlapping montage for sub-category headers */
+    .uc-cat-header-montage {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 110px;
+      height: 90px;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+    }
+
+    .uc-cat-montage-circle {
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      background: #fff;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .uc-cat-montage-circle img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      padding: 3px;
+      box-sizing: border-box;
+    }
+
+    .uc-cat-montage-circle:nth-child(1) {
+      left: 0;
+      z-index: 3;
+      width: 56px;
+      height: 56px;
+    }
+    .uc-cat-montage-circle:nth-child(2) {
+      left: 30px;
+      z-index: 2;
+      width: 48px;
+      height: 48px;
+    }
+    .uc-cat-montage-circle:nth-child(3) {
+      left: 56px;
+      z-index: 1;
+      width: 40px;
+      height: 40px;
+    }
+
+    .uc-cat-header-title {
+      position: relative;
+      z-index: 4;
+      flex: 1;
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.3px;
+      text-align: left;
+      padding-left: 16px;
+      line-height: 1.2;
+    }
+
+    .uc-cat-header-link {
+      position: relative;
+      z-index: 4;
+      background: var(--yellow, #F5C800);
+      color: #111 !important;
+      padding: 10px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 800;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(245, 200, 0, 0.25);
+      transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+
+    .uc-cat-header-link:hover {
+      background: #fff;
+      color: var(--red, #e41e26) !important;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Mobile Responsive Headers */
+    @media (max-width: 768px) {
+      .uc-cat-header {
+        height: 80px;
+        margin-left: 0;
+        padding: 0 14px 0 90px;
+      }
+      .uc-cat-header-img {
+        width: 60px;
+        height: 60px;
+        left: 10px;
+        border-width: 3px;
+      }
+      .uc-cat-header-img img {
+        width: 62%;
+        height: 62%;
+      }
+      .uc-cat-header-montage {
+        left: 8px;
+        width: 80px;
+        height: 65px;
+      }
+      .uc-cat-montage-circle {
+        width: 42px;
+        height: 42px;
+      }
+      .uc-cat-montage-circle img {
+        padding: 2px;
+      }
+      .uc-cat-montage-circle:nth-child(2) {
+        left: 20px;
+        width: 36px;
+        height: 36px;
+      }
+      .uc-cat-montage-circle:nth-child(3) {
+        left: 38px;
+        width: 30px;
+        height: 30px;
+      }
+      .uc-cat-header-title {
+        font-size: 16px;
+        padding-left: 8px;
+      }
+      .uc-cat-header-link {
+        padding: 6px 14px;
+        font-size: 12px;
+      }
     }
 
     .uc-subcat-list {
@@ -188,16 +365,9 @@
     .r-subcat-img img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
     }
 
-    .r-subcat-title {
-      font-size: 11px;
-      font-weight: 700;
-      text-align: center;
-      line-height: 1.2;
-      padding: 0 4px;
-    }
   </style>
 </head>
 
@@ -229,36 +399,18 @@
     <div class="h-dots" id="hDots" role="tablist" aria-label="Slides"></div>
   </div>
 
-  <!-- PROMO STRIP -->
-  <div class="promo-strip">
-    <div class="ctr">
-      <div class="promo-grid">
-        <div class="promo-item"><span class="promo-ic">🚀</span>
-          <div><span class="promo-ttl">Free Delivery</span><span class="promo-sub">Orders above AED 200p</span></div>
-        </div>
-        <div class="promo-item"><span class="promo-ic">🔄</span>
-          <div><span class="promo-ttl">Easy Returns</span><span class="promo-sub">7-day return policy</span></div>
-        </div>
-        <div class="promo-item"><span class="promo-ic">🔒</span>
-          <div><span class="promo-ttl">Secure Payment</span><span class="promo-sub">100% safe checkout</span></div>
-        </div>
-        <div class="promo-item"><span class="promo-ic">🎧</span>
-          <div><span class="promo-ttl">24/7 Support</span><span class="promo-sub">055 594 4719</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- ② SHOP BY CATEGORY -->
   <section class="sec sec-w">
     <div class="ctr">
       <div class="uc-cat-group" style="margin-bottom:20px;">
-        <div class="uc-cat-header" style="margin-bottom:0; justify-content:center; position:relative;">
-          <div class="uc-cat-header-img" style="background:#fff; font-size:24px; color:#111;">🛒</div>
-          <h2 class="uc-cat-header-title" style="margin:0; font-size:14px;">Shop by Category</h2>
-          <a href="shop.html"
-            style="position:absolute; right:20px; color:#fff; font-size:14.3px; font-weight:700; text-decoration:none; display:flex; align-items:center; gap:4px;">All
-            Categories <span style="font-size:17.6px;">→</span></a>
+        <div class="uc-cat-header">
+          <div class="uc-cat-header-bg"></div>
+          <div class="uc-cat-header-img">
+            <img src="/proxy/web/image/res.company/1/logo" alt="Coop Discounts" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0yIC0yIDI4IDI4IiBmaWxsPSJub25lIiBzdHJva2U9IiNlNDFlMjYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48Y2lyY2xlIGN4PSI5IiBjeT0iMjEiIHI9IjEuNSIgZmlsbD0iI0Y1QzgwMCIgc3Ryb2tlPSIjRjVDODAwIj48L2NpcmNsZT48Y2lyY2xlIGN4PSIyMCIgY3k9IjIxIiByPSIxLjUiIGZpbGw9IiNGNUM4MDAiIHN0cm9rZT0iI0Y1QzgwMCI+PC9jaXJjbGU+PHBhdGggZD0iTTEgMWg0bDIuNjggMTMuMzlhMiAyIDAgMCAwIDIgMS42MWg5LjcyYTIgMiAwIDAgMCAyLTEuNjFMMjMgNkg2Ij48L3BhdGg+PC9zdmc+'">
+          </div>
+          <h2 class="uc-cat-header-title">Shop by Category</h2>
+          <a href="shop.html" class="uc-cat-header-link">View All →</a>
         </div>
       </div>
       <div class="cat-row" id="catRow">
@@ -368,104 +520,7 @@
     </div>
   </section>
 
-  <!-- NEW: TRUST BUILDING ELEMENTS (ID 13) -->
-  <section class="sec" id="trustSec" style="background:#f9fafb;padding:40px 0;border-top:1px solid #eee">
-    <div class="ctr">
-      <div style="text-align:left;margin-bottom:24px">
-        <h3 style="font-size:26.4px;font-weight:900;color:#111">Payment Partners</h3>
-        <p style="color:#6b7280;margin-top:6px;font-size:15.4px">Your payment information is processed securely.</p>
-      </div>
-      <div
-        style="display:flex;justify-content:space-between;align-items:stretch;flex-wrap:nowrap;overflow-x:auto;gap:16px;padding-bottom:10px;width:100%;">
-        <div
-          style="flex:1;background:#d1fae5;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
-          <img src="img/SSL.webp" style="max-height:48px;max-width:100%;object-fit:contain" alt="SSL Secure">
-        </div>
-        <div
-          style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
-          <img src="img/visa-logo-02.png" style="max-height:48px;max-width:100%;object-fit:contain" alt="VISA">
-        </div>
-        <div
-          style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
-          <img src="img/Mastercard.png" style="max-height:48px;max-width:100%;object-fit:contain" alt="Mastercard">
-        </div>
-        <div
-          style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
-          <img src="img/apple pay.png" style="max-height:48px;max-width:100%;object-fit:contain" alt="Apple Pay">
-        </div>
-        <div
-          style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
-          <img src="img/Gpay.png" style="max-height:48px;max-width:100%;object-fit:contain" alt="G Pay">
-        </div>
-        <div
-          style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
-          <img src="img/Tappy-Logo-PNG.png" style="max-height:48px;max-width:100%;object-fit:contain" alt="Tabby">
-        </div>
-        <div
-          style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;display:flex;align-items:center;justify-content:center;min-width:120px;height:86px;">
-          <img src="img/tamara.png" style="max-height:48px;max-width:100%;object-fit:contain" alt="Tamara">
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- SHOP BY SECTION -->
-  <section class="sec" id="shopBySec" style="background:#fff;padding:40px 0;border-top:1px solid #eee">
-    <div class="ctr">
-      <div style="text-align:left;margin-bottom:24px">
-        <h3 style="font-size:26.4px;font-weight:900;color:#111">Shop By</h3>
-        <p style="color:#6b7280;margin-top:6px;font-size:15.4px">Choose your preferred way to shop with us.</p>
-      </div>
-      <div
-        style="display:flex;justify-content:space-between;align-items:stretch;flex-wrap:nowrap;overflow-x:auto;gap:16px;padding-bottom:10px;width:100%;">
-        <div
-          style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;font-weight:800;font-size:16px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:12px;text-align:center;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-          <span style="font-size:32px;">🌐</span> <span>Website</span>
-        </div>
-        <div
-          style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;font-weight:800;font-size:16px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:12px;text-align:center;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-          <span style="font-size:32px;">📱</span> <span>Mobile App</span>
-        </div>
-        <div
-          style="flex:1;background:#fff;padding:16px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #f3f4f6;font-weight:800;font-size:16px;color:#25D366;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:12px;text-align:center;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-          <span style="font-size:32px;">💬</span> <span>WhatsApp</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- POWERED BY SECTION -->
-  <section class="sec" style="background:#fff;padding:30px 0;border-top:1px solid #eee; margin-bottom:20px;">
-    <div class="ctr">
-      <div style="text-align:left;margin-bottom:24px">
-        <h3 style="font-size:26.4px;font-weight:900;color:#111">Powered By</h3>
-        <p style="color:#6b7280;margin-top:6px;font-size:15.4px">Leading technology partners.</p>
-      </div>
-      <div
-        style="display:flex;justify-content:space-between;align-items:stretch;flex-wrap:nowrap;overflow-x:auto;gap:16px;padding-bottom:10px;width:100%;">
-        <div
-          style="flex:1;background:#f8f9fa;padding:16px;border-radius:16px;border:1px solid #e5e7eb;font-weight:800;font-size:14px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.02);">
-          <span style="font-size:32px;">🧠</span> <span>AI Shopping</span>
-        </div>
-        <div
-          style="flex:1;background:#f8f9fa;padding:16px;border-radius:16px;border:1px solid #e5e7eb;font-weight:800;font-size:14px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.02);">
-          <span style="font-size:32px;">🔒</span> <span>Secure Checkout</span>
-        </div>
-        <div
-          style="flex:1;background:#f8f9fa;padding:16px;border-radius:16px;border:1px solid #e5e7eb;font-weight:800;font-size:14px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.02);">
-          <span style="font-size:32px;">📦</span> <span style="line-height:1.2;">Real-Time Inventory</span>
-        </div>
-        <div
-          style="flex:1;background:#f8f9fa;padding:16px;border-radius:16px;border:1px solid #e5e7eb;font-weight:800;font-size:14px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.02);">
-          <span style="font-size:32px;">💡</span> <span>Recommendations</span>
-        </div>
-        <div
-          style="flex:1;background:#f8f9fa;padding:16px;border-radius:16px;border:1px solid #e5e7eb;font-weight:800;font-size:14px;color:#374151;display:flex;align-items:center;justify-content:center;min-width:140px;height:86px;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.02);">
-          <span style="font-size:32px;">🚚</span> <span>Fast Tracking</span>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <div id="site-footer"></div>
 
@@ -596,19 +651,18 @@
     }
 
     function buildCategories(cats) {
-      // 1) Original single row categories
       var cr = document.getElementById('catRow');
       if (cr) {
-        if (!cats || !cats.length) { cr.innerHTML = '<div style="color:#9ca3af;padding:18px">No categories</div>'; }
-        else {
-          cr.innerHTML = cats.slice(0, 14).map(function (c) {
-            var imgSrc = c.image_1024 ? API.img(c.image_1024) : API.catImg(c.id);
+        if (!cats || !cats.length) {
+          cr.innerHTML = '<div style="color:#9ca3af;padding:18px">No categories</div>';
+        } else {
+          cr.innerHTML = cats.map(function (c) {
+            var headImgSrc = c.image_1024 ? API.img(c.image_1024) : API.catImg(c.id);
             return '<a href="shop.html?cat_id=' + c.id + '&cat_name=' + encodeURIComponent(c.name) + '" class="cat-chip">' +
               '<div class="cat-chip-img">' +
-              '<img src="' + imgSrc + '" alt="' + c.name + '" loading="lazy"' +
-              ' onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'<span style=font-size:28.6px>🏷️</span>\'">' +
+              '<img src="' + headImgSrc + '" alt="' + c.name + '" onerror="this.src=\'data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 100 100&quot;><text y=&quot;.9em&quot; font-size=&quot;90&quot;>🛒</text></svg>\'">' +
               '</div>' +
-              '<div class="cat-chip-nm">' + c.name + '</div>' +
+              '<span class="cat-chip-txt">' + c.name + '</span>' +
               '</a>';
           }).join('');
         }
@@ -628,11 +682,18 @@
 
       var html = '<div class="uc-cat-grid">';
       targetCats.forEach(function (c) {
-        var headImgSrc = c.image_1024 ? API.img(c.image_1024) : API.catImg(c.id);
+        var viewAllUrl = 'shop.html?cat_id=' + c.id + '&cat_name=' + encodeURIComponent(c.name);
         html += '<div class="uc-cat-group">';
         html += '  <div class="uc-cat-header">';
-        html += '    <div class="uc-cat-header-img"><img src="' + headImgSrc + '" alt="" onerror="this.style.display=\'none\'"></div>';
+        html += '    <div class="uc-cat-header-bg"></div>';
+        // Montage placeholder — will be filled with 3 product images after fetch
+        html += '    <div class="uc-cat-header-montage" id="cat-montage-' + c.id + '">';
+        html += '      <div class="uc-cat-montage-circle skel"></div>';
+        html += '      <div class="uc-cat-montage-circle skel"></div>';
+        html += '      <div class="uc-cat-montage-circle skel"></div>';
+        html += '    </div>';
         html += '    <div class="uc-cat-header-title">' + c.name + '</div>';
+        html += '    <a href="' + viewAllUrl + '" class="uc-cat-header-link">View All →</a>';
         html += '  </div>';
         html += '  <div style="margin-top:8px; padding-left:10px;">';
         html += '    <div class="dscroll" id="cat-prods-' + c.id + '">';
@@ -652,9 +713,38 @@
             return { data: [] };
           }
         }).then(function (res) {
+          var allProds = (res.data || []);
+          var validProds = allProds.filter(function (p) { return getProdPrice(p) > 0; });
+
+          // Fill the 3-image montage in the header
+          var montageEl = document.getElementById('cat-montage-' + c.id);
+          if (montageEl) {
+            var montageProds = allProds.slice(0, 3);
+            if (montageProds.length > 0) {
+              montageEl.innerHTML = montageProds.map(function (p) {
+                var imgSrc = p.image_1024 ? API.img(p.image_1024) : API.prodImg(p.id);
+                return '<div class="uc-cat-montage-circle"><img src="' + imgSrc + '" alt="" onerror="this.style.display=\'none\'"></div>';
+              }).join('');
+              // If fewer than 3, pad with category image
+              if (montageProds.length < 3) {
+                var catImgSrc = c.image_1024 ? API.img(c.image_1024) : API.catImg(c.id);
+                for (var i = montageProds.length; i < 3; i++) {
+                  montageEl.innerHTML += '<div class="uc-cat-montage-circle"><img src="' + catImgSrc + '" alt=""></div>';
+                }
+              }
+            } else {
+              // Fallback: use category image for all 3
+              var catImgSrc = c.image_1024 ? API.img(c.image_1024) : API.catImg(c.id);
+              montageEl.innerHTML = '';
+              for (var i = 0; i < 3; i++) {
+                montageEl.innerHTML += '<div class="uc-cat-montage-circle"><img src="' + catImgSrc + '" alt=""></div>';
+              }
+            }
+          }
+
+          // Fill the product cards
           var prodsEl = document.getElementById('cat-prods-' + c.id);
           if (prodsEl) {
-            var validProds = (res.data || []).filter(function (p) { return getProdPrice(p) > 0; });
             if (validProds.length > 0) {
               prodsEl.innerHTML = validProds.map(buildMiniCard).join('');
             } else {
@@ -664,6 +754,15 @@
         }).catch(function (err) {
           var prodsEl = document.getElementById('cat-prods-' + c.id);
           if (prodsEl) prodsEl.innerHTML = '<div style="padding:20px;color:#9ca3af;font-size:13.2px;">Error loading products</div>';
+          // Fallback montage
+          var montageEl = document.getElementById('cat-montage-' + c.id);
+          if (montageEl) {
+            var catImgSrc = c.image_1024 ? API.img(c.image_1024) : API.catImg(c.id);
+            montageEl.innerHTML = '';
+            for (var i = 0; i < 3; i++) {
+              montageEl.innerHTML += '<div class="uc-cat-montage-circle"><img src="' + catImgSrc + '" alt=""></div>';
+            }
+          }
         });
       });
       html += '</div>';

@@ -232,23 +232,13 @@ function buildFooter(){
           </div>
         </div>
       </div>
-      <div style="padding-top:20px; border-top:1px solid var(--gray-100); margin-top:20px; font-size:11px; color:var(--gray-400); line-height:1.6;">
+      <div style="padding-top:20px; border-top:1px solid rgba(255,255,255,0.1); margin-top:20px; font-size:11px; color:#9ca3af; line-height:1.6;">
         <strong>Popular Searches:</strong> Lowest Prices Dubai | Everyday Low Prices | Best Deals Dubai | Affordable Shopping Dubai | Family Shopping Dubai | Save More Dubai | Budget Shopping Dubai | Best Grocery Prices Dubai
       </div>
       <div class="r-ftr-bottom"
-        style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; padding-top:20px; border-top:1px solid var(--gray-200); margin-top:30px;">
-        <div style="color:var(--gray-500); font-weight:600;">
+        style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1); margin-top:30px;">
+        <div style="color:#9ca3af; font-weight:600;">
           &copy; 2026 COOP DISCOUNTS. All Rights Reserved.
-        </div>
-        <div class="r-ftr-partners" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-          <img src="img/visa-logo-02.png" alt="Visa" style="height:24px; object-fit:contain;">
-          <img src="img/Mastercard.png" alt="Mastercard" style="height:24px; object-fit:contain;">
-          <img src="img/apple pay.png" alt="Apple Pay" style="height:24px; object-fit:contain;">
-          <img src="img/Gpay.png" alt="Google Pay" style="height:24px; object-fit:contain;">
-          <img src="img/tamara.png" alt="Tamara" style="height:24px; object-fit:contain;">
-          <img src="img/Tappy-Logo-PNG.png" alt="Tabby" style="height:24px; object-fit:contain;">
-          <div style="width:1px; height:24px; background:var(--gray-200); margin:0 4px;"></div>
-          <img src="img/SSL.webp" alt="SSL Secure" style="height:24px; object-fit:contain;">
         </div>
       </div>
     </div>

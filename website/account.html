@@ -229,6 +229,11 @@
               <select class="fsel" id="aType"><option value="delivery">Delivery</option><option value="invoice">Invoice</option></select>
             </div>
           </div>
+          <input type="hidden" id="aLat"><input type="hidden" id="aLng">
+          <div style="margin-top:10px;font-size:12px">
+            <button onclick="getAccountLocation()" class="sbtn" style="background:#fff;color:var(--primary);border:1px solid var(--primary);padding:6px 12px;max-width:max-content;font-size:11px">📍 Get My Current Location</button>
+            <span id="locStatus" style="margin-left:10px;font-weight:600"></span>
+          </div>
           <div id="addrMsg" style="margin-top:8px;font-size:12px;font-weight:600"></div>
           <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
             <button onclick="saveNewAddress()" class="sbtn" style="max-width:220px">💾 Save Address</button>
@@ -480,8 +485,21 @@ async function loadOrders(isLoadMore = false){
       
       var totalVal = parseFloat(o.amount_total || 0);
       if (o.note && o.note.includes('[STORE PICKUP]')) {
-        var match = o.note.match(/Store Pickup Discount \(5%\):\s*-AED\s*([\d.]+)/i);
-        var pickupDisc = match ? parseFloat(match[1]) : parseFloat((parseFloat(o.amount_untaxed || 0) * 0.05).toFixed(2));
+        var match = o.note.match(/Store Pickup Discount \((\d+(?:\.\d+)?)\%\):\s*-AED\s*([\d.]+)/i);
+        var rate = 5.0;
+        var pickupDisc = 0;
+        if (match) {
+          rate = parseFloat(match[1]);
+          pickupDisc = parseFloat(match[2]);
+        } else {
+          var oldMatch = o.note.match(/Store Pickup Discount \(5%\):\s*-AED\s*([\d.]+)/i);
+          if (oldMatch) {
+            pickupDisc = parseFloat(oldMatch[1]);
+          } else {
+            rate = parseFloat(o.discount_rate || 0);
+            pickupDisc = parseFloat(o.amount_discount || (parseFloat(o.amount_untaxed || 0) * (rate / 100)).toFixed(2));
+          }
+        }
         var netUntaxed = Math.max(0, parseFloat(o.amount_untaxed || 0) - pickupDisc);
         var newVat = parseFloat((netUntaxed * 0.05).toFixed(2));
         totalVal = netUntaxed + newVat;
@@ -580,7 +598,7 @@ async function viewOrderDetail(oid){
             +'</div>';}).join('')
         +'<div style="margin-top:10px;padding-top:10px;border-top:1.5px solid #e5e7eb;font-size:12px">'
           +'<div style="display:flex;justify-content:space-between;color:#6b7280"><span>Subtotal</span><span>AED '+amtSub.toFixed(2)+'</span></div>'
-          +(pricing.isPickup?'<div style="display:flex;justify-content:space-between;color:#16a34a;margin-top:3px"><span>Store Pickup Discount (5%)</span><span>-AED '+pricing.pickupDiscount.toFixed(2)+'</span></div>':'')
+          +(pricing.isPickup?'<div style="display:flex;justify-content:space-between;color:#16a34a;margin-top:3px"><span>Store Pickup Discount ('+pricing.pickupDiscountRate+'%)</span><span>-AED '+pricing.pickupDiscount.toFixed(2)+'</span></div>':'')
           +(pricing.promoDiscount>0?'<div style="display:flex;justify-content:space-between;color:#16a34a;margin-top:3px"><span>Discount</span><span>-AED '+pricing.promoDiscount.toFixed(2)+'</span></div>':'')
           +(pricing.delFee>0?'<div style="display:flex;justify-content:space-between;color:#6b7280;margin-top:3px"><span>Delivery Fee</span><span>AED '+pricing.delFee.toFixed(2)+'</span></div>':'')
           +(amtTax?'<div style="display:flex;justify-content:space-between;color:#6b7280;margin-top:3px"><span>VAT (5%)</span><span>AED '+amtTax.toFixed(2)+'</span></div>':'')
@@ -607,7 +625,7 @@ async function viewOrderDetail(oid){
             if(!inv) continue;
             var istate=Array.isArray(inv.state)?inv.state[1]:inv.state||'Draft';
             var pdfUrl=inv.access_token?API.invPdfUrl(inv.id,inv.access_token):(inv.access_url?API.PX+inv.access_url:'');
-            var invPrices = recalculateInvoicePrices(inv, pricing.isPickup);
+            var invPrices = recalculateInvoicePrices(inv, pricing.isPickup, pricing.pickupDiscountRate);
             var invTotal = invPrices.total;
             invHtml += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;flex-wrap:wrap">'
               +'<div><div style="font-size:13px;font-weight:800">'+(inv.name||'Invoice #'+inv.id)+'</div>'
@@ -1136,6 +1154,24 @@ window.loadStatesForCountry = async function(countryId, targetId) {
   }
 };
 
+function getAccountLocation() {
+  var status = document.getElementById('locStatus');
+  status.textContent = 'Locating...';
+  if (!navigator.geolocation) {
+    status.textContent = 'Geolocation is not supported by your browser';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    if(document.getElementById('aLat')) document.getElementById('aLat').value = pos.coords.latitude;
+    if(document.getElementById('aLng')) document.getElementById('aLng').value = pos.coords.longitude;
+    status.textContent = 'Location acquired ✅';
+    status.style.color = '#065f46';
+  }, function() {
+    status.textContent = 'Unable to retrieve your location';
+    status.style.color = '#ED1C24';
+  });
+}
+
 async function saveNewAddress(){
   var pid = API.myPid(); if(!pid)return;
   var msg = document.getElementById('addrMsg');
@@ -1159,7 +1195,9 @@ async function saveNewAddress(){
       zip: document.getElementById('aZip').value.trim(),
       type: document.getElementById('aType').value,
       country_id: document.getElementById('aCountry').value,
-      state_id: document.getElementById('aState').value
+      state_id: document.getElementById('aState').value,
+      latitude: document.getElementById('aLat') ? document.getElementById('aLat').value : '',
+      longitude: document.getElementById('aLng') ? document.getElementById('aLng').value : ''
     };
     await API.addAddress(payload);
     msg.textContent='✅ Address created successfully!'; msg.style.color='#065f46';

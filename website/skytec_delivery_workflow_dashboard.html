@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SKYTEC Delivery Workflow</title>
+<title>Coop Discount — Delivery Workflow</title>
 <style>
-:root{--primary:#6f3d68;--primary2:#875A7B;--bg:#f4f6f9;--card:#fff;--border:#e5e7eb;--text:#111827;--muted:#6b7280;--green:#16a34a;--blue:#2563eb;--orange:#f97316;--red:#dc2626}
+:root{--primary:#ED1C24;--primary2:#BE161D;--bg:#f4f6f9;--card:#fff;--border:#e5e7eb;--text:#111827;--muted:#6b7280;--green:#16a34a;--blue:#2563eb;--orange:#f97316;--red:#dc2626}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
 .header{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}.header h1{font-size:18px;margin:0}.header small{opacity:.8}.wrap{padding:16px;max-width:1200px;margin:auto}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}select,input,button{border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-family:inherit}button{cursor:pointer;background:var(--primary);color:#fff;font-weight:700;border:none}button.secondary{background:#fff;color:var(--primary);border:1px solid var(--primary)}button.green{background:var(--green)}button.blue{background:var(--blue)}button.orange{background:var(--orange)}button.red{background:var(--red)}
@@ -28,7 +28,7 @@
 </style>
 </head>
 <body>
-<div class="header"><div><h1>SKYTEC Delivery Workflow</h1><small>Store Manager / Store Keeper realtime dashboard</small></div><div style="display:flex;gap:10px;"><button style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.5);" onclick="location.href='index.html'">&#x1F3E0; Home</button><button style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.5);" onclick="logoutDashboard()">&#x1F6AA; Logout</button></div></div>
+<div class="header"><div><h1>Coop Discount — Delivery Workflow</h1><small>Store Manager / Store Keeper realtime dashboard</small></div><div style="display:flex;gap:10px;"><button style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.5);" onclick="location.href='index.html'">&#x1F3E0; Home</button><button style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.5);" onclick="logoutDashboard()">&#x1F6AA; Logout</button></div></div>
 <div class="wrap">
 <div id="err" class="err"></div>
 <div class="toolbar">
@@ -63,7 +63,7 @@ function saveSession(){localStorage.setItem('odoo_session_id',document.getElemen
 function logoutDashboard(){localStorage.removeItem('odoo_session_id');localStorage.removeItem('cd_session');localStorage.removeItem('cd_role_code');location.href='login.html';}
 function showErr(m){const e=document.getElementById('err');e.style.display=m?'block':'none';e.textContent=m||''}
 function badge(s){return `<span class="badge ${s||'new'}">${s||'new'}</span>`}
-function val(o,...keys){for(const k of keys){if(o&&o[k]!==undefined&&o[k]!==null&&o[k]!=='')return (Array.isArray(o[k])&&o[k].length===2&&typeof o[k][0]==='number')?o[k][1]:o[k]}return''}
+function val(o,...keys){for(const k of keys){if(o&&o[k]!==undefined&&o[k]!==null&&o[k]!==''){const v=o[k];if(Array.isArray(v)&&v.length===2&&typeof v[0]==='number')return v[1];if(typeof v==='object'&&!Array.isArray(v))return v.name||v.display_name||v.id||'';return v;}}return''}
 async function apiGet(path,params={}){const url=new URL(BASE_URL+path);Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));const res=await fetch(url,{method:'GET',credentials:'include',headers:{'Accept':'application/json','Content-Type':'application/json','Cookie':'session_id='+sid()}});const txt=await res.text();if(txt.trim().startsWith('<'))throw new Error('Odoo returned HTML/login page. Check session_id cookie.');return JSON.parse(txt)}
 async function apiPost(path,body){const res=await fetch(BASE_URL+path,{method:'POST',credentials:'include',headers:{'Accept':'application/json','Content-Type':'application/json','Cookie':'session_id='+sid()},body:JSON.stringify(body)});const txt=await res.text();if(txt.trim().startsWith('<'))throw new Error('Odoo returned HTML/login page. Check session_id cookie.');return JSON.parse(txt)}
 function selectQueue(data){const role=document.getElementById('role').value;if(role==='store_manager')return data.store_manager_queue||[];if(role==='store_keeper')return data.store_keeper_queue||[];if(role==='delivery')return data.delivery_queue||[];return data.workflow_orders||data.recent_orders||[]}
@@ -101,8 +101,39 @@ async function loadDashboard(){
 }
 function setView(v){currentView=v;document.getElementById('btnList').classList.toggle('active',v==='list');document.getElementById('btnKanban').classList.toggle('active',v==='kanban');render()}
 function render(){if(!currentItems.length){document.getElementById('orders').innerHTML='<div class="empty">No records found</div>';return}if(currentView==='kanban'){document.getElementById('orders').innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;padding:12px">${currentItems.map(card).join('')}</div>`}else{document.getElementById('orders').innerHTML=`<table class="table"><thead><tr><th>Order</th><th>Customer</th><th>Source</th><th>Status</th><th>Responsible</th><th>Actions</th></tr></thead><tbody>${currentItems.map(row).join('')}</tbody></table>`}}
-function row(o){const state=val(o,'delivery_state','state');return `<tr><td data-label="Order"><b>${val(o,'name')}</b><br><small>${val(o,'scheduled_date','create_date')}</small></td><td data-label="Customer">${val(o,'partner','customer','partner_name')}<br><small>${val(o,'partner_phone')}</small></td><td data-label="Source">${val(o,'source','delivery_source')}</td><td data-label="Status">${badge(state)}</td><td data-label="Responsible">${val(o,'store_manager','store_keeper','driver','responsible')||'-'}</td><td data-label="Actions"><div class="actions">${buttons(o,state)}</div></td></tr>`}
-function card(o){const state=val(o,'delivery_state','state');return `<div class="kpi" style="text-align:left"><b style="font-size:15px">${val(o,'name')}</b><br>${badge(state)}<p><b>Customer:</b> ${val(o,'partner','customer','partner_name')||'-'}</p><p><b>Source:</b> ${val(o,'source','delivery_source')||'-'}</p><p><b>Responsible:</b> ${val(o,'store_manager','store_keeper','driver','responsible')||'-'}</p><div class="actions">${buttons(o,state)}</div></div>`}
+function row(o){
+  const state=val(o,'delivery_state','state');
+  const phone=val(o,'partner_phone');
+  const address=val(o,'partner_address');
+  const lat=val(o,'partner_latitude');
+  const lng=val(o,'partner_longitude');
+  
+  let custHtml = `${val(o,'partner','customer','partner_name')}`;
+  if (phone) custHtml += `<br><small>📞 ${phone}</small>`;
+  if (address) custHtml += `<br><small>📍 ${address}</small>`;
+  if (lat && lng) {
+    custHtml += `<br><button onclick="window.open('https://maps.google.com/?q=${lat},${lng}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:700;margin-top:2px;cursor:pointer;">📍 Map</button>`;
+  }
+  
+  return `<tr><td data-label="Order"><b>${val(o,'name')}</b><br><small>${val(o,'scheduled_date','create_date')}</small></td><td data-label="Customer">${custHtml}</td><td data-label="Source">${val(o,'source','delivery_source')}</td><td data-label="Status">${badge(state)}</td><td data-label="Responsible">${val(o,'store_manager','store_keeper','driver','responsible')||'-'}</td><td data-label="Actions"><div class="actions">${buttons(o,state)}</div></td></tr>`
+}
+
+function card(o){
+  const state=val(o,'delivery_state','state');
+  const phone=val(o,'partner_phone');
+  const address=val(o,'partner_address');
+  const lat=val(o,'partner_latitude');
+  const lng=val(o,'partner_longitude');
+  
+  let custHtml = `${val(o,'partner','customer','partner_name')||'-'}`;
+  if (phone) custHtml += ` (📞 ${phone})`;
+  if (address) custHtml += `<br>📍 ${address}`;
+  if (lat && lng) {
+    custHtml += ` <button onclick="window.open('https://maps.google.com/?q=${lat},${lng}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:700;cursor:pointer;margin-left:4px;">📍 Map</button>`;
+  }
+  
+  return `<div class="kpi" style="text-align:left"><b style="font-size:15px">${val(o,'name')}</b><br>${badge(state)}<p><b>Customer:</b> ${custHtml}</p><p><b>Source:</b> ${val(o,'source','delivery_source')||'-'}</p><p><b>Responsible:</b> ${val(o,'store_manager','store_keeper','driver','responsible')||'-'}</p><div class="actions">${buttons(o,state)}</div></div>`
+}
 function buttons(o,state){
   const id=val(o,'id','picking_id');
   const allowed=o.allowed_actions;

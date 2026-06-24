@@ -1,8 +1,14 @@
 // Coop Discounts CORS Proxy v2.1 — Handles binary images + session cookies
 // Fixed: CORS origin allowlist, path allowlist, deprecated url.parse → WHATWG URL
 const http = require('http'), https = require('https'), querystring = require('querystring');
-const ODOO = process.env.ODOO_BASE || 'http://cooperp.freeddns.org:8070';
+const ODOO = process.env.ODOO_BASE || 'http://cooperp.freeddns.org:8077';
 const PORT = parseInt(process.env.PORT || '3001');
+
+const TELR_STORE_ID = process.env.TELR_STORE_ID || '';
+const TELR_AUTH_KEY = process.env.TELR_AUTH_KEY || '';
+const ODOO_API_KEY  = process.env.ODOO_API_KEY || '';
+const SITE_BASE_URL = process.env.SITE_BASE_URL || `http://localhost:${PORT}`;
+const TELR_TEST_MODE = process.env.TELR_TEST_MODE !== 'false';
 
 // ── CORS ORIGIN ALLOWLIST ──────────────────────────────────────────
 // Only these origins may make credentialed requests.
@@ -211,6 +217,95 @@ http.createServer((req, res) => {
       tr.end();
     });
     return;
+  }
+
+  // ── TELR PAYMENT BRIDGE NATIVE IMPLEMENTATION ───────────────────
+  if (path === '/pay.php' || path.startsWith('/pay/')) {
+    const token = reqUrl.searchParams.get('token') || path.replace('/pay/', '');
+    if (!token || token === '/' || token === 'pay.php') {
+      res.statusCode = 400; res.setHeader('Content-Type', 'text/html'); return res.end('Invalid payment link');
+    }
+    fetch(`${ODOO}/coop_wa/payment/${encodeURIComponent(token)}`, {
+      headers: { 'X-API-Key': ODOO_API_KEY }
+    })
+    .then(r => r.json())
+    .then(order => {
+      if (!order || !order.amount) {
+        res.statusCode = 400; res.setHeader('Content-Type', 'text/html'); return res.end('Invalid order response');
+      }
+      const amount = Number(order.amount).toFixed(2);
+      const orderRef = order.order_ref || ('WA-' + Date.now());
+      const payload = {
+        method: 'create',
+        store: TELR_STORE_ID,
+        authkey: TELR_AUTH_KEY,
+        order: {
+          cartid: orderRef,
+          test: TELR_TEST_MODE ? '1' : '0',
+          amount: amount,
+          currency: 'AED',
+          description: 'WhatsApp Order ' + orderRef,
+        },
+        return: {
+          authorised: `${SITE_BASE_URL}/payment/telr/success.php?token=${encodeURIComponent(token)}`,
+          declined:   `${SITE_BASE_URL}/payment/telr/decline.php?token=${encodeURIComponent(token)}`,
+          cancelled:  `${SITE_BASE_URL}/payment/telr/cancel.php?token=${encodeURIComponent(token)}`,
+        },
+        customer: {
+          name: { forenames: order.customer_name || 'Customer', surname: '' },
+          email: order.customer_email || 'customer@coop-discounts.com',
+          phone: order.customer_mobile || '',
+        }
+      };
+      return fetch('https://secure.telr.com/gateway/order.json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    })
+    .then(r => r.json())
+    .then(data => {
+      const url = data.order && data.order.url;
+      if (!url) {
+        res.statusCode = 502; res.setHeader('Content-Type', 'text/html'); return res.end('<pre>Telr error: ' + JSON.stringify(data, null, 2) + '</pre>');
+      }
+      res.statusCode = 302;
+      res.setHeader('Location', url);
+      res.end();
+    })
+    .catch(e => {
+      console.error('[Proxy] Telr Bridge Error:', e);
+      res.statusCode = 500; res.setHeader('Content-Type', 'text/html'); return res.end('Internal Server Error: ' + e.message);
+    });
+    return;
+  }
+
+  if (path.startsWith('/payment/telr/')) {
+    const token = reqUrl.searchParams.get('token') || '';
+    const telrRef = reqUrl.searchParams.get('ref') || reqUrl.searchParams.get('orderref') || '';
+    let status = '';
+    if (path.includes('success')) status = 'paid';
+    else if (path.includes('decline')) status = 'declined';
+    else if (path.includes('cancel')) status = 'cancelled';
+    
+    if (status) {
+      fetch(`${ODOO}/coop_wa/payment/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Key': ODOO_API_KEY },
+        body: JSON.stringify({ token, status, telr_ref: telrRef, currency: 'AED' })
+      })
+      .then(() => {
+        res.setHeader('Content-Type', 'text/html');
+        if (status === 'paid') res.end('<h2>Payment successful</h2><p>Your order has been received. You will get WhatsApp confirmation shortly.</p>');
+        else if (status === 'declined') res.end('<h2>Payment declined</h2><p>Your payment was declined. Please try again or use another card.</p>');
+        else res.end('<h2>Payment cancelled</h2><p>You cancelled the payment.</p>');
+      })
+      .catch(e => {
+        console.error('[Proxy] Telr Update Error:', e);
+        res.statusCode = 500; res.setHeader('Content-Type', 'text/html'); res.end('Error updating payment status.');
+      });
+      return;
+    }
   }
 
   // Health check

@@ -407,13 +407,22 @@ async function goStep(step){
         if(oid && !contact.isStore && contact.partnerShippingId) {
            await API.updDelivery(parseInt(oid), selCarrierId, {
              partner_shipping_id: contact.partnerShippingId,
-             partner_invoice_id: contact.partnerInvoiceId || contact.partnerShippingId
+             partner_invoice_id: contact.partnerInvoiceId || contact.partnerShippingId,
+             amount_discount: 0,
+             discount_rate: 0.0,
+             discount_type: 'percent'
            });
            await Cart.syncToOrder(parseInt(oid), true);
            renderSummary();
         } else if (oid && contact.isStore && contact.partnerInvoiceId) {
+           var sub = Cart.total();
+           var pRate = (selDeliveryMethod && typeof selDeliveryMethod.margin !== 'undefined') ? parseFloat(selDeliveryMethod.margin || 0) : 0.0;
+           var pDisc = parseFloat((sub * (pRate / 100)).toFixed(2));
            await API.updDelivery(parseInt(oid), selCarrierId, {
-             partner_invoice_id: contact.partnerInvoiceId
+             partner_invoice_id: contact.partnerInvoiceId,
+             amount_discount: pDisc,
+             discount_rate: pRate,
+             discount_type: 'percent'
            });
            await Cart.syncToOrder(parseInt(oid), true);
            renderSummary();
@@ -796,11 +805,9 @@ window.loadStatesForCountry = async function(countryId, targetId) {
 function renderSummary(){
   var items=Cart.raw(), sub=Cart.total();
   
-  // 1. Calculate pickup discount (5% of subtotal)
-  var pickupDisc = 0;
-  if (selDeliveryKind === 'store') {
-    pickupDisc = parseFloat((sub * 0.05).toFixed(2));
-  }
+  // 1. Calculate pickup discount (dynamic percentage of subtotal from backend margin)
+  var pRate = (selDeliveryMethod && typeof selDeliveryMethod.margin !== 'undefined') ? parseFloat(selDeliveryMethod.margin || 0) : 0.0;
+  var pickupDisc = parseFloat((sub * (pRate / 100)).toFixed(2));
   
   // 2. Calculate delivery fee
   var delFee = 0;
@@ -839,6 +846,11 @@ function renderSummary(){
     if (pickupDisc > 0) {
       pickupDiscRow.style.display = 'flex';
       pickupDiscAmt.textContent = '–AED ' + pickupDisc.toFixed(2);
+      var labelSpan = pickupDiscRow.querySelector('span:first-child');
+      if (labelSpan) {
+        var pRate = (selDeliveryMethod && typeof selDeliveryMethod.margin !== 'undefined') ? parseFloat(selDeliveryMethod.margin || 0) : 0.0;
+        labelSpan.textContent = '🏪 Store Pickup Discount (' + pRate + '%)';
+      }
     } else {
       pickupDiscRow.style.display = 'none';
     }
@@ -939,7 +951,16 @@ async function pushCarrierToOrder(){
   }
   if(!oid){ msg.textContent='ℹ️ Add an item to cart to apply the delivery method'; msg.style.color='#92400e'; return; }
   try{
-    await API.updDelivery(parseInt(oid), selCarrierId);
+    var sub = Cart.total();
+    var pRate = (selDeliveryMethod && typeof selDeliveryMethod.margin !== 'undefined') ? parseFloat(selDeliveryMethod.margin || 0) : 0.0;
+    var pDisc = parseFloat((sub * (pRate / 100)).toFixed(2));
+    var pType = 'percent';
+
+    await API.updDelivery(parseInt(oid), selCarrierId, {
+      amount_discount: pDisc,
+      discount_rate: pRate,
+      discount_type: pType
+    });
     msg.textContent='✅ '+selCarrierName+' applied to your order';
     msg.style.color='#065f46';
   }catch(e){ msg.textContent='❌ Failed to apply carrier: '+e.message; msg.style.color='#ED1C24'; }
@@ -1317,13 +1338,24 @@ async function placeOrder(){
     } else if(contact.isStore && contact.partnerInvoiceId){
       updOpts.partner_invoice_id = contact.partnerInvoiceId;
     }
+
+    // Map percentage and amount of pickup/delivery discount
+    var pRate = (selDeliveryMethod && typeof selDeliveryMethod.margin !== 'undefined') ? parseFloat(selDeliveryMethod.margin || 0) : 0.0;
+    var pDisc = parseFloat((sub * (pRate / 100)).toFixed(2));
+    var pType = 'percent';
+
+    updOpts.amount_discount = pDisc;
+    updOpts.discount_rate = pRate;
+    updOpts.discount_type = pType;
+
     try{await API.updDelivery(parseInt(oid),selCarrierId, updOpts);}catch(_){}
 
     // 4) Add delivery note
     var note = '';
     if(contact.isStore) {
-      var pickupDisc = parseFloat((sub * 0.05).toFixed(2));
-      note = '[STORE PICKUP] ' + contact.fn + ' | ' + contact.ph + (contact.em?' | '+contact.em:'') + (contact.partnerInvoiceId?' | Invoice Contact ID '+contact.partnerInvoiceId:'') + ' | Store Pickup Discount (5%): -AED ' + pickupDisc.toFixed(2);
+      var pRate = (selDeliveryMethod && typeof selDeliveryMethod.margin !== 'undefined') ? parseFloat(selDeliveryMethod.margin || 0) : 0.0;
+      var pickupDisc = parseFloat((sub * (pRate / 100)).toFixed(2));
+      note = '[STORE PICKUP] ' + contact.fn + ' | ' + contact.ph + (contact.em?' | '+contact.em:'') + (contact.partnerInvoiceId?' | Invoice Contact ID '+contact.partnerInvoiceId:'') + ' | Store Pickup Discount (' + pRate + '%): -AED ' + pickupDisc.toFixed(2);
     } else {
       note = '[DELIVERY] Ship Contact ID ' + contact.partnerShippingId + ' | Invoice Contact ID ' + (contact.partnerInvoiceId || contact.partnerShippingId);
     }
@@ -1344,7 +1376,8 @@ async function placeOrder(){
       log.info('Checkout','Telr → transaction created',{orderId:oid,txId:txId});
 
       // Step 5b: Calculate total amount
-      var pickupDiscAmount = contact.isStore ? parseFloat((sub * 0.05).toFixed(2)) : 0;
+      var pRate = (selDeliveryMethod && typeof selDeliveryMethod.margin !== 'undefined') ? parseFloat(selDeliveryMethod.margin || 0) : 0.0;
+      var pickupDiscAmount = parseFloat((sub * (pRate / 100)).toFixed(2));
       var deliveryFeeVal = 0;
       if (!contact.isStore && sub < 150) {
         deliveryFeeVal = selDeliveryMethod ? parseFloat(selDeliveryMethod.fixed_price || 0) : 15;

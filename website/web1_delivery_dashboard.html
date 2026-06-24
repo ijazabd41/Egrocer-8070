@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>CD.COM — Delivery Dashboard</title>
+<title>Coop Discount — Delivery Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="cd_dashboard.css">
 <script src="js/error-logger.js?v=1.0"></script>
 <script src="cd_web_api.js"></script>
 <style>
-:root{--bg:#F7F8FA;--sidebar:#fff;--card:#fff;--border:#E8ECF2;--primary:#E62C31;
+:root{--bg:#F7F8FA;--sidebar:#fff;--card:#fff;--border:#E8ECF2;--primary:#ED1C24;
 --text:#0F172A;--text-mid:#64748B;--text-soft:#94A3B8;--nav-active:#DBEAFE;--font:'Inter',sans-serif;}
 .role-toggle{display:flex;background:var(--border);border-radius:8px;padding:3px;gap:2px;margin-left:auto}
 .rt-btn{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-mid);transition:.15s;border:none;background:transparent}
@@ -28,7 +28,7 @@
 <body>
 <div class="dash-shell">
 <aside class="dash-sidebar">
-  <div class="sb-logo">CD<span>.COM</span></div>
+  <div class="sb-logo">Coop<span> Discount</span></div>
   <div class="sb-user">
     <div class="sb-avatar" id="sbav">D</div>
     <div><div class="sb-name" id="sbname">—</div><div class="sb-role" id="sbrole">Delivery</div></div>
@@ -60,7 +60,7 @@
 
     <!-- Stats row - always visible -->
     <div class="mini-stats" id="stats-row">
-      <div class="mini-stat"><div class="val" id="st-total"    style="color:#E62C31">—</div><div class="lbl">Total Today</div></div>
+      <div class="mini-stat"><div class="val" id="st-total"    style="color:#ED1C24">—</div><div class="lbl">Total Today</div></div>
       <div class="mini-stat"><div class="val" id="st-unassign" style="color:#DC2626">—</div><div class="lbl">Unassigned</div></div>
       <div class="mini-stat"><div class="val" id="st-transit"  style="color:#F59E0B">—</div><div class="lbl">In Transit</div></div>
       <div class="mini-stat"><div class="val" id="st-done"     style="color:#16A34A">—</div><div class="lbl">Delivered</div></div>
@@ -244,7 +244,7 @@ function loadCurrent(){
 }
 
 function loadCurrentView(){
-function ext(v){if(Array.isArray(v)){if(v.length===0)return'';let l=v[v.length-1];if(typeof l==='object'&&l!==null)return l.name||l.display_name||('ID: '+l.id)||'';return l;}return v||'';}
+function ext(v){if(Array.isArray(v)){if(v.length===0)return'';let l=v[v.length-1];if(typeof l==='object'&&l!==null)return l.name||l.display_name||('ID: '+l.id)||'';return l;}if(typeof v==='object'&&v!==null)return v.name||v.display_name||('ID: '+v.id)||'';return v||'';}
 function extState(v){if(Array.isArray(v)){return{st:v[0]||'',l:v[1]||''};}return{st:v||'',l:v||''};}
 window.ext=ext;window.extState=extState;
   if(currentRole==='manager'){showView('manager');loadManagerView();}
@@ -302,12 +302,19 @@ function renderDelList(dels){
     const cust=window.ext(d.partner_id)||'Customer';
     const driver=window.ext(d.user_id); const unassigned=!driver;
     const c=stateColor[st]||'#94A3B8'; const l=apiLabel||stateLabel[st]||st;
+    const addr=d.partner_address?`<div style="font-size:11px;color:var(--text-mid);margin-top:2px;line-height:1.3">📍 ${d.partner_address}</div>`:'';
+    const phone=d.partner_phone?`<div style="font-size:11px;color:var(--text-mid);margin-top:2px">📞 ${d.partner_phone}</div>`:'';
+    const hasGeo = d.partner_latitude && d.partner_longitude;
+    const mapBtn = hasGeo ? `<button onclick="event.stopPropagation();window.open('https://maps.google.com/?q=${d.partner_latitude},${d.partner_longitude}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px">📍 Map</button>` : '';
     return `<div class="del-row">
       <div class="del-av">${String(cust)[0]?.toUpperCase()||'C'}</div>
       <div style="flex:1">
         <div style="font-size:12px;color:var(--text-soft)">${d.name||''}</div>
         <div style="font-size:14px;font-weight:700">${cust}</div>
-        <div style="font-size:11px;color:${unassigned?'#DC2626':'var(--text-mid)'}">
+        ${phone}
+        ${addr}
+        ${mapBtn}
+        <div style="font-size:11px;color:${unassigned?'#DC2626':'var(--text-mid)'};margin-top:4px">
           ${unassigned?'&#x26A0;&#xFE0F; Unassigned':'&#x1F69A; '+driver}
         </div>
       </div>
@@ -376,9 +383,13 @@ async function loadMoreRU(){
 function renderRU(items){
   document.getElementById('ru-list').innerHTML=items.map(d=>{
     const cust=window.ext(d.partner_id)||'Customer';
+    const addr=d.partner_address?`<div style="font-size:11px;color:var(--text-mid);margin-top:2px;line-height:1.3">📍 ${d.partner_address}</div>`:'';
+    const phone=d.partner_phone?`<div style="font-size:11px;color:var(--text-mid);margin-top:2px">📞 ${d.partner_phone}</div>`:'';
+    const hasGeo = d.partner_latitude && d.partner_longitude;
+    const mapBtn = hasGeo ? `<button onclick="event.stopPropagation();window.open('https://maps.google.com/?q=${d.partner_latitude},${d.partner_longitude}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px">📍 Map</button>` : '';
     return `<div class="del-row">
       <div class="del-av">${String(cust)[0]?.toUpperCase()||'C'}</div>
-      <div style="flex:1"><div style="font-size:12px;color:var(--text-soft)">${d.name||''}</div><div style="font-size:14px;font-weight:700">${cust}</div></div>
+      <div style="flex:1"><div style="font-size:12px;color:var(--text-soft)">${d.name||''}</div><div style="font-size:14px;font-weight:700">${cust}</div>${phone}${addr}${mapBtn}</div>
       <button onclick="doAccept(${d.id})" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer">Accept</button>
     </div>`;
   }).join('')||'<div style="text-align:center;padding:20px;color:var(--text-mid)">&#x1F69A; No available deliveries</div>';
@@ -395,11 +406,15 @@ async function loadRiderMine(){
     const d=(r.results||r.data||[]);
     document.getElementById('rm-list').innerHTML=d.map(x=>{
       const cust=window.ext(x.partner_id)||'Customer';
+      const addr=x.partner_address?`<div style="font-size:11px;color:var(--text-mid);margin-top:2px;line-height:1.3">📍 ${x.partner_address}</div>`:'';
+      const phone=x.partner_phone?`<div style="font-size:11px;color:var(--text-mid);margin-top:2px">📞 ${x.partner_phone}</div>`:'';
       const {st}=window.extState(x.state);
       const done=st==='done';
-      return `<div class="del-row" style="cursor:${done?'default':'pointer'}" onclick="${done?'':'openOtp('+x.id+',\''+x.name+'\',\''+cust+'\')'}">
+      const hasGeo = x.partner_latitude && x.partner_longitude;
+      const mapBtn = hasGeo ? `<button onclick="event.stopPropagation();window.open('https://maps.google.com/?q=${x.partner_latitude},${x.partner_longitude}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px">📍 Directions</button>` : '';
+      return `<div class="del-row" style="cursor:${done?'default':'pointer'}" onclick="${done?'':'openOtp('+x.id+',\''+x.name+'\',\''+String(cust).replace(/'/g,"\\'")+'\','+(x.partner_latitude||0)+','+(x.partner_longitude||0)+',\''+(x.partner_address?x.partner_address.replace(/'/g,"\\'"):'')+'\',\''+(x.partner_phone||'')+'\')'}">
         <div class="del-av" style="background:${done?'#16A34A':'var(--primary)'}">${String(cust)[0]?.toUpperCase()||'C'}</div>
-        <div style="flex:1"><div style="font-size:12px;color:var(--text-soft)">${x.name||''}</div><div style="font-size:14px;font-weight:700">${cust}</div></div>
+        <div style="flex:1"><div style="font-size:12px;color:var(--text-soft)">${x.name||''}</div><div style="font-size:14px;font-weight:700">${cust}</div>${phone}${addr}${mapBtn}</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
           <span class="pill ${done?'pill-green':'pill-blue'}">${done?'Delivered':'Manage &#x3009;'}</span>
         </div>
@@ -410,15 +425,20 @@ async function loadRiderMine(){
 
 // OTP Flow
 let otpSent=false, otpVerified=false;
-function openOtp(id,name,cust){
+function openOtp(id,name,cust,lat,lng,addr,phone){
   otpDelId=id; otpSent=false; otpVerified=false;
   for(let i=0;i<6;i++){const el=document.getElementById('oi'+i);if(el)el.value='';}
   document.getElementById('otp-del-name').textContent=name;
   document.getElementById('otp-del-cust').textContent='Customer: '+cust;
+  const mapBtn = lat && lng ? `<button onclick="window.open('https://maps.google.com/?q=${lat},${lng}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;margin-top:10px">📍 Get Directions</button>` : '';
+  const addrHtml = addr ? `<div style="font-size:13px;margin-bottom:8px"><b>Address:</b> ${addr}</div>` : '';
+  const phoneHtml = phone ? `<div style="font-size:13px;margin-bottom:8px"><b>Phone:</b> ${phone}</div>` : '';
   document.getElementById('otp-del-info').innerHTML=`
     <div style="font-size:13px;margin-bottom:8px"><b>Delivery ID:</b> ${id}</div>
     <div style="font-size:13px;margin-bottom:8px"><b>Customer:</b> ${cust}</div>
-    <div style="font-size:13px"><b>Status:</b> Assigned</div>`;
+    ${phoneHtml}${addrHtml}
+    <div style="font-size:13px"><b>Status:</b> Assigned</div>
+    ${mapBtn}`;
   resetSteps();
   showView('otp-detail');
 }
