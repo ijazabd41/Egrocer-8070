@@ -114,7 +114,7 @@
 
     <!-- OTP DETAIL PANEL -->
     <div id="view-otp-detail" style="display:none">
-      <button class="btn-outline" onclick="showView('rider-mine')" style="margin-bottom:14px">← Back to My Deliveries</button>
+      <button class="btn-outline" onclick="currentRole === 'manager' ? showView('manager') : showView('rider-mine')" style="margin-bottom:14px">← Back to Deliveries</button>
       <div class="chart-row chart-row-equal">
         <div class="card">
           <div class="card-head"><div><div class="card-title" id="otp-del-name">Delivery</div><div class="card-sub" id="otp-del-cust">Customer</div></div></div>
@@ -246,7 +246,22 @@ function loadCurrent(){
 function loadCurrentView(){
 function ext(v){if(Array.isArray(v)){if(v.length===0)return'';let l=v[v.length-1];if(typeof l==='object'&&l!==null)return l.name||l.display_name||('ID: '+l.id)||'';return l;}if(typeof v==='object'&&v!==null)return v.name||v.display_name||('ID: '+v.id)||'';return v||'';}
 function extState(v){if(Array.isArray(v)){return{st:v[0]||'',l:v[1]||''};}return{st:v||'',l:v||''};}
-window.ext=ext;window.extState=extState;
+function extractGeo(d){
+  let lat=d.partner_latitude||d.latitude||d.delivery_latitude||d.lat||0;
+  let lng=d.partner_longitude||d.longitude||d.delivery_longitude||d.lng||d.long||0;
+  if((!lat||!lng||lat==0||lng==0) && Array.isArray(d.partner_id) && typeof d.partner_id[0]==='object'){
+    lat=d.partner_id[0].latitude||lat;
+    lng=d.partner_id[0].longitude||lng;
+  }
+  if((!lat||!lng||lat==0||lng==0)&&d.partner_address){
+    let addr=String(d.partner_address).toLowerCase();
+    let m=addr.match(/lat(?:itude)?\s*[:=]?\s*(-?\d+\.\d+).*?(?:lng|long|longitude)\s*[:=]?\s*(-?\d+\.\d+)/) ||
+          addr.match(/(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/);
+    if(m){lat=parseFloat(m[1]);lng=parseFloat(m[2]);}
+  }
+  return {lat:parseFloat(lat)||0,lng:parseFloat(lng)||0};
+}
+window.ext=ext;window.extState=extState;window.extractGeo=extractGeo;
   if(currentRole==='manager'){showView('manager');loadManagerView();}
   else{showView('rider-unassigned');loadRiderUnassigned();}
 }
@@ -304,9 +319,10 @@ function renderDelList(dels){
     const c=stateColor[st]||'#94A3B8'; const l=apiLabel||stateLabel[st]||st;
     const addr=d.partner_address?`<div style="font-size:11px;color:var(--text-mid);margin-top:2px;line-height:1.3">📍 ${d.partner_address}</div>`:'';
     const phone=d.partner_phone?`<div style="font-size:11px;color:var(--text-mid);margin-top:2px">📞 ${d.partner_phone}</div>`:'';
-    const hasGeo = d.partner_latitude && d.partner_longitude;
-    const mapBtn = hasGeo ? `<button onclick="event.stopPropagation();window.open('https://maps.google.com/?q=${d.partner_latitude},${d.partner_longitude}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px">📍 Map</button>` : '';
-    return `<div class="del-row">
+    const geo = window.extractGeo(d);
+    const hasGeo = geo.lat !== 0 && geo.lng !== 0;
+    const mapBtn = hasGeo ? `<button onclick="event.stopPropagation();window.open('https://maps.google.com/?q=${geo.lat},${geo.lng}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px">📍 Map</button>` : '';
+      return `<div class="del-row" style="cursor:pointer" onclick="openOtp(${d.id},'${d.name||''}','${String(cust).replace(/'/g,"\\'")}',${geo.lat},${geo.lng},'${(d.partner_address||'').replace(/'/g,"\\'")}','${d.partner_phone||''}')">
       <div class="del-av">${String(cust)[0]?.toUpperCase()||'C'}</div>
       <div style="flex:1">
         <div style="font-size:12px;color:var(--text-soft)">${d.name||''}</div>
@@ -320,7 +336,7 @@ function renderDelList(dels){
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
         <span class="pill" style="background:${c}22;color:${c}">${l}</span>
-        ${unassigned?`<button onclick="openAssign(${d.id},'${d.name||''}')" style="background:var(--primary);color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer">Assign</button>`:''}
+        ${unassigned?`<button onclick="event.stopPropagation();openAssign(${d.id},'${d.name||''}')" style="background:var(--primary);color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer">Assign</button>`:''}
       </div>
     </div>`;
   }).join('')||'<div style="text-align:center;padding:20px;color:var(--text-mid)">No deliveries</div>';
@@ -385,8 +401,9 @@ function renderRU(items){
     const cust=window.ext(d.partner_id)||'Customer';
     const addr=d.partner_address?`<div style="font-size:11px;color:var(--text-mid);margin-top:2px;line-height:1.3">📍 ${d.partner_address}</div>`:'';
     const phone=d.partner_phone?`<div style="font-size:11px;color:var(--text-mid);margin-top:2px">📞 ${d.partner_phone}</div>`:'';
-    const hasGeo = d.partner_latitude && d.partner_longitude;
-    const mapBtn = hasGeo ? `<button onclick="event.stopPropagation();window.open('https://maps.google.com/?q=${d.partner_latitude},${d.partner_longitude}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px">📍 Map</button>` : '';
+    const geo = window.extractGeo(d);
+    const hasGeo = geo.lat !== 0 && geo.lng !== 0;
+    const mapBtn = hasGeo ? `<button onclick="event.stopPropagation();window.open('https://maps.google.com/?q=${geo.lat},${geo.lng}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px">📍 Map</button>` : '';
     return `<div class="del-row">
       <div class="del-av">${String(cust)[0]?.toUpperCase()||'C'}</div>
       <div style="flex:1"><div style="font-size:12px;color:var(--text-soft)">${d.name||''}</div><div style="font-size:14px;font-weight:700">${cust}</div>${phone}${addr}${mapBtn}</div>
@@ -410,9 +427,10 @@ async function loadRiderMine(){
       const phone=x.partner_phone?`<div style="font-size:11px;color:var(--text-mid);margin-top:2px">📞 ${x.partner_phone}</div>`:'';
       const {st}=window.extState(x.state);
       const done=st==='done';
-      const hasGeo = x.partner_latitude && x.partner_longitude;
-      const mapBtn = hasGeo ? `<button onclick="event.stopPropagation();window.open('https://maps.google.com/?q=${x.partner_latitude},${x.partner_longitude}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px">📍 Directions</button>` : '';
-      return `<div class="del-row" style="cursor:${done?'default':'pointer'}" onclick="${done?'':'openOtp('+x.id+',\''+x.name+'\',\''+String(cust).replace(/'/g,"\\'")+'\','+(x.partner_latitude||0)+','+(x.partner_longitude||0)+',\''+(x.partner_address?x.partner_address.replace(/'/g,"\\'"):'')+'\',\''+(x.partner_phone||'')+'\')'}">
+      const geo = window.extractGeo(x);
+      const hasGeo = geo.lat !== 0 && geo.lng !== 0;
+      const mapBtn = hasGeo ? `<button onclick="event.stopPropagation();window.open('https://maps.google.com/?q=${geo.lat},${geo.lng}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px">📍 Directions</button>` : '';
+      return `<div class="del-row" style="cursor:${done?'default':'pointer'}" onclick="${done?'':'openOtp('+x.id+',\''+x.name+'\',\''+String(cust).replace(/'/g,"\\'")+'\','+geo.lat+','+geo.lng+',\''+(x.partner_address?x.partner_address.replace(/'/g,"\\'"):'')+'\',\''+(x.partner_phone||'')+'\')'}">
         <div class="del-av" style="background:${done?'#16A34A':'var(--primary)'}">${String(cust)[0]?.toUpperCase()||'C'}</div>
         <div style="flex:1"><div style="font-size:12px;color:var(--text-soft)">${x.name||''}</div><div style="font-size:14px;font-weight:700">${cust}</div>${phone}${addr}${mapBtn}</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -438,9 +456,53 @@ function openOtp(id,name,cust,lat,lng,addr,phone){
     <div style="font-size:13px;margin-bottom:8px"><b>Customer:</b> ${cust}</div>
     ${phoneHtml}${addrHtml}
     <div style="font-size:13px"><b>Status:</b> Assigned</div>
-    ${mapBtn}`;
+    ${mapBtn}
+    <div id="otp-del-items" style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
+       <div style="font-size:12px;color:var(--text-mid)">Loading items...</div>
+    </div>`;
+    
+  CdApi.riderDeliveryDetail(id).then(r => {
+     let lines = [];
+     if (r.data && Array.isArray(r.data) && r.data.length > 0) {
+         const d = r.data[0];
+         if (d.sale_id && d.sale_id.order_line) lines = d.sale_id.order_line;
+         else if (d.move_ids_without_package) lines = d.move_ids_without_package;
+         else if (d.move_lines) lines = d.move_lines;
+     } else if (r && !r.error) {
+         if (r.sale_id && r.sale_id.order_line) lines = r.sale_id.order_line;
+         else if (r.move_ids_without_package) lines = r.move_ids_without_package;
+         else if (r.move_lines) lines = r.move_lines;
+     }
+     
+     if (lines && lines.length > 0) {
+         document.getElementById('otp-del-items').innerHTML = '<div style="font-size:13px;font-weight:700;margin-bottom:8px">🛒 Order Items</div>' + 
+           lines.map(l => {
+              const name = l.product_id ? (Array.isArray(l.product_id) ? l.product_id[1] : l.product_id.name || l.product_id) : (l.name || 'Item');
+              const qty = l.product_uom_qty || l.quantity_done || l.qty_done || 1;
+              return '<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #f1f5f9">' +
+                '<span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px">' + name + '</span>' +
+                '<span style="font-weight:600">x' + qty + '</span>' +
+              '</div>';
+           }).join('');
+     } else {
+         document.getElementById('otp-del-items').innerHTML = '<div style="font-size:12px;color:var(--text-mid)">No item details available</div>';
+     }
+  });
+
   resetSteps();
   showView('otp-detail');
+  
+  if(currentRole === 'manager') {
+    document.getElementById('step1').style.display='none';
+    document.getElementById('step2').style.display='none';
+    document.getElementById('step3').style.display='block';
+    document.getElementById('step3').className='otp-step active';
+    document.getElementById('sn3').className='step-num active-n';
+    document.getElementById('btn-done').style.display='block';
+  } else {
+    document.getElementById('step1').style.display='block';
+    document.getElementById('step2').style.display='block';
+  }
 }
 function resetSteps(){
   ['step1','step2','step3'].forEach((s,i)=>{
@@ -490,10 +552,16 @@ async function doVerifyOtp(){
 }
 async function doMarkDone(){
   document.getElementById('btn-done').textContent='Processing...';
-  const r=await CdApi.riderMarkDone(otpDelId,CdApi.userId());
+  const r=await CdApi.riderMarkDone(otpDelId);
   const ok=window.checkOk(r)||r.state==='done';
-  if(ok){showToast('🎉 Delivery marked as done!');showView('rider-mine');loadRiderMine();}
-  else{showToast(r.message||'Error','error');document.getElementById('btn-done').textContent='Mark as Delivered ✅';}
+  if(ok){
+    showToast('🎉 Delivery marked as done!');
+    if(currentRole === 'manager') { showView('manager'); loadManagerView(); }
+    else { showView('rider-mine'); loadRiderMine(); }
+  } else{
+    showToast(r.message||'Error','error');
+    document.getElementById('btn-done').textContent='✅ Mark as Delivered';
+  }
 }
 async function doCustomerWait(){
   const r=await CdApi.riderCustomerWait(otpDelId,CdApi.userId(),'Customer not available');

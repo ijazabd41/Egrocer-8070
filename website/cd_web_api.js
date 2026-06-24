@@ -136,6 +136,7 @@ const CdApi = (() => {
   const riderUnassigned  = (limit=10, offset=0) => _get('/api/rider-delivery', {limit, offset, domain:'[("user_id","=",False),("state","not in",["done","cancel"])]'});
   const riderMyDeliveries= (uid, limit=10, offset=0) =>
     _get('/api/rider-delivery', {domain:`[("user_id","=",${uid}),("state","not in",["done","cancel"])]`, limit, offset});
+  const riderDeliveryDetail = (id) => _get(`/api/rider-delivery/${id}`);
   const riderAccept      = (id, uid)    => _get(`/api/rider-delivery/${id}/update`, {user_id:uid});
   const riderSendOtp     = (id)         => _get(`/api/rider-delivery/${id}/regenerate_send_otp`);
   const riderVerifyOtp   = (id, otp)    => _get(`/api/rider-delivery/${id}/verify_otp`, {otp});
@@ -191,7 +192,7 @@ const CdApi = (() => {
     deliveryDashboard, allDeliveries, unassignedDeliveries, myDeliveriesCSV,
     deliveryPersons, assignDelivery,
     // rider (always work)
-    riderUnassigned, riderMyDeliveries, riderAccept, riderSendOtp,
+    riderUnassigned, riderMyDeliveries, riderDeliveryDetail, riderAccept, riderSendOtp,
     riderVerifyOtp, riderMarkDone, riderStart, riderCustomerWait,
     // stock
     stockDashboard, inventoryValuation, deadStock,

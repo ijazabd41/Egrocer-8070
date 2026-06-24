@@ -141,12 +141,12 @@ tr:hover td{background:#1e293b}
       URL: <code style="color:var(--g)">/proxy/web/image/slider.image/{id}/image</code>
     </div>
     <div style="font-size:10px;color:#94a3b8;line-height:2;margin-bottom:12px">
-      <strong style="color:#e2e8f0">ID 12</strong>=Logo &nbsp; <strong style="color:#e2e8f0">9</strong>=Home Sliders &nbsp; <strong style="color:#e2e8f0">2</strong>=Deal Day &nbsp; <strong style="color:#e2e8f0">1</strong>=Best Seller &nbsp;
+      <strong style="color:#e2e8f0">ID 75</strong>=Logo &nbsp; <strong style="color:#e2e8f0">72</strong>=Home Sliders &nbsp; <strong style="color:#e2e8f0">65</strong>=Deal Day &nbsp; <strong style="color:#e2e8f0">64</strong>=Best Seller &nbsp;
       <strong style="color:#e2e8f0">3</strong>=Recommended &nbsp; <strong style="color:#e2e8f0">4</strong>=Featured &nbsp; <strong style="color:#e2e8f0">5</strong>=Fresh Pick &nbsp; <strong style="color:#e2e8f0">8</strong>=Brands
     </div>
     <div id="slider-list"></div>
     <script>
-      document.getElementById('slider-list').innerHTML = [['12','Logo (banner_image field)'],['9','Home Sliders (image_ids[].id)'],['2','Deal of Day'],['1','Best Sellers'],['3','Recommended'],['4','Featured'],['5','Fresh Pick'],['8','Shop By Brand']]
+      document.getElementById('slider-list').innerHTML = [['75','Logo (banner_image field)'],['72','Home Sliders (image_ids[].id)'],['65','Deal of Day'],['64','Best Sellers'],['66','Recommended'],['67','Featured'],['68','Fresh Pick'],['78','Shop By Brand']]
       .map(([id,nm])=>`<div style="background:var(--dk);border:1px solid var(--dk3);border-radius:8px;padding:9px 12px;margin-bottom:7px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
         <span style="background:#164e63;color:#67e8f9;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;font-family:monospace">GET</span>
         <code style="font-size:10px;color:#67e8f9;flex:1">/proxy/api/deal-day-slider/${id}</code>
@@ -305,7 +305,7 @@ tr:hover td{background:#1e293b}
   <div class="card">
     <div id="tester-presets" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px"></div>
     <script>
-      document.getElementById('tester-presets').innerHTML = [['Logo','/api/deal-day-slider/12',''],['HomeSliders','/api/deal-day-slider/9',''],['DealDay','/api/deal-day-slider/2',''],['BestSeller','/api/deal-day-slider/1',''],['Recommended','/api/deal-day-slider/3',''],['Featured','/api/deal-day-slider/4',''],['FreshPick','/api/deal-day-slider/5',''],['Brands','/api/deal-day-slider/8',''],['WebSettings','/api/config-settings','user_id=2'],['Categories','/api/website-category',''],['Products','/api/product-template','limit=10'],['Orders','/api/order',''],['PayProviders','/api/payment-provider','domain=[(\'state\',\'in\',[\'enabled\',\'test\'])]'],['Invoices','/api/invoice/',''],['Deliveries','/api/delivery-order',''],['LoyaltyCards','/api/loyalty-card',''],['Contacts','/api/contacts',''],['OrderLines','/api/order-line',''],['DelivMethods','/api/delivery-method','user_id=2'],['Countries','/api/country',''],['States','/api/country-state',''],['LineQty','/api/order-line-qty/1',''],]
+      document.getElementById('tester-presets').innerHTML = [['Logo','/api/deal-day-slider/75',''],['HomeSliders','/api/deal-day-slider/72',''],['DealDay','/api/deal-day-slider/65',''],['BestSeller','/api/deal-day-slider/64',''],['Recommended','/api/deal-day-slider/66',''],['Featured','/api/deal-day-slider/67',''],['FreshPick','/api/deal-day-slider/68',''],['Brands','/api/deal-day-slider/78',''],['WebSettings','/api/config-settings','user_id=2'],['Categories','/api/website-category',''],['Products','/api/product-template','limit=10'],['Orders','/api/order',''],['PayProviders','/api/payment-provider','domain=[(\'state\',\'in\',[\'enabled\',\'test\'])]'],['Invoices','/api/invoice/',''],['Deliveries','/api/delivery-order',''],['LoyaltyCards','/api/loyalty-card',''],['Contacts','/api/contacts',''],['OrderLines','/api/order-line',''],['DelivMethods','/api/delivery-method','user_id=2'],['Countries','/api/country',''],['States','/api/country-state',''],['LineQty','/api/order-line-qty/1',''],]
         .map(([l,p,q])=>`<button class="btn btn-g" style="padding:4px 8px;font-size:10px" onclick="preset('${p}','${q}')">${l}</button>`).join('');
     </script>
     <div style="display:flex;gap:8px;margin-bottom:6px">
@@ -430,7 +430,7 @@ async function checkAll(){
   loadDashSession();
   try{const r=await fetch(API.PX+'/health');const d=await r.json();document.getElementById('d-px').className='dot dOk';document.getElementById('t-px').textContent='✅ Proxy → '+d.odoo;document.getElementById('st-px').textContent='✅';}
   catch{document.getElementById('d-px').className='dot dErr';document.getElementById('t-px').textContent='❌ Proxy not running';document.getElementById('st-px').textContent='❌';}
-  const checks=[{n:'Categories',e:'/api/website-category'},{n:'Products',e:'/api/product-template?limit=1'},{n:'Sliders',e:'/api/deal-day-slider/9'},{n:'Orders',e:'/api/order'}];
+  const checks=[{n:'Categories',e:'/api/bcd-website-category'},{n:'Products',e:'/api/bcp-product-template?limit=1'},{n:'Sliders',e:'/api/deal-day-slider/72'},{n:'Orders',e:'/api/order'}];
   const res=await Promise.all(checks.map(async c=>{try{const d=await API.GET(c.e);return{n:c.n,ok:true,cnt:d.data?.length};}catch(e){return{n:c.n,ok:false,err:e.message};}}));
   if(res[0]?.ok){document.getElementById('d-api').className='dot dOk';document.getElementById('t-api').textContent='✅ Backend API connected';}
   else{document.getElementById('d-api').className='dot dErr';document.getElementById('t-api').textContent='❌ Backend unreachable';}

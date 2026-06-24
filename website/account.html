@@ -230,10 +230,10 @@
             </div>
           </div>
           <input type="hidden" id="aLat"><input type="hidden" id="aLng">
-          <div style="margin-top:10px;font-size:12px">
-            <button onclick="getAccountLocation()" class="sbtn" style="background:#fff;color:var(--primary);border:1px solid var(--primary);padding:6px 12px;max-width:max-content;font-size:11px">📍 Get My Current Location</button>
-            <span id="locStatus" style="margin-left:10px;font-weight:600"></span>
+          <div style="margin-top:10px;font-size:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span id="locStatus" style="font-weight:600"></span>
           </div>
+          <div id="accMapPickerContainer" style="display:none; margin-top:10px; height:250px; border-radius:8px; overflow:hidden; border:1px solid #e5e7eb; position:relative; z-index:1;"></div>
           <div id="addrMsg" style="margin-top:8px;font-size:12px;font-weight:600"></div>
           <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
             <button onclick="saveNewAddress()" class="sbtn" style="max-width:220px">💾 Save Address</button>
@@ -665,8 +665,18 @@ async function viewOrderDetail(oid){
             if(!del) continue;
             var dstate = Array.isArray(del.state)?del.state[1]:del.state||'Processing';
             var dstateKey=Array.isArray(del.state)?del.state[0]:del.state||'';
-            var hasGeo = del.partner_latitude && del.partner_longitude;
-            var mapUrl = hasGeo?'https://maps.google.com/?q='+del.partner_latitude+','+del.partner_longitude:'';
+            var dLat = del.partner_latitude || del.latitude || del.delivery_latitude || 0;
+            var dLng = del.partner_longitude || del.longitude || del.delivery_longitude || 0;
+            if ((!dLat || !dLng || dLat==0 || dLng==0) && Array.isArray(del.partner_id) && typeof del.partner_id[0]==='object') {
+               dLat = del.partner_id[0].latitude || dLat; dLng = del.partner_id[0].longitude || dLng;
+            }
+            if ((!dLat || !dLng || dLat==0 || dLng==0) && del.partner_address) {
+               var m = String(del.partner_address).toLowerCase().match(/lat(?:itude)?\s*[:=]?\s*(-?\d+\.\d+).*?(?:lng|long|longitude)\s*[:=]?\s*(-?\d+\.\d+)/) ||
+                       String(del.partner_address).match(/(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/);
+               if (m) { dLat = parseFloat(m[1]); dLng = parseFloat(m[2]); }
+            }
+            var hasGeo = dLat && dLng && dLat != 0 && dLng != 0;
+            var mapUrl = hasGeo?'https://maps.google.com/?q='+dLat+','+dLng:'';
             var dcarrier = Array.isArray(del.carrier_id)?del.carrier_id[1]:(del.carrier_id||carrier||'');
             var trackUrl = del.carrier_tracking_url || '';
             var trackRef = del.carrier_tracking_ref || '';

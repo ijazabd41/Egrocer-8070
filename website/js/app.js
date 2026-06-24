@@ -1060,6 +1060,7 @@ window.promptAddressMethod = function(prefix) {
     if(p === 'co') {
       var coForm = document.getElementById('coNewAddr');
       if (coForm) { coForm.style.display='block'; coForm.scrollIntoView({behavior:'smooth',block:'center'}); }
+      window.openMapPicker('addrLat', 'addrLng', 'locStatus', 'mapPickerContainer', 'co', true);
     } else {
       if(typeof showNewAddressForm === 'function') {
         await showNewAddressForm();
@@ -1069,6 +1070,7 @@ window.promptAddressMethod = function(prefix) {
         var accForm = document.getElementById('newAddressFormSec');
         if(accForm) { accForm.style.display='block'; accForm.scrollIntoView({behavior:'smooth',block:'center'}); }
       }
+      window.openMapPicker('aLat', 'aLng', 'locStatus', 'accMapPickerContainer', 'acc', true);
     }
   }
 
@@ -1172,4 +1174,87 @@ window.autofillLocation = function(prefix, callback) {
   }, { timeout: 10000 });
 };
 
+window.openMapPicker = function(latId, lngId, statusId, containerId, addrPrefix, forceShow) {
+  var container = document.getElementById(containerId);
+  if(!container) return;
+  if(container.style.display === 'block' && !forceShow) {
+    container.style.display = 'none';
+    return;
+  }
+  container.style.display = 'block';
+  var statusEl = document.getElementById(statusId);
+  if(statusEl && !container._leaflet_id) statusEl.textContent = 'Loading map...';
+  
+  if(!window.L) {
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(link);
+    var script = document.createElement('script');
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.onload = function() { _cd_initMap(latId, lngId, statusId, containerId, addrPrefix); };
+    document.head.appendChild(script);
+  } else {
+    _cd_initMap(latId, lngId, statusId, containerId, addrPrefix);
+  }
+};
 
+function _cd_initMap(latId, lngId, statusId, containerId, addrPrefix) {
+  var container = document.getElementById(containerId);
+  if(container._leaflet_id) {
+     var map = container._map_instance;
+     setTimeout(function(){ map.invalidateSize(); }, 100);
+     return;
+  }
+  
+  var initLat = 25.2048;
+  var initLng = 55.2708;
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(pos) {
+       setup(pos.coords.latitude, pos.coords.longitude);
+    }, function() { setup(initLat, initLng); });
+  } else {
+    setup(initLat, initLng);
+  }
+  
+  function setup(lat, lng) {
+    var map = L.map(containerId).setView([lat, lng], 13);
+    container._map_instance = map;
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    var marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+    
+    function updateInputs(pos) {
+       var latInput = document.getElementById(latId);
+       var lngInput = document.getElementById(lngId);
+       if(latInput) latInput.value = pos.lat;
+       if(lngInput) lngInput.value = pos.lng;
+       var status = document.getElementById(statusId);
+       if(status) {
+         status.textContent = 'Location selected ✅';
+         status.style.color = '#065f46';
+       }
+       if(addrPrefix && window.autofillLocation) {
+         fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+pos.lat+'&lon='+pos.lng)
+         .then(r=>r.json()).then(data=>{
+            if (data && data.address) {
+                var addr = data.address;
+                var street = [addr.road, addr.house_number, addr.suburb, addr.neighbourhood].filter(Boolean).join(', ');
+                var city = addr.city || addr.town || addr.village || addr.county || '';
+                var zip = addr.postcode || '';
+                var elStreet = document.getElementById(addrPrefix==='acc'?'aStreet':'addr');
+                var elCity = document.getElementById(addrPrefix==='acc'?'aCity':'city');
+                var elZip = document.getElementById(addrPrefix==='acc'?'aZip':'zip');
+                if (elStreet && street && !elStreet.value) elStreet.value = street;
+                if (elCity && city && !elCity.value) elCity.value = city;
+                if (elZip && zip && !elZip.value) elZip.value = zip;
+            }
+         }).catch(console.error);
+       }
+    }
+    
+    updateInputs({lat:lat, lng:lng});
+    
+    marker.on('dragend', function(e){ updateInputs(marker.getLatLng()); });
+    map.on('click', function(e){ marker.setLatLng(e.latlng); updateInputs(e.latlng); });
+  }
+}

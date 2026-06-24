@@ -673,12 +673,8 @@
       if (!container) return;
       if (!cats || !cats.length) { container.innerHTML = '<div style="color:#9ca3af;padding:18px">No categories</div>'; return; }
 
-      var targetCatNames = ['Roastery', 'Butchery', 'Deli', 'Fresh Vegetables'];
-      var targetCats = cats.filter(c => targetCatNames.includes(c.name));
-      // Sort them in the requested order
-      targetCats.sort(function (a, b) {
-        return targetCatNames.indexOf(a.name) - targetCatNames.indexOf(b.name);
-      });
+      // Dynamically select the first 4 categories instead of hardcoding
+      var targetCats = cats.slice(0, 4);
 
       var html = '<div class="uc-cat-grid">';
       targetCats.forEach(function (c) {
@@ -783,20 +779,20 @@
 
       // Load all data in parallel
       Promise.allSettled([
-        API.getHomeSliders(),   // 0 - slider 9
+        API.getHomeSliders(),   // 0 - slider 72
         API.getCats(),          // 1 - categories
-        API.getDealOfDay(),     // 2 - slider 2
-        API.getBestSeller(),    // 3 - slider 1
-        API.getRecommended(),   // 4 - slider 3
-        API.getFeatured(),      // 5 - slider 4
-        API.getFreshPick(),     // 6 - slider 5
-        API.getBrands(),        // 7 - slider 8
+        API.getDealOfDay(),     // 2 - slider 65
+        API.getBestSeller(),    // 3 - slider 64
+        API.getRecommended(),   // 4 - slider 66
+        API.getFeatured(),      // 5 - slider 67
+        API.getFreshPick(),     // 6 - slider 68
+        API.getBrands(),        // 7 - slider 78
         API.getProds({ limit: 10 }), // 8 - all products
-        API.getMobileAppPromo(),// 9 - app promo (id 12)
-        API.getTrustElements()  // 10 - trust elements (id 13)
+        API.getMobileAppPromo(),// 9 - app promo (id 77)
+        API.getTrustElements()  // 10 - trust elements (id 79)
       ]).then(function (results) {
 
-        // ① HOME SLIDER — slider 9 → image_ids[].image_url
+        // ① HOME SLIDER — slider 72 → image_ids[].image_url
         if (results[0].status === 'fulfilled') {
           var sl9 = results[0].value.data && results[0].value.data[0];
           var imgIds = sl9 && sl9.image_ids ? sl9.image_ids : [];
@@ -805,7 +801,7 @@
           }
           // Fallback: use banner_image if no image_ids
           else if (sl9 && sl9.banner_image) {
-            initSlider([{ id: 9, image_url: sl9.banner_image, name: 'Coop Discounts' }]);
+            initSlider([{ id: 72, image_url: sl9.banner_image, name: 'Coop Discounts' }]);
           }
         }
 
@@ -819,7 +815,7 @@
           if (rContainer) rContainer.innerHTML = '<div style="color:#9ca3af;padding:18px">Could not load categories</div>';
         }
 
-        // ③ DEAL OF DAY — slider 2
+        // ③ DEAL OF DAY — slider 65
         if (results[2].status === 'fulfilled') {
           var sl = results[2].value.data && results[2].value.data[0];
           buildDealSection(sl, 'ddProds', 'ddTtl');
@@ -827,29 +823,29 @@
           document.getElementById('ddProds').innerHTML = '<div style="padding:20px;color:#9ca3af">No deals today</div>';
         }
 
-        // ④ BEST SELLERS — slider 1
+        // ④ BEST SELLERS — slider 64
         if (results[3].status === 'fulfilled') {
           buildDealSection(results[3].value.data && results[3].value.data[0], 'bsProds', 'bsTtl');
         } else {
           document.getElementById('bsProds').innerHTML = '';
         }
 
-        // ⑤ RECOMMENDED — slider 3
+        // ⑤ RECOMMENDED — slider 66
         if (results[4].status === 'fulfilled') {
           // Section removed
         }
 
-        // ⑥ FEATURED — slider 4
+        // ⑥ FEATURED — slider 67
         if (results[5].status === 'fulfilled') {
           // Section removed
         }
 
-        // ⑦ FRESH PICK — slider 5
+        // ⑦ FRESH PICK — slider 68
         if (results[6].status === 'fulfilled') {
           // Section removed
         }
 
-        // ⑧ BRANDS — slider 8
+        // ⑧ BRANDS — slider 78
         if (results[7].status === 'fulfilled') {
           // Section removed
         }

@@ -214,8 +214,18 @@ document.addEventListener('DOMContentLoaded', async function(){
           var dstate = Array.isArray(del.state)?del.state[1]:del.state||'Processing';
           var dstateKey = Array.isArray(del.state)?del.state[0]:del.state||'';
           var dstateClass = dstateKey==='done'?'os-ok':dstateKey==='cancel'?'os-cancel':'os-proc';
-          var hasGeo = del.partner_latitude || del.partner_longitude;
-          var mapUrl = hasGeo ? 'https://maps.google.com/?q='+del.partner_latitude+','+del.partner_longitude : '';
+          var dLat = del.partner_latitude || del.latitude || del.delivery_latitude || 0;
+          var dLng = del.partner_longitude || del.longitude || del.delivery_longitude || 0;
+          if ((!dLat || !dLng || dLat==0 || dLng==0) && Array.isArray(del.partner_id) && typeof del.partner_id[0]==='object') {
+             dLat = del.partner_id[0].latitude || dLat; dLng = del.partner_id[0].longitude || dLng;
+          }
+          if ((!dLat || !dLng || dLat==0 || dLng==0) && del.partner_address) {
+             var m = String(del.partner_address).toLowerCase().match(/lat(?:itude)?\s*[:=]?\s*(-?\d+\.\d+).*?(?:lng|long|longitude)\s*[:=]?\s*(-?\d+\.\d+)/) ||
+                     String(del.partner_address).match(/(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/);
+             if (m) { dLat = parseFloat(m[1]); dLng = parseFloat(m[2]); }
+          }
+          var hasGeo = dLat && dLng && dLat != 0 && dLng != 0;
+          var mapUrl = hasGeo ? 'https://maps.google.com/?q='+dLat+','+dLng : '';
           var dcarrier = Array.isArray(del.carrier_id)?(typeof del.carrier_id[0]==='object'?del.carrier_id[0].name:del.carrier_id[1]):(del.carrier_id||carrier||'');
           delHtml += '<div style="padding:8px 0;border-bottom:1px solid #f3f4f6">'
             +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px">'

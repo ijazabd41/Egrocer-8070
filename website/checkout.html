@@ -162,10 +162,10 @@
         <div class="fg"><label class="fl">State / Emirate</label><select class="fsel" id="state"><option value="">Loading...</option></select></div>
         <div class="fg"><label class="fl">Type</label><select class="fsel" id="addrType"><option value="delivery">Delivery</option><option value="invoice">Invoice</option></select></div>
       </div>
-      <div style="display:flex;align-items:center;margin-top:10px;gap:8px">
-        <button type="button" onclick="getLocation()" style="background:#f3f4f6;border:1px solid #e5e7eb;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer">📍 Get Location</button>
-        <span id="locStatus" style="font-size:11px;color:#6b7280"></span>
+      <div style="display:flex;align-items:center;margin-top:10px;gap:8px;flex-wrap:wrap">
+        <span id="locStatus" style="font-size:11px;color:#6b7280;font-weight:600"></span>
       </div>
+      <div id="mapPickerContainer" style="display:none; margin-top:10px; height:250px; border-radius:8px; overflow:hidden; border:1px solid #e5e7eb; position:relative; z-index:1;"></div>
       <input type="hidden" id="addrLat">
       <input type="hidden" id="addrLng">
       <div id="addrMsg" style="margin-top:8px;font-size:12px;font-weight:600"></div>
@@ -579,6 +579,7 @@ document.addEventListener('DOMContentLoaded', async function(){
       if (saveBtn) saveBtn.style.display = 'none';
       var heading = newAddr.querySelector('h4');
       if (heading) heading.textContent = 'Enter Delivery Address';
+      if(window.openMapPicker) window.openMapPicker('addrLat', 'addrLng', 'locStatus', 'mapPickerContainer', 'co', true);
     }
   }
 
