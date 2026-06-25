@@ -1008,10 +1008,11 @@ document.addEventListener('DOMContentLoaded', async function(){
   try {
     const r = await API.getDeliveryMethods();
     if(r && r.data) {
-      const hm = r.data.find(m => /home|delivery/i.test(m.name || '') && String(m.free_over).toLowerCase() === 'true');
+      const isFree = m => m.free_over === true || m.free_over === 1 || String(m.free_over).toLowerCase() === 'true';
+      const hm = r.data.find(m => /home|delivery/i.test(m.name || '') && isFree(m));
       if (hm && hm.amount) window._cd_free_delivery_amount = parseFloat(hm.amount);
       else {
-        const any = r.data.find(m => String(m.free_over).toLowerCase() === 'true');
+        const any = r.data.find(m => isFree(m));
         if (any && any.amount) window._cd_free_delivery_amount = parseFloat(any.amount);
       }
     }

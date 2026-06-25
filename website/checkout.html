@@ -818,7 +818,8 @@ function renderSummary(){
   // 2. Calculate delivery fee
   var delFee = 0;
   var freeThreshold = 50;
-  if (selDeliveryMethod && String(selDeliveryMethod.free_over).toLowerCase() === 'true' && selDeliveryMethod.amount) {
+  const isFree = m => m.free_over === true || m.free_over === 1 || String(m.free_over).toLowerCase() === 'true';
+      if (selDeliveryMethod && isFree(selDeliveryMethod) && selDeliveryMethod.amount) {
     freeThreshold = parseFloat(selDeliveryMethod.amount);
   } else if (typeof window._cd_free_delivery_amount !== 'undefined') {
     freeThreshold = window._cd_free_delivery_amount;
@@ -1408,7 +1409,8 @@ async function placeOrder(){
       var pickupDiscAmount = parseFloat((sub * (pRate / 100)).toFixed(2));
       var deliveryFeeVal = 0;
       var freeThreshold = 50;
-      if (selDeliveryMethod && String(selDeliveryMethod.free_over).toLowerCase() === 'true' && selDeliveryMethod.amount) {
+      const isFree = m => m.free_over === true || m.free_over === 1 || String(m.free_over).toLowerCase() === 'true';
+      if (selDeliveryMethod && isFree(selDeliveryMethod) && selDeliveryMethod.amount) {
         freeThreshold = parseFloat(selDeliveryMethod.amount);
       } else if (typeof window._cd_free_delivery_amount !== 'undefined') {
         freeThreshold = window._cd_free_delivery_amount;
