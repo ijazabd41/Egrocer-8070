@@ -886,7 +886,7 @@ const API = ((_DB='production', SK='cd_session', NOTIFY='eicoopit@gmail.com') =>
   const getCustomerOrdersStatus = (pid, limit=25, offset=0) => GET('/api/skytec-delivery/customer-orders-status', { partner_id: pid, limit, offset });
 
   // ── PAYMENT ───────────────────────────────────────────────────
-  const getPayProviders = () => GET('/api/payment-provider', {domain:`[('state','in',['enabled','test'])]`});
+  const getPayProviders = () => GET('/api/payment-provider', {domain:`[('state','in',['enabled'])]`});
   const getPayProvider  = id => GET(`/api/payment-provider/${id}`);
   /** Prefer Cash on Delivery; deprioritize Demo/test providers (Postman: 22=COD, 6=Demo). */
   function isDemoProvider(p) {
@@ -1056,7 +1056,7 @@ const API = ((_DB='production', SK='cd_session', NOTIFY='eicoopit@gmail.com') =>
   // ── TELR PAYMENT GATEWAY ──────────────────────────────────────────
   const TELR_STORE_ID  = '35269';
   const TELR_AUTH_KEY  = 'WGLV^NLX7F@ztPFV';
-  const TELR_TEST_MODE = '1'; // '1' = sandbox, '0' = live
+  const TELR_TEST_MODE = '0'; // '1' = sandbox, '0' = live
 
   // Telr proxy base: route through our proxy server /telr/ → secure.telr.com
   const TELR_PX = (() => {

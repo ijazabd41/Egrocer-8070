@@ -157,7 +157,7 @@ function updateCartProgressAndWarning(sub) {
 
 async function updateCartDeliveryFeeAndTotals(sub) {
   var delFee = 0;
-  if (sub < 150) {
+  if (sub < 50) {
     try {
       var r = await API.getDeliveryMethods();
       var methods = r.data || [];

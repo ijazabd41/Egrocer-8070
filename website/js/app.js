@@ -22,9 +22,9 @@ function isStorePickupMethod(m){
 function getCartProgressHtml(subtotal, isCheckout = false) {
   var minAmt = typeof window._cd_min_order_amount !== 'undefined' ? window._cd_min_order_amount : 100;
   var minProgress = Math.min(100, (subtotal / minAmt) * 100);
-  var freeProgress = Math.min(100, (subtotal / 150) * 100);
+  var freeProgress = Math.min(100, (subtotal / 50) * 100);
   var minReached = subtotal >= minAmt;
-  var freeReached = subtotal >= 150;
+  var freeReached = subtotal >= 50;
   
   var minMsg = minReached 
     ? "Minimum order reached ✓" 
@@ -32,7 +32,7 @@ function getCartProgressHtml(subtotal, isCheckout = false) {
     
   var freeMsg = freeReached 
     ? "You have unlocked FREE delivery 🎉" 
-    : "Add AED " + (150 - subtotal).toFixed(2) + " more to unlock free delivery.";
+    : "Add AED " + (50 - subtotal).toFixed(2) + " more to unlock free delivery.";
     
   var showFreeDelivery = (typeof selDeliveryKind !== 'undefined' && selDeliveryKind === 'home');
   var showMinOrder = !isCheckout;
@@ -63,7 +63,7 @@ function getCartProgressHtml(subtotal, isCheckout = false) {
         <!-- Free Delivery Progress -->
         <div style="display:flex; flex-direction:column; gap:6px;">
           <div style="display:flex; justify-content:space-between; font-size:13.2px; font-weight:700; color:#374151;">
-            <span>Free Delivery (AED 150)</span>
+            <span>Free Delivery (AED 50)</span>
             <span style="color:${freeReached ? '#10B981' : '#3B82F6'}">${freeMsg}</span>
           </div>
           <div style="background:#e5e7eb; border-radius:50px; height:8px; overflow:hidden; position:relative;">

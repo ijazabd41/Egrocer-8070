@@ -191,6 +191,7 @@
 
 <script>
 let currentRole='manager', currentTab='', delOffset=0, ruOffset=0, allDels=[], drivers=[], otpDelId=0, statusChart;
+window.deliveryDataMap = {};
 function checkOk(r){return r&&(r.success===1||r.success===true||String(r.success)==='1'||r.status==='success'||(r.data&&r.data.success===1));}
 window.checkOk=checkOk;
 function showToast(msg,type='success'){let c=document.getElementById('toast-container');if(!c){c=document.createElement('div');c.id='toast-container';c.style.cssText='position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;';document.body.appendChild(c);}const t=document.createElement('div');const isErr=type==='error';t.style.cssText=`background:${isErr?'#FEF2F2':'#F0FDF4'};color:${isErr?'#DC2626':'#16A34A'};border:1px solid ${isErr?'#F87171':'#86EFAC'};padding:12px 20px;border-radius:8px;font-family:Inter,sans-serif;font-size:14px;font-weight:600;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);opacity:0;transform:translateY(-20px);transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);`;t.innerHTML=msg;c.appendChild(t);setTimeout(()=>{t.style.opacity='1';t.style.transform='translateY(0)';},10);setTimeout(()=>{t.style.opacity='0';t.style.transform='translateY(-20px)';setTimeout(()=>t.remove(),300);},3000);}
@@ -294,6 +295,7 @@ async function loadDeliveries(domain){
     const r=await (domain?CdApi.allDeliveries(15,delOffset,domain):CdApi.allDeliveries(15,delOffset));
     const data=(r.results||r.data||[]);
     if(delOffset===0) allDels=data; else allDels=[...allDels,...data];
+    allDels.forEach(d => window.deliveryDataMap[d.id] = d);
     setText('del-count',allDels.length+' deliveries'+(r.total?' of '+r.total:''));
     renderDelList(allDels);
     document.getElementById('del-more-btn').style.display=data.length===15?'block':'none';
@@ -383,6 +385,7 @@ async function loadRiderUnassigned(){
   try{
     const r=await CdApi.riderUnassigned(10,0);
     ruItems=(r.results||r.data||[]);
+    ruItems.forEach(d => window.deliveryDataMap[d.id] = d);
     renderRU(ruItems);
     document.getElementById('ru-more').style.display=ruItems.length===10?'block':'none';
     ruOffset=ruItems.length;
@@ -392,6 +395,7 @@ async function loadMoreRU(){
   const r=await CdApi.riderUnassigned(10,ruOffset);
   const d=(r.results||r.data||[]);
   ruItems=[...ruItems,...d];
+  ruItems.forEach(x => window.deliveryDataMap[x.id] = x);
   renderRU(ruItems);
   ruOffset+=d.length;
   if(d.length<10)document.getElementById('ru-more').style.display='none';
@@ -421,6 +425,7 @@ async function loadRiderMine(){
   try{
     const r=await CdApi.riderMyDeliveries(CdApi.userId(),15,0);
     const d=(r.results||r.data||[]);
+    d.forEach(x => window.deliveryDataMap[x.id] = x);
     document.getElementById('rm-list').innerHTML=d.map(x=>{
       const cust=window.ext(x.partner_id)||'Customer';
       const addr=x.partner_address?`<div style="font-size:11px;color:var(--text-mid);margin-top:2px;line-height:1.3">📍 ${x.partner_address}</div>`:'';
@@ -451,15 +456,27 @@ function openOtp(id,name,cust,lat,lng,addr,phone){
   const mapBtn = lat && lng ? `<button onclick="window.open('https://maps.google.com/?q=${lat},${lng}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;margin-top:10px">📍 Get Directions</button>` : '';
   const addrHtml = addr ? `<div style="font-size:13px;margin-bottom:8px"><b>Address:</b> ${addr}</div>` : '';
   const phoneHtml = phone ? `<div style="font-size:13px;margin-bottom:8px"><b>Phone:</b> ${phone}</div>` : '';
+  
+  const d = window.deliveryDataMap[id] || {};
+  const originHtml = d.origin ? `<div style="font-size:13px;margin-bottom:8px"><b>Order Ref:</b> ${d.origin}</div>` : '';
+  const dateHtml = d.scheduled_date ? `<div style="font-size:13px;margin-bottom:8px"><b>Scheduled:</b> ${d.scheduled_date}</div>` : '';
+  const deadlineHtml = d.date_deadline ? `<div style="font-size:13px;margin-bottom:8px"><b>Deadline:</b> ${d.date_deadline}</div>` : '';
+  const noteHtml = d.note ? `<div style="font-size:13px;margin-bottom:8px;color:#92400e;background:#fef3c7;padding:6px;border-radius:6px"><b>Note:</b> ${d.note}</div>` : '';
+  const stateHtml = d.state ? `<div style="font-size:13px;margin-bottom:8px"><b>Status:</b> ${window.extState(d.state).l || d.state}</div>` : '<div style="font-size:13px;margin-bottom:8px"><b>Status:</b> Assigned</div>';
+
   document.getElementById('otp-del-info').innerHTML=`
     <div style="font-size:13px;margin-bottom:8px"><b>Delivery ID:</b> ${id}</div>
+    ${originHtml}
     <div style="font-size:13px;margin-bottom:8px"><b>Customer:</b> ${cust}</div>
     ${phoneHtml}${addrHtml}
-    <div style="font-size:13px"><b>Status:</b> Assigned</div>
+    ${dateHtml}${deadlineHtml}
+    ${stateHtml}
+    ${noteHtml}
     ${mapBtn}
     <div id="otp-del-items" style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
        <div style="font-size:12px;color:var(--text-mid)">Loading items...</div>
     </div>`;
+    
     
   CdApi.riderDeliveryDetail(id).then(r => {
      let lines = [];

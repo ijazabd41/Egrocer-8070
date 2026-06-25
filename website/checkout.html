@@ -817,7 +817,7 @@ function renderSummary(){
   
   // 2. Calculate delivery fee
   var delFee = 0;
-  if (selDeliveryKind === 'store' || sub >= 150) {
+  if (selDeliveryKind === 'store' || sub >= 50) {
     delFee = 0;
   } else {
     delFee = selDeliveryMethod ? parseFloat(selDeliveryMethod.fixed_price || 0) : 15;
@@ -964,7 +964,7 @@ async function pushCarrierToOrder(){
       else if (selDeliveryKind === 'store') pRate = 5.0;
     }
     var pDisc = parseFloat((sub * (pRate / 100)).toFixed(2));
-    var delFee = (selDeliveryKind === 'store' || sub >= 150) ? 0 : (selDeliveryMethod ? parseFloat(selDeliveryMethod.fixed_price || 0) : 15);
+    var delFee = (selDeliveryKind === 'store' || sub >= 50) ? 0 : (selDeliveryMethod ? parseFloat(selDeliveryMethod.fixed_price || 0) : 15);
     var pType = 'percent';
 
     await API.updDelivery(parseInt(oid), selCarrierId, {
@@ -1400,7 +1400,7 @@ async function placeOrder(){
       var pRate = (selDeliveryMethod && typeof selDeliveryMethod.margin !== 'undefined') ? parseFloat(selDeliveryMethod.margin || 0) : 0.0;
       var pickupDiscAmount = parseFloat((sub * (pRate / 100)).toFixed(2));
       var deliveryFeeVal = 0;
-      if (!contact.isStore && sub < 150) {
+      if (!contact.isStore && sub < 50) {
         deliveryFeeVal = selDeliveryMethod ? parseFloat(selDeliveryMethod.fixed_price || 0) : 15;
       }
       var promoDiscVal = Math.max(0, Math.min((discountPromo||0)+(discountLoyalty||0), sub - pickupDiscAmount));
