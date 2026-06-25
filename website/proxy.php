@@ -1,6 +1,7 @@
 <?php
 // proxy.php
 // A simple PHP proxy to forward requests to the Odoo ERP and bypass CORS
+require_once __DIR__ . '/config.php';
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Session-Token');
@@ -57,7 +58,7 @@ if (!isImage($pathInfo)) {
     }
 }
 
-$targetUrl = 'http://cooperp.freeddns.org:8070' . $pathInfo;
+$targetUrl = $ODOO_BASE_URL . $pathInfo;
 if (!empty($queryString)) {
     $targetUrl .= '?' . $queryString;
 }
