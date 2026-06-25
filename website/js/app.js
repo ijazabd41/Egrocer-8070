@@ -21,10 +21,11 @@ function isStorePickupMethod(m){
 
 function getCartProgressHtml(subtotal, isCheckout = false) {
   var minAmt = typeof window._cd_min_order_amount !== 'undefined' ? window._cd_min_order_amount : 100;
+  var freeAmt = typeof window._cd_free_delivery_amount !== 'undefined' ? window._cd_free_delivery_amount : 50;
   var minProgress = Math.min(100, (subtotal / minAmt) * 100);
-  var freeProgress = Math.min(100, (subtotal / 50) * 100);
+  var freeProgress = Math.min(100, (subtotal / freeAmt) * 100);
   var minReached = subtotal >= minAmt;
-  var freeReached = subtotal >= 50;
+  var freeReached = subtotal >= freeAmt;
   
   var minMsg = minReached 
     ? "Minimum order reached ✓" 
@@ -32,7 +33,7 @@ function getCartProgressHtml(subtotal, isCheckout = false) {
     
   var freeMsg = freeReached 
     ? "You have unlocked FREE delivery 🎉" 
-    : "Add AED " + (50 - subtotal).toFixed(2) + " more to unlock free delivery.";
+    : "Add AED " + (freeAmt - subtotal).toFixed(2) + " more to unlock free delivery.";
     
   var showFreeDelivery = (typeof selDeliveryKind !== 'undefined' && selDeliveryKind === 'home');
   var showMinOrder = !isCheckout;
@@ -63,7 +64,7 @@ function getCartProgressHtml(subtotal, isCheckout = false) {
         <!-- Free Delivery Progress -->
         <div style="display:flex; flex-direction:column; gap:6px;">
           <div style="display:flex; justify-content:space-between; font-size:13.2px; font-weight:700; color:#374151;">
-            <span>Free Delivery (AED 50)</span>
+            <span>Free Delivery (AED `+freeAmt+`)</span>
             <span style="color:${freeReached ? '#10B981' : '#3B82F6'}">${freeMsg}</span>
           </div>
           <div style="background:#e5e7eb; border-radius:50px; height:8px; overflow:hidden; position:relative;">
@@ -1002,8 +1003,29 @@ function verifyOtp(email,input){
 }
 
 /* ── GLOBAL INIT ──────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded',()=>{
-  initDealCardInteractions();
+document.addEventListener('DOMContentLoaded', async function(){
+  if (typeof initDealCardInteractions === 'function') initDealCardInteractions();
+  try {
+    const r = await API.getDeliveryMethods();
+    if(r && r.data) {
+      const hm = r.data.find(m => /home|delivery/i.test(m.name || '') && String(m.free_over).toLowerCase() === 'true');
+      if (hm && hm.amount) window._cd_free_delivery_amount = parseFloat(hm.amount);
+      else {
+        const any = r.data.find(m => String(m.free_over).toLowerCase() === 'true');
+        if (any && any.amount) window._cd_free_delivery_amount = parseFloat(any.amount);
+      }
+    }
+    const lhFreeDelTxt = document.getElementById('lhFreeDelTxt');
+    if (lhFreeDelTxt && window._cd_free_delivery_amount) lhFreeDelTxt.textContent = 'Free delivery above ' + window._cd_free_delivery_amount;
+    const pdFreeDelTxt = document.getElementById('pdFreeDelTxt');
+    if (pdFreeDelTxt && window._cd_free_delivery_amount) pdFreeDelTxt.textContent = 'Free delivery on orders above AED ' + window._cd_free_delivery_amount;
+    
+    if (typeof tick === 'function') tick();
+    Cart.render();
+  } catch(e) {}
+  
+  // init other cart logic
+  if(document.getElementById('cart-items')) Cart.render();
   // Inject skeleton CSS
   if(!document.getElementById('sk-st')){const s=document.createElement('style');s.id='sk-st';s.textContent='@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}.skel{background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:sk 1.5s infinite}';document.head.appendChild(s);}
   Bar.init();

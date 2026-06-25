@@ -142,7 +142,7 @@ function buildHeader(){
             style="background:#FFF200; color:#111; padding:4px 12px; border-radius:20px; display:flex; align-items:center; gap:6px; white-space:nowrap; flex-shrink:0;">
             <span style="font-size:18px;">🚚</span>
             <div style="display:flex; align-items:center; line-height:1.1;">
-              <span style="font-weight:800; font-size:12px;">Free delivery above 50</span>
+              <span id="lhFreeDelTxt" style="font-weight:800; font-size:12px;">Free delivery above 50</span>
             </div>
           </div>
           <div

@@ -817,7 +817,14 @@ function renderSummary(){
   
   // 2. Calculate delivery fee
   var delFee = 0;
-  if (selDeliveryKind === 'store' || sub >= 50) {
+  var freeThreshold = 50;
+  if (selDeliveryMethod && String(selDeliveryMethod.free_over).toLowerCase() === 'true' && selDeliveryMethod.amount) {
+    freeThreshold = parseFloat(selDeliveryMethod.amount);
+  } else if (typeof window._cd_free_delivery_amount !== 'undefined') {
+    freeThreshold = window._cd_free_delivery_amount;
+  }
+  
+  if (selDeliveryKind === 'store' || sub >= freeThreshold) {
     delFee = 0;
   } else {
     delFee = selDeliveryMethod ? parseFloat(selDeliveryMethod.fixed_price || 0) : 15;
@@ -1400,7 +1407,13 @@ async function placeOrder(){
       var pRate = (selDeliveryMethod && typeof selDeliveryMethod.margin !== 'undefined') ? parseFloat(selDeliveryMethod.margin || 0) : 0.0;
       var pickupDiscAmount = parseFloat((sub * (pRate / 100)).toFixed(2));
       var deliveryFeeVal = 0;
-      if (!contact.isStore && sub < 50) {
+      var freeThreshold = 50;
+      if (selDeliveryMethod && String(selDeliveryMethod.free_over).toLowerCase() === 'true' && selDeliveryMethod.amount) {
+        freeThreshold = parseFloat(selDeliveryMethod.amount);
+      } else if (typeof window._cd_free_delivery_amount !== 'undefined') {
+        freeThreshold = window._cd_free_delivery_amount;
+      }
+      if (!contact.isStore && sub < freeThreshold) {
         deliveryFeeVal = selDeliveryMethod ? parseFloat(selDeliveryMethod.fixed_price || 0) : 15;
       }
       var promoDiscVal = Math.max(0, Math.min((discountPromo||0)+(discountLoyalty||0), sub - pickupDiscAmount));

@@ -156,8 +156,9 @@ function updateCartProgressAndWarning(sub) {
 }
 
 async function updateCartDeliveryFeeAndTotals(sub) {
+  var freeThreshold = typeof window._cd_free_delivery_amount !== 'undefined' ? window._cd_free_delivery_amount : 50;
   var delFee = 0;
-  if (sub < 50) {
+  if (sub < freeThreshold) {
     try {
       var r = await API.getDeliveryMethods();
       var methods = r.data || [];
