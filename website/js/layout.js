@@ -224,8 +224,8 @@ function buildFooter(){
               style="color:#3b82f6;display:inline;margin:0">info@coop-discounts.com</a>
           </div>
           <div class="r-ftr-contact">
-            <a href="tel:+971555944719">📞 055 594 4719</a>
-            <a href="https://wa.me/971555944719" class="wa">💬 WhatsApp Us</a>
+            <a href="tel:+971502760026">📞 050 276 0026</a>
+            <a href="https://wa.me/971502760026" class="wa">💬 WhatsApp Us</a>
           </div>
           <div style="margin-top:20px;color:#6b7280;font-size:11px;">
             Mon to Sun from 08:00 to 00:00
@@ -259,7 +259,12 @@ function buildFooter(){
     </button>
     <a href="account.html" class="mna"><span class="ic">👤</span><span class="en">Account</span><span class="ar" style="display:none">حسابي</span></a>
   </div>
-</nav>`;
+</nav>
+
+<!-- Floating WhatsApp Button -->
+<a href="https://wa.me/971502760026" target="_blank" class="float-wa" style="position:fixed;bottom:80px;right:20px;background:#25D366;color:#fff;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:999;text-decoration:none;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" aria-label="Chat with us on WhatsApp">
+  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 0C5.383 0 0 5.383 0 12.031c0 2.124.553 4.195 1.604 6.012L.15 23.364l5.474-1.436a11.954 11.954 0 0 0 6.407 1.834h.004c6.649 0 12.032-5.384 12.032-12.032C24.067 5.383 18.68 0 12.031 0zm0 21.733h-.004a9.92 9.92 0 0 1-5.068-1.385l-.364-.216-3.766.987.997-3.67-.236-.377A9.927 9.927 0 0 1 2.031 12.03c0-5.522 4.492-10.013 10.004-10.013 5.51 0 10.003 4.491 10.003 10.013 0 5.522-4.492 10.013-10.003 10.013zM17.525 14.5c-.302-.151-1.785-.88-2.062-.981-.277-.101-.479-.151-.68.151-.202.302-.781.981-.958 1.182-.176.202-.353.227-.655.076-1.637-.803-2.656-1.41-3.69-3.235-.203-.353.204-.326.638-.973.101-.151.05-.277-.025-.428-.076-.151-.68-1.637-.932-2.241-.246-.591-.495-.51-.68-.52-.176-.01-.378-.01-.58-.01-.202 0-.529.076-.806.378-.277.302-1.058 1.033-1.058 2.518 0 1.485 1.083 2.919 1.234 3.12.151.202 2.128 3.249 5.156 4.555.72.31 1.282.496 1.721.635.724.23 1.383.197 1.899.119.578-.087 1.785-.729 2.037-1.435.252-.705.252-1.31.176-1.435-.075-.125-.276-.201-.578-.352z"/></svg>
+</a>`;
 }
 
 function doSearch(){
