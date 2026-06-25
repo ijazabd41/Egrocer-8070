@@ -47,6 +47,7 @@ $queryString = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
 
 // Fix: Odoo backend fails to decode %40 in email fields, so we must pass @ unencoded
 $queryString = str_replace('%40', '@', $queryString);
+$queryString = str_replace(['%5B', '%5D'], ['[', ']'], $queryString);
 
 if (!isImage($pathInfo)) {
     if (strpos($queryString, 'by_AJR=') === false) {
@@ -128,6 +129,10 @@ if (isset($responseHeaders['set-cookie'])) {
         if (preg_match('/session_id=([^;]+)/', $cookie, $matches)) {
             header('X-Set-Session-Token: ' . $matches[1]);
         }
+        // Strip Secure and rewrite SameSite like the local proxy does
+        $cookie = preg_replace('/;\\s*Secure/i', '', $cookie);
+        $cookie = preg_replace('/;\\s*SameSite=[^;]*/i', '', $cookie);
+        $cookie .= '; SameSite=Lax';
         header('Set-Cookie: ' . $cookie, false);
     }
 }
