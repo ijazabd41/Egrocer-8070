@@ -328,6 +328,8 @@ function renderDelList(dels){
       <div class="del-av">${String(cust)[0]?.toUpperCase()||'C'}</div>
       <div style="flex:1">
         <div style="font-size:12px;color:var(--text-soft)">${d.name||''}</div>
+        <div style="font-size:11px;color:var(--text-soft);margin-bottom:2px">Created: ${d.create_date||''}</div>
+        <div style="font-size:11px;color:var(--text-soft)">Delivery: ${d.scheduled_date||d.date_deadline||''}</div>
         <div style="font-size:14px;font-weight:700">${cust}</div>
         ${phone}
         ${addr}
@@ -410,7 +412,13 @@ function renderRU(items){
     const mapBtn = hasGeo ? `<button onclick="event.stopPropagation();window.open('https://maps.google.com/?q=${geo.lat},${geo.lng}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px">📍 Map</button>` : '';
     return `<div class="del-row">
       <div class="del-av">${String(cust)[0]?.toUpperCase()||'C'}</div>
-      <div style="flex:1"><div style="font-size:12px;color:var(--text-soft)">${d.name||''}</div><div style="font-size:14px;font-weight:700">${cust}</div>${phone}${addr}${mapBtn}</div>
+      <div style="flex:1">
+        <div style="font-size:12px;color:var(--text-soft)">${d.name||''}</div>
+        <div style="font-size:11px;color:var(--text-soft);margin-bottom:2px">Created: ${d.create_date||''}</div>
+        <div style="font-size:11px;color:var(--text-soft)">Delivery: ${d.scheduled_date||d.date_deadline||''}</div>
+        <div style="font-size:14px;font-weight:700">${cust}</div>
+        ${phone}${addr}${mapBtn}
+      </div>
       <button onclick="doAccept(${d.id})" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer">Accept</button>
     </div>`;
   }).join('')||'<div style="text-align:center;padding:20px;color:var(--text-mid)">&#x1F69A; No available deliveries</div>';
@@ -437,7 +445,13 @@ async function loadRiderMine(){
       const mapBtn = hasGeo ? `<button onclick="event.stopPropagation();window.open('https://maps.google.com/?q=${geo.lat},${geo.lng}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px">📍 Directions</button>` : '';
       return `<div class="del-row" style="cursor:${done?'default':'pointer'}" onclick="${done?'':'openOtp('+x.id+',\''+x.name+'\',\''+String(cust).replace(/'/g,"\\'")+'\','+geo.lat+','+geo.lng+',\''+(x.partner_address?x.partner_address.replace(/'/g,"\\'"):'')+'\',\''+(x.partner_phone||'')+'\')'}">
         <div class="del-av" style="background:${done?'#16A34A':'var(--primary)'}">${String(cust)[0]?.toUpperCase()||'C'}</div>
-        <div style="flex:1"><div style="font-size:12px;color:var(--text-soft)">${x.name||''}</div><div style="font-size:14px;font-weight:700">${cust}</div>${phone}${addr}${mapBtn}</div>
+        <div style="flex:1">
+          <div style="font-size:12px;color:var(--text-soft)">${x.name||''}</div>
+          <div style="font-size:11px;color:var(--text-soft);margin-bottom:2px">Created: ${x.create_date||''}</div>
+          <div style="font-size:11px;color:var(--text-soft)">Delivery: ${x.scheduled_date||x.date_deadline||''}</div>
+          <div style="font-size:14px;font-weight:700">${cust}</div>
+          ${phone}${addr}${mapBtn}
+        </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
           <span class="pill ${done?'pill-green':'pill-blue'}">${done?'Delivered':'Manage &#x3009;'}</span>
         </div>

@@ -115,7 +115,7 @@ function row(o){
     custHtml += `<br><button onclick="window.open('https://maps.google.com/?q=${lat},${lng}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:700;margin-top:2px;cursor:pointer;">📍 Map</button>`;
   }
   
-  return `<tr><td data-label="Order"><b>${val(o,'name')}</b><br><small>${val(o,'scheduled_date','create_date')}</small></td><td data-label="Customer">${custHtml}</td><td data-label="Source">${val(o,'source','delivery_source')}</td><td data-label="Status">${badge(state)}</td><td data-label="Responsible">${val(o,'store_manager','store_keeper','driver','responsible')||'-'}</td><td data-label="Actions"><div class="actions">${buttons(o,state)}</div></td></tr>`
+  return `<tr><td data-label="Order"><b>${val(o,'name')}</b><br><small><b>Created:</b> ${val(o,'create_date')||'-'}</small><br><small><b>Delivery:</b> ${val(o,'scheduled_date','date_deadline')||'-'}</small></td><td data-label="Customer">${custHtml}</td><td data-label="Source">${val(o,'source','delivery_source')}</td><td data-label="Status">${badge(state)}</td><td data-label="Responsible">${val(o,'store_manager','store_keeper','driver','responsible')||'-'}</td><td data-label="Actions"><div class="actions">${buttons(o,state)}</div></td></tr>`
 }
 
 function card(o){
@@ -132,7 +132,7 @@ function card(o){
     custHtml += ` <button onclick="window.open('https://maps.google.com/?q=${lat},${lng}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:700;cursor:pointer;margin-left:4px;">📍 Map</button>`;
   }
   
-  return `<div class="kpi" style="text-align:left"><b style="font-size:15px">${val(o,'name')}</b><br>${badge(state)}<p><b>Customer:</b> ${custHtml}</p><p><b>Source:</b> ${val(o,'source','delivery_source')||'-'}</p><p><b>Responsible:</b> ${val(o,'store_manager','store_keeper','driver','responsible')||'-'}</p><div class="actions">${buttons(o,state)}</div></div>`
+  return `<div class="kpi" style="text-align:left"><b style="font-size:15px">${val(o,'name')}</b><br>${badge(state)}<p style="margin:8px 0;font-size:11px;color:var(--muted)"><b>Created:</b> ${val(o,'create_date')||'-'}<br><b>Delivery:</b> ${val(o,'scheduled_date','date_deadline')||'-'}</p><p><b>Customer:</b> ${custHtml}</p><p><b>Source:</b> ${val(o,'source','delivery_source')||'-'}</p><p><b>Responsible:</b> ${val(o,'store_manager','store_keeper','driver','responsible')||'-'}</p><div class="actions">${buttons(o,state)}</div></div>`
 }
 function buttons(o,state){
   const id=val(o,'id','picking_id');
