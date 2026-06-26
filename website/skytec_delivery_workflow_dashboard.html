@@ -103,7 +103,7 @@ async function loadDashboard(){
   }catch(e){showErr(e.message)}
 }
 function setView(v){currentView=v;document.getElementById('btnList').classList.toggle('active',v==='list');document.getElementById('btnKanban').classList.toggle('active',v==='kanban');render()}
-function render(){if(!currentItems.length){document.getElementById('orders').innerHTML='<div class="empty">No records found</div>';return}if(currentView==='kanban'){document.getElementById('orders').innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;padding:12px">${currentItems.map(card).join('')}</div>`}else{document.getElementById('orders').innerHTML=`<table class="table"><thead><tr><th>Order</th><th>Customer</th><th>Source</th><th>Status</th><th>Responsible</th><th>Actions</th></tr></thead><tbody>${currentItems.map(row).join('')}</tbody></table>`}}
+function render(){if(!currentItems.length){document.getElementById('orders').innerHTML='<div class="empty">No records found</div>';return}if(currentView==='kanban'){document.getElementById('orders').innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;padding:12px">${currentItems.map(card).join('')}</div>`}else{document.getElementById('orders').innerHTML=`<div style="overflow-x:auto;"><table class="table" style="min-width:900px;"><thead><tr><th>Order</th><th>Created Date</th><th>Schedule Date</th><th>Warehouse</th><th>Customer</th><th>Source</th><th>Status</th><th>Responsible</th><th>Actions</th></tr></thead><tbody>${currentItems.map(row).join('')}</tbody></table></div>`}}
 function row(o){
   const state=val(o,'delivery_state','state');
   const phone=val(o,'partner_phone');
@@ -118,7 +118,21 @@ function row(o){
     custHtml += `<br><button onclick="window.open('https://maps.google.com/?q=${lat},${lng}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:700;margin-top:2px;cursor:pointer;">📍 Map</button>`;
   }
   
-  return `<tr><td data-label="Order"><b>${val(o,'name')}</b><br><small><b>Created:</b> ${val(o,'create_date')||'-'}</small><br><small><b>Delivery:</b> ${val(o,'scheduled_date','date_deadline')||'-'}</small></td><td data-label="Customer">${custHtml}</td><td data-label="Source">${val(o,'source','delivery_source')}</td><td data-label="Status">${badge(state)}</td><td data-label="Responsible">${val(o,'store_manager','store_keeper','driver','responsible')||'-'}</td><td data-label="Actions"><div class="actions">${buttons(o,state)}</div></td></tr>`
+  const createdDate = (val(o,'create_date','date')||'').replace('T',' ').substring(0,16) || '-';
+  const scheduleDate = (val(o,'scheduled_date','date_deadline')||'').replace('T',' ').substring(0,16) || '-';
+  const warehouse = val(o,'warehouse','warehouse_id','location_id','picking_type_id') || '-';
+
+  return `<tr>
+    <td data-label="Order"><b>${val(o,'name')}</b></td>
+    <td data-label="Created Date" style="white-space:nowrap;font-size:12px;">${createdDate}</td>
+    <td data-label="Schedule Date" style="white-space:nowrap;font-size:12px;">${scheduleDate}</td>
+    <td data-label="Warehouse" style="font-size:12px;">${warehouse}</td>
+    <td data-label="Customer">${custHtml}</td>
+    <td data-label="Source">${val(o,'source','delivery_source')}</td>
+    <td data-label="Status">${badge(state)}</td>
+    <td data-label="Responsible">${val(o,'store_manager','store_keeper','driver','responsible')||'-'}</td>
+    <td data-label="Actions"><div class="actions">${buttons(o,state)}</div></td>
+  </tr>`
 }
 
 function card(o){
@@ -135,7 +149,20 @@ function card(o){
     custHtml += ` <button onclick="window.open('https://maps.google.com/?q=${lat},${lng}','_blank')" style="background:#e0f2fe;color:#0284c7;border:none;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:700;cursor:pointer;margin-left:4px;">📍 Map</button>`;
   }
   
-  return `<div class="kpi" style="text-align:left"><b style="font-size:15px">${val(o,'name')}</b><br>${badge(state)}<p style="margin:8px 0;font-size:11px;color:var(--muted)"><b>Created:</b> ${val(o,'create_date')||'-'}<br><b>Delivery:</b> ${val(o,'scheduled_date','date_deadline')||'-'}</p><p><b>Customer:</b> ${custHtml}</p><p><b>Source:</b> ${val(o,'source','delivery_source')||'-'}</p><p><b>Responsible:</b> ${val(o,'store_manager','store_keeper','driver','responsible')||'-'}</p><div class="actions">${buttons(o,state)}</div></div>`
+  const createdDate = (val(o,'create_date','date')||'').replace('T',' ').substring(0,16) || '-';
+  const scheduleDate = (val(o,'scheduled_date','date_deadline')||'').replace('T',' ').substring(0,16) || '-';
+  const warehouse = val(o,'warehouse','warehouse_id','location_id','picking_type_id') || '-';
+
+  return `<div class="kpi" style="text-align:left"><b style="font-size:15px">${val(o,'name')}</b><br>${badge(state)}
+  <div style="margin:10px 0;font-size:12px;color:var(--text);background:#f8fafc;padding:8px;border-radius:6px;border:1px solid #e2e8f0;">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="color:var(--muted)">Created:</span> <b>${createdDate}</b></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="color:var(--muted)">Schedule:</span> <b>${scheduleDate}</b></div>
+    <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted)">Warehouse:</span> <b>${warehouse}</b></div>
+  </div>
+  <p style="margin:4px 0;font-size:12px;"><b>Customer:</b> ${custHtml}</p>
+  <p style="margin:4px 0;font-size:12px;"><b>Source:</b> ${val(o,'source','delivery_source')||'-'}</p>
+  <p style="margin:4px 0;font-size:12px;"><b>Responsible:</b> ${val(o,'store_manager','store_keeper','driver','responsible')||'-'}</p>
+  <div class="actions" style="margin-top:12px;">${buttons(o,state)}</div></div>`
 }
 function buttons(o,state){
   const id=val(o,'id','picking_id');

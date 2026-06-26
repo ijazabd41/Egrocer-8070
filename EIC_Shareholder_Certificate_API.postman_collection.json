@@ -1,0 +1,180 @@
+{
+  "info": {
+    "name": "EIC Shareholder Bridge v19 - Certificate API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://cooperp.freeddns.org:8070"
+    },
+    {
+      "key": "shareholder_no",
+      "value": "100234"
+    },
+    {
+      "key": "api_key",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Download Certificate EN",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"shareholder_no\": \"{{shareholder_no}}\",\n  \"language\": \"en\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/shareholder/certificate/download",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "shareholder",
+            "certificate",
+            "download"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Preview Certificate EN",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"shareholder_no\": \"{{shareholder_no}}\",\n  \"language\": \"en\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/shareholder/certificate/preview",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "shareholder",
+            "certificate",
+            "preview"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Download Certificate AR",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"shareholder_no\": \"{{shareholder_no}}\",\n  \"language\": \"ar\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/shareholder/certificate/download",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "shareholder",
+            "certificate",
+            "download"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Generate Attachment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"shareholder_no\": \"{{shareholder_no}}\",\n  \"language\": \"en\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/shareholder/certificate/generate",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "shareholder",
+            "certificate",
+            "generate"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Download Attachment",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "disabled": true
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/shareholder/certificate/attachment/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "shareholder",
+            "certificate",
+            "attachment",
+            "1"
+          ]
+        }
+      }
+    }
+  ]
+}
