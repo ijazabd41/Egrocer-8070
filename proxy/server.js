@@ -6,7 +6,7 @@ const PORT = parseInt(process.env.PORT || '3001');
 
 const TELR_STORE_ID = process.env.TELR_STORE_ID || '';
 const TELR_AUTH_KEY = process.env.TELR_AUTH_KEY || '';
-const ODOO_API_KEY  = process.env.ODOO_API_KEY || '';
+const ODOO_API_KEY  = process.env.ODOO_API_KEY || 'SoYt1JvXCIQX1wPuJsh51YYOBlm4vsqD';
 const SITE_BASE_URL = process.env.SITE_BASE_URL || `http://localhost:${PORT}`;
 const TELR_TEST_MODE = process.env.TELR_TEST_MODE !== 'false';
 
@@ -116,6 +116,12 @@ function fwd(res, odooPath, method, body, cookie, sessionToken, reqContentType) 
     'Accept': '*/*',
     'User-Agent': 'CoopDiscountsProxy/2.1'
   };
+  
+  // Inject API key for certificate endpoints as they require elevated privileges
+  if (odooPath.startsWith('/api/shareholder/certificate/')) {
+    hdrs['X-API-Key'] = ODOO_API_KEY;
+  }
+
   if (reqContentType) hdrs['Content-Type'] = reqContentType;
   else if (!isImage(odooPath)) hdrs['Content-Type'] = 'application/json';
   if (cookie) hdrs['Cookie'] = cookie;
