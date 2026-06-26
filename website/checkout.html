@@ -859,10 +859,10 @@ function renderSummary(){
   if (pickupDiscRow && pickupDiscAmt) {
     if (pickupDisc > 0) {
       pickupDiscRow.style.display = 'flex';
-      pickupDiscAmt.textContent = '-' + pRate + '%';
+      pickupDiscAmt.textContent = '–AED ' + pickupDisc.toFixed(2);
       var labelSpan = pickupDiscRow.querySelector('span:first-child');
       if (labelSpan) {
-        labelSpan.textContent = '🏪 Store Pickup Discount';
+        labelSpan.textContent = '🏪 Store Pickup Discount (' + pRate + '%)';
       }
     } else {
       pickupDiscRow.style.display = 'none';
@@ -901,14 +901,27 @@ async function loadDeliveryMethods(){
     methods.forEach(function(m,i){
       var price=parseFloat(m.fixed_price||0);
       var kind=isStorePickupMethod(m)?'store':'home';
+      var pRate = 0;
+      if (typeof m.margin !== 'undefined' && m.margin > 0) pRate = parseFloat(m.margin);
+      else if (kind === 'store' && price < 0) pRate = Math.abs(price);
+      else if (kind === 'store') pRate = 5.0; // fallback
+
       var ic=kind==='store'?'🏬':'🚚';
       var d=document.createElement('div');
       d.className='pmeth'+(i===0?' on':'');
       d.id='dm-'+m.id;
       d.onclick=(function(mid,mname,k,mm){return function(){selDelivery(mid,mname,k,mm);};})(m.id,m.name,kind,m);
+      
+      var priceDisplay = '';
+      if (kind === 'store' && pRate > 0) {
+          priceDisplay = '<span style="color:#a01820">-' + pRate + '%</span>';
+      } else {
+          priceDisplay = '<span style="color:'+(price===0?'#16a34a':'#a01820')+'">'+(price===0?'FREE':'AED '+price.toFixed(2))+'</span>';
+      }
+
       d.innerHTML='<span class="pmeth-ic">'+ic+'</span>'
         +'<div><div class="pmeth-lbl">'+m.name+'</div>'+(m.delivery_type?'<div class="pmeth-desc">'+m.delivery_type[1]+'</div>':'<div class="pmeth-desc">'+(kind==='store'?'Pick up from store':'Home delivery')+'</div>')+'</div>'
-        +'<span style="margin-left:auto;font-weight:800;color:'+(price===0?'#16a34a':'#a01820')+'">'+(price===0?'FREE':'AED '+price.toFixed(2))+'</span>';
+        +'<span style="margin-left:auto;font-weight:800;">'+priceDisplay+'</span>';
       el.appendChild(d);
     });
     if(methods.length){
