@@ -157,6 +157,23 @@ if (isset($responseHeaders['content-disposition'])) {
     header('Content-Disposition: ' . $responseHeaders['content-disposition'][0]);
 }
 
+// ── CACHE-CONTROL (mirrors server.js) ────────────────────────────
+if ($httpCode === 200 && $method === 'GET') {
+    if (isImage($pathInfo)) {
+        header('Cache-Control: public, max-age=604800, stale-while-revalidate=86400');
+    } elseif (strpos($pathInfo, '/api/country') === 0) {
+        header('Cache-Control: public, max-age=3600');
+    } elseif (strpos($pathInfo, '/bcd-website-category') !== false) {
+        header('Cache-Control: public, max-age=1800');
+    } elseif (preg_match('/\/config-settings|\/faq|\/banner|\/slider/', $pathInfo)) {
+        header('Cache-Control: public, max-age=1200');
+    } elseif (preg_match('/\/deal-day-slider|\/delivery-method|\/loyalty-program/', $pathInfo)) {
+        header('Cache-Control: public, max-age=600');
+    } elseif (preg_match('/\/bcp-product-template|\/payment-provider|\/loyalty-card|\/loyalty-coupon|\/shareholder/', $pathInfo)) {
+        header('Cache-Control: public, max-age=300');
+    }
+}
+
 http_response_code($httpCode);
 echo $response;
 ?>

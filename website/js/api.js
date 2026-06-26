@@ -226,27 +226,84 @@ const API = ((_DB='production', SK='cd_session', NOTIFY='eicoopit@gmail.com') =>
       p.startsWith('/api/delivery-method') ||
       p.startsWith('/api/country') ||
       p.startsWith('/api/country-state') ||
-      p.startsWith('/api/loyalty-program')
+      p.startsWith('/api/loyalty-program') ||
+      p.startsWith('/api/loyalty-card') ||
+      p.startsWith('/api/loyalty-coupon') ||
+      p.startsWith('/api/shareholder/info') ||
+      p.startsWith('/api/shareholder/certificates') ||
+      p.startsWith('/api/shareholder/rewards') ||
+      p.startsWith('/api/shareholder/lookup') ||
+      p.startsWith('/api/faq') ||
+      p.startsWith('/api/banner') ||
+      p.startsWith('/api/slider')
     );
   }
   function cacheTtlMs(path) {
     const p = String(path || '');
-    if (p.startsWith('/api/bcp-product-template')) return 30000;
-    if (p.startsWith('/api/deal-day-slider')) return 120000;
-    if (p.startsWith('/api/bcd-website-category')) return 300000;
-    return 180000;
+    // Long-lived static/reference data — persist across page loads
+    if (p.startsWith('/api/country'))          return 60 * 60 * 1000;  // 1 hour
+    if (p.startsWith('/api/bcd-website-category')) return 30 * 60 * 1000; // 30 min
+    if (p.startsWith('/api/config-settings'))  return 20 * 60 * 1000;  // 20 min
+    if (p.startsWith('/api/faq'))              return 20 * 60 * 1000;  // 20 min
+    if (p.startsWith('/api/banner'))           return 15 * 60 * 1000;  // 15 min
+    if (p.startsWith('/api/slider'))           return 15 * 60 * 1000;  // 15 min
+    if (p.startsWith('/api/deal-day-slider'))  return 10 * 60 * 1000;  // 10 min
+    if (p.startsWith('/api/delivery-method'))  return 10 * 60 * 1000;  // 10 min
+    if (p.startsWith('/api/loyalty-program'))  return 10 * 60 * 1000;  // 10 min
+    if (p.startsWith('/api/loyalty-card'))     return  5 * 60 * 1000;  // 5 min
+    if (p.startsWith('/api/loyalty-coupon'))   return  5 * 60 * 1000;  // 5 min
+    if (p.startsWith('/api/payment-provider')) return  5 * 60 * 1000;  // 5 min
+    if (p.startsWith('/api/shareholder/info')) return  5 * 60 * 1000;  // 5 min
+    if (p.startsWith('/api/shareholder/certificates')) return 5 * 60 * 1000; // 5 min
+    if (p.startsWith('/api/shareholder/rewards'))   return 5 * 60 * 1000;  // 5 min
+    if (p.startsWith('/api/shareholder/lookup'))    return 2 * 60 * 1000;  // 2 min
+    if (p.startsWith('/api/bcp-product-template'))  return 3 * 60 * 1000;  // 3 min
+    return 2 * 60 * 1000; // default 2 min
+  }
+  function _ssKey(key) {
+    // Hash the key to a safe sessionStorage key
+    let h = 0;
+    for (let i = 0; i < key.length; i++) h = ((h << 5) - h + key.charCodeAt(i)) | 0;
+    return 'cd_api_' + (h >>> 0).toString(36);
   }
   function readCached(key) {
+    const now = Date.now();
     const row = _respCache.get(key);
-    if (!row) return null;
-    if (row.exp <= Date.now()) {
-      _respCache.delete(key);
-      return null;
-    }
-    return row.data;
+    if (row && row.exp > now) return row.data;
+    if (row) _respCache.delete(key);
+    // Fallback to sessionStorage for cross-page cache hits
+    try {
+      const raw = sessionStorage.getItem(_ssKey(key));
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.exp > now) {
+          _respCache.set(key, parsed); // restore to memory
+          return parsed.data;
+        }
+        sessionStorage.removeItem(_ssKey(key));
+      }
+    } catch(_) {}
+    return null;
   }
   function writeCached(key, data, ttlMs) {
-    _respCache.set(key, { data, exp: Date.now() + ttlMs });
+    const row = { data, exp: Date.now() + ttlMs };
+    _respCache.set(key, row);
+    // Persist to sessionStorage for anything >= 2 minutes (survives page navigation)
+    if (ttlMs >= 2 * 60 * 1000) {
+      try {
+        sessionStorage.setItem(_ssKey(key), JSON.stringify(row));
+      } catch(_) {
+        // If storage quota exceeded, clear old API cache entries and retry
+        try {
+          for (let i = sessionStorage.length - 1; i >= 0; i--) {
+            const sk = sessionStorage.key(i);
+            if (sk && sk.startsWith('cd_api_')) sessionStorage.removeItem(sk);
+            if (sessionStorage.length < 50) break;
+          }
+          sessionStorage.setItem(_ssKey(key), JSON.stringify(row));
+        } catch(_2) {}
+      }
+    }
   }
   function clearCache() {
     _respCache.clear();

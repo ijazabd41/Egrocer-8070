@@ -150,6 +150,24 @@ function fwd(res, odooPath, method, body, cookie, sessionToken, reqContentType) 
     const ct = or.headers['content-type'] || (isImage(odooPath) ? 'image/jpeg' : 'application/json');
     res.setHeader('Content-Type', ct);
     if (or.headers['content-length']) res.setHeader('Content-Length', or.headers['content-length']);
+    // ── CACHE-CONTROL ──────────────────────────────────────────────
+    if (or.statusCode === 200 && method === 'GET') {
+      if (isImage(odooPath)) {
+        // Images: 7-day browser cache (product/category images rarely change)
+        res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400');
+      } else if (/\/api\/country/.test(odooPath)) {
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+      } else if (/\/bcd-website-category/.test(odooPath)) {
+        res.setHeader('Cache-Control', 'public, max-age=1800');
+      } else if (/\/config-settings|\/faq|\/banner|\/slider/.test(odooPath)) {
+        res.setHeader('Cache-Control', 'public, max-age=1200');
+      } else if (/\/deal-day-slider|\/delivery-method|\/loyalty-program/.test(odooPath)) {
+        res.setHeader('Cache-Control', 'public, max-age=600');
+      } else if (/\/bcp-product-template|\/payment-provider|\/loyalty-card|\/loyalty-coupon|\/shareholder/.test(odooPath)) {
+        res.setHeader('Cache-Control', 'public, max-age=300');
+      }
+    }
+
     // For images: stream binary data as buffers
     const chunks = [];
     or.on('data', chunk => chunks.push(Buffer.from(chunk)));
