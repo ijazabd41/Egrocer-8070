@@ -859,10 +859,10 @@ function renderSummary(){
   if (pickupDiscRow && pickupDiscAmt) {
     if (pickupDisc > 0) {
       pickupDiscRow.style.display = 'flex';
-      pickupDiscAmt.textContent = '–AED ' + pickupDisc.toFixed(2);
+      pickupDiscAmt.textContent = '–' + pRate + '%';
       var labelSpan = pickupDiscRow.querySelector('span:first-child');
       if (labelSpan) {
-        labelSpan.textContent = '🏪 Store Pickup Discount (' + pRate + '%)';
+        labelSpan.textContent = '🏪 Store Pickup Discount';
       }
     } else {
       pickupDiscRow.style.display = 'none';
