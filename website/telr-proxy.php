@@ -1,12 +1,20 @@
 <?php
-// telr-proxy.php
-// A simple PHP proxy to forward requests to the Telr API and bypass CORS
+// telr-proxy.php — PHP production proxy for Telr Payment Gateway
+// Mirrors the server.js /telr/* handler logic
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
+    exit;
+}
+
+// Only POST is allowed (matches server.js restriction)
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Only POST allowed for Telr proxy']);
     exit;
 }
 
@@ -26,7 +34,7 @@ if (!function_exists('getallheaders')) {
     }
 }
 
-// Safe URL parsing from REQUEST_URI without Apache URL-decoding
+// ── PATH PARSING ─────────────────────────────────────────────────
 $uri = $_SERVER['REQUEST_URI'];
 $parsedUrl = parse_url($uri);
 $path = isset($parsedUrl['path']) ? $parsedUrl['path'] : '';
@@ -35,7 +43,12 @@ $pos = strpos($path, $prefix);
 if ($pos !== false) {
     $pathInfo = substr($path, $pos + strlen($prefix));
 } else {
-    $pathInfo = $path; // Fallback
+    $pathInfo = $path;
+}
+
+// Ensure path starts with /
+if (empty($pathInfo) || $pathInfo[0] !== '/') {
+    $pathInfo = '/' . ltrim($pathInfo, '/');
 }
 
 $targetUrl = 'https://secure.telr.com' . $pathInfo;
@@ -43,42 +56,48 @@ if (!empty($_SERVER['QUERY_STRING'])) {
     $targetUrl .= '?' . $_SERVER['QUERY_STRING'];
 }
 
+// ── REQUEST ──────────────────────────────────────────────────────
+$input = file_get_contents('php://input');
+
 $ch = curl_init($targetUrl);
-
-// Forward request method and body
-$method = $_SERVER['REQUEST_METHOD'];
-curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-
-if ($method === 'POST' || $method === 'PUT' || $method === 'PATCH') {
-    $input = file_get_contents('php://input');
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $input);
-}
-
-// Forward headers
-$headers = array();
-foreach (getallheaders() as $name => $value) {
-    $lowerName = strtolower($name);
-    if ($lowerName !== 'host' && $lowerName !== 'content-length' && $lowerName !== 'connection' && $lowerName !== 'accept-encoding') {
-        $headers[] = "$name: $value";
-    }
-}
-curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-curl_setopt($ch, CURLOPT_ENCODING, ""); // Automatically handle gzip/deflate decoding
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+curl_setopt($ch, CURLOPT_POSTFIELDS, $input);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Content-Type: application/json',
+    'Content-Length: ' . strlen($input)
+]);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HEADER, false);
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // For compatibility with some shared hosts
+curl_setopt($ch, CURLOPT_ENCODING, ""); // Auto handle gzip/deflate
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true); // Keep SSL verification on in production
+curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+// ── RESPONSE HEADERS ─────────────────────────────────────────────
+$responseHeaders = [];
+curl_setopt($ch, CURLOPT_HEADERFUNCTION, function($curl, $header) use (&$responseHeaders) {
+    $len = strlen($header);
+    $parts = explode(':', $header, 2);
+    if (count($parts) < 2) return $len;
+    $name = strtolower(trim($parts[0]));
+    $responseHeaders[$name][] = trim($parts[1]);
+    return $len;
+});
 
 $response = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
 if (curl_errno($ch)) {
-    $httpCode = 500;
-    $response = json_encode(['error' => 'Proxy cURL Error: ' . curl_error($ch)]);
+    curl_close($ch);
+    http_response_code(502);
+    header('Content-Type: application/json');
+    echo json_encode(['success' => 0, 'error' => 'Telr unreachable', 'detail' => curl_error($ch)]);
+    exit;
 }
-
 curl_close($ch);
 
+// Forward Telr's actual content-type (matches server.js)
+$contentType = isset($responseHeaders['content-type']) ? $responseHeaders['content-type'][0] : 'application/json';
 http_response_code($httpCode);
-header('Content-Type: application/json');
+header('Content-Type: ' . $contentType);
 echo $response;
 ?>
