@@ -890,19 +890,13 @@ async function loadLoyalty(){
 async function handleCertificateAction(action, shNum, lang) {
   try {
     toast((action === 'preview' ? 'Loading preview...' : 'Downloading certificate...'), 'info');
-    var sessionToken = '';
-    try {
-      var sObj = JSON.parse(localStorage.getItem('cd_session') || 'null');
-      sessionToken = sObj?.session_id || localStorage.getItem('cd_session_id') || '';
-    } catch(e) {}
     
     var url = API.PX + '/api/shareholder/certificate/' + action;
-    var headers = { 'Content-Type': 'application/json' };
-    if (sessionToken) headers['X-Session-Token'] = sessionToken;
     
     var res = await fetch(url, {
       method: 'POST',
-      headers: headers,
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ shareholder_no: shNum, language: lang })
     });
     

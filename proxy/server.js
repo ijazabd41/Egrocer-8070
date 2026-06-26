@@ -339,8 +339,9 @@ http.createServer((req, res) => {
   const qs = {};
   reqUrl.searchParams.forEach((v, k) => { qs[k] = v; });
 
-  // CRITICAL: Only add by_AJR to API calls, NOT to image/binary paths
-  if (!isImage(odooPath) && !qs.by_AJR) qs.by_AJR = '1';
+  // CRITICAL: Only add by_AJR to API calls, NOT to image/binary paths or certificate endpoints
+  const isCertPath = odooPath.startsWith('/api/shareholder/certificate/');
+  if (!isImage(odooPath) && !isCertPath && !qs.by_AJR) qs.by_AJR = '1';
 
   // Odoo list params must keep literal brackets: args=[22] not args=%5B22%5D
   const ODOO_LITERAL_KEYS = new Set(['args', 'domain', 'line_ids']);
