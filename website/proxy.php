@@ -1,10 +1,12 @@
 <?php
-// proxy.php
-// A simple PHP proxy to forward requests to the Odoo ERP and bypass CORS
+// proxy.php — PHP production proxy, mirrors server.js logic
+// Forwards requests to the Odoo ERP and bypasses CORS
 require_once __DIR__ . '/config.php';
+
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Session-Token');
+header('Access-Control-Expose-Headers: Set-Cookie, Content-Type, Content-Disposition, X-Set-Session-Token');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -27,7 +29,7 @@ if (!function_exists('getallheaders')) {
     }
 }
 
-// Safe URL parsing from REQUEST_URI without Apache URL-decoding
+// ── PATH PARSING ─────────────────────────────────────────────────
 $uri = $_SERVER['REQUEST_URI'];
 $parsedUrl = parse_url($uri);
 $path = isset($parsedUrl['path']) ? $parsedUrl['path'] : '';
@@ -36,20 +38,24 @@ $pos = strpos($path, $prefix);
 if ($pos !== false) {
     $pathInfo = substr($path, $pos + strlen($prefix));
 } else {
-    $pathInfo = $path; // Fallback
+    $pathInfo = $path;
 }
 
 function isImage($p) {
     return strpos($p, '/web/image/') !== false || strpos($p, '/web/binary/') !== false;
 }
 
+// ── QUERY STRING ─────────────────────────────────────────────────
 $queryString = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
 
-// Fix: Odoo backend fails to decode %40 in email fields, so we must pass @ unencoded
+// Fix: Odoo backend fails to decode %40 in email fields, pass @ unencoded
 $queryString = str_replace('%40', '@', $queryString);
 $queryString = str_replace(['%5B', '%5D'], ['[', ']'], $queryString);
 
-if (!isImage($pathInfo)) {
+// CRITICAL: Do NOT add by_AJR to certificate endpoints — it causes 401 on Odoo
+$isCertPath = strpos($pathInfo, '/api/shareholder/certificate/') === 0;
+
+if (!isImage($pathInfo) && !$isCertPath) {
     if (strpos($queryString, 'by_AJR=') === false) {
         if (!empty($queryString)) {
             $queryString .= '&by_AJR=1';
@@ -74,15 +80,15 @@ if ($method === 'POST' || $method === 'PUT' || $method === 'PATCH') {
     curl_setopt($ch, CURLOPT_POSTFIELDS, $input);
 }
 
+// ── HEADERS ──────────────────────────────────────────────────────
 $sessionToken = '';
 foreach (getallheaders() as $name => $value) {
-    $lowerName = strtolower($name);
-    if ($lowerName === 'x-session-token') {
+    if (strtolower($name) === 'x-session-token') {
         $sessionToken = $value;
     }
 }
 
-$headers = array();
+$headers = [];
 foreach (getallheaders() as $name => $value) {
     $lowerName = strtolower($name);
     if ($lowerName !== 'host' && $lowerName !== 'content-length' && $lowerName !== 'connection' && $lowerName !== 'x-session-token' && $lowerName !== 'accept-encoding') {
@@ -96,16 +102,23 @@ foreach (getallheaders() as $name => $value) {
 if ($sessionToken) {
     $headers[] = "Cookie: session_id=$sessionToken";
 }
-curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-curl_setopt($ch, CURLOPT_ENCODING, ""); // Automatically handle gzip/deflate decoding
 
-$responseHeaders = array();
+// Inject API key for certificate endpoints (they require elevated privileges)
+if ($isCertPath) {
+    $headers[] = 'X-API-Key: ' . $ODOO_API_KEY;
+}
+
+curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+curl_setopt($ch, CURLOPT_ENCODING, ""); // Auto-handle gzip/deflate
+
+// ── RESPONSE ─────────────────────────────────────────────────────
+$responseHeaders = [];
 curl_setopt($ch, CURLOPT_HEADERFUNCTION, function($curl, $header) use (&$responseHeaders) {
     $len = strlen($header);
-    $headerParts = explode(':', $header, 2);
-    if (count($headerParts) < 2) return $len;
-    $name = strtolower(trim($headerParts[0]));
-    $responseHeaders[$name][] = trim($headerParts[1]);
+    $parts = explode(':', $header, 2);
+    if (count($parts) < 2) return $len;
+    $name = strtolower(trim($parts[0]));
+    $responseHeaders[$name][] = trim($parts[1]);
     return $len;
 });
 
@@ -121,17 +134,14 @@ if (curl_errno($ch)) {
 }
 curl_close($ch);
 
-// Expose headers for frontend
-header('Access-Control-Expose-Headers: Set-Cookie, Content-Type, Content-Disposition, X-Set-Session-Token');
-
+// Forward Set-Cookie with SameSite fix (mirrors server.js)
 if (isset($responseHeaders['set-cookie'])) {
     foreach ($responseHeaders['set-cookie'] as $cookie) {
         if (preg_match('/session_id=([^;]+)/', $cookie, $matches)) {
             header('X-Set-Session-Token: ' . $matches[1]);
         }
-        // Strip Secure and rewrite SameSite like the local proxy does
-        $cookie = preg_replace('/;\\s*Secure/i', '', $cookie);
-        $cookie = preg_replace('/;\\s*SameSite=[^;]*/i', '', $cookie);
+        $cookie = preg_replace('/;\s*Secure/i', '', $cookie);
+        $cookie = preg_replace('/;\s*SameSite=[^;]*/i', '', $cookie);
         $cookie .= '; SameSite=Lax';
         header('Set-Cookie: ' . $cookie, false);
     }
@@ -141,6 +151,10 @@ if (isset($responseHeaders['content-type'])) {
     header('Content-Type: ' . $responseHeaders['content-type'][0]);
 } else {
     header('Content-Type: application/json');
+}
+
+if (isset($responseHeaders['content-disposition'])) {
+    header('Content-Disposition: ' . $responseHeaders['content-disposition'][0]);
 }
 
 http_response_code($httpCode);
