@@ -499,17 +499,23 @@ function openOtp(id,name,cust,lat,lng,addr,phone){
          if (d.sale_id && d.sale_id.order_line) lines = d.sale_id.order_line;
          else if (d.move_ids_without_package) lines = d.move_ids_without_package;
          else if (d.move_lines) lines = d.move_lines;
+         else if (d.move_ids) lines = d.move_ids;
      } else if (r && !r.error) {
          if (r.sale_id && r.sale_id.order_line) lines = r.sale_id.order_line;
          else if (r.move_ids_without_package) lines = r.move_ids_without_package;
          else if (r.move_lines) lines = r.move_lines;
+         else if (r.move_ids) lines = r.move_ids;
      }
      
      if (lines && lines.length > 0) {
          document.getElementById('otp-del-items').innerHTML = '<div style="font-size:13px;font-weight:700;margin-bottom:8px">🛒 Order Items</div>' + 
            lines.map(l => {
-              const name = l.product_id ? (Array.isArray(l.product_id) ? l.product_id[1] : l.product_id.name || l.product_id) : (l.name || 'Item');
-              const qty = l.product_uom_qty || l.quantity_done || l.qty_done || 1;
+              const name = l.product_id ? 
+                  (Array.isArray(l.product_id) ? 
+                      (typeof l.product_id[0] === 'object' ? (l.product_id[0].display_name || l.product_id[0].name) : l.product_id[1]) 
+                  : l.product_id.name || l.product_id) 
+              : (l.name || 'Item');
+              const qty = l.product_uom_qty || l.quantity_done || l.quantity || l.qty_done || 1;
               return '<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #f1f5f9">' +
                 '<span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px">' + name + '</span>' +
                 '<span style="font-weight:600">x' + qty + '</span>' +

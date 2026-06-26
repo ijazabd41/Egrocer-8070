@@ -1234,7 +1234,45 @@ async function placeOrder(){
       var result = await API.confirmGuestOrder(selProvider);
       if (result.success && result.orderName) {
         Cart.clear();
-        location.href='order-success.html?name=' + encodeURIComponent(result.orderName) + '&oid=guest';
+        
+        if (selIsTelr) {
+            var pRate = (selDeliveryMethod && typeof selDeliveryMethod.margin !== 'undefined') ? parseFloat(selDeliveryMethod.margin || 0) : 0.0;
+            var pickupDiscAmount = parseFloat((sub * (pRate / 100)).toFixed(2));
+            var deliveryFeeVal = 0;
+            var freeThreshold = 50;
+            const isFree = m => m.free_over === true || m.free_over === 1 || String(m.free_over).toLowerCase() === 'true';
+            if (selDeliveryMethod && isFree(selDeliveryMethod) && selDeliveryMethod.amount) {
+              freeThreshold = parseFloat(selDeliveryMethod.amount);
+            } else if (typeof window._cd_free_delivery_amount !== 'undefined') {
+              freeThreshold = window._cd_free_delivery_amount;
+            }
+            if (sub < freeThreshold) {
+              deliveryFeeVal = selDeliveryMethod ? parseFloat(selDeliveryMethod.fixed_price || 0) : 15;
+            }
+            var promoDiscVal = Math.max(0, Math.min((discountPromo||0)+(discountLoyalty||0), sub - pickupDiscAmount));
+            var totalDiscVal = promoDiscVal + pickupDiscAmount;
+            var netTaxVal = Math.max(0, sub - totalDiscVal + deliveryFeeVal);
+            var vatVal = parseFloat((netTaxVal * 0.05).toFixed(2));
+            var totalAmount = (sub - totalDiscVal + deliveryFeeVal + vatVal).toFixed(2);
+            
+            var telrSession = await API.createTelrSession(result.orderName, totalAmount, 'AED', 'Order ' + result.orderName, null);
+            sessionStorage.setItem('telr_checkout', JSON.stringify({
+              oid: 0,
+              txId: 0,
+              provId: selProvider,
+              telrRef: telrSession.ref,
+              orderName: result.orderName,
+              isGuest: true
+            }));
+            location.href = telrSession.url;
+            return;
+        }
+        
+        if (result.redirectUrl) {
+          location.href = result.redirectUrl;
+        } else {
+          location.href='order-success.html?name=' + encodeURIComponent(result.orderName) + '&oid=guest';
+        }
       } else {
         throw new Error('Order confirmation failed');
       }
@@ -1478,6 +1516,11 @@ async function placeOrder(){
     }
   }catch(e){
     var savedOid=Cart.oid();
+    if (e.message && e.message.includes('stale payment')) {
+      Cart.coid();
+      Cart.clearLineIds();
+      log.info('Checkout','cleared cart oid due to stale payment to force new order on next attempt');
+    }
     log.error('Checkout','placeOrder ✗',{message:e.message,savedOid:savedOid});
     if(savedOid&&API.isOdooAccessError&&API.isOdooAccessError(e)){
       Cart.markPlaced(savedOid);

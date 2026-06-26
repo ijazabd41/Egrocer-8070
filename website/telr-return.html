@@ -100,36 +100,42 @@ document.addEventListener('DOMContentLoaded', async function(){
     }
     markStep('step1','done');
 
-    // Step 2: Call markDone to complete the order
-    markStep('step2','active');
-    try {
-      // Use Demo Gateway ID (6) as requested to ensure Odoo backend confirmation logic succeeds
-      var demoGatewayId = 6;
-      await API.markDone(parseInt(oid), parseInt(txId), demoGatewayId);
-      log.info('TelrReturn','markDone ✓',{oid:oid,txId:txId,usedDemoId:demoGatewayId});
-    } catch(e) {
-      log.warn('TelrReturn','markDone failed — checking if order already confirmed',{message:e.message});
-      // markDone might fail if order is already confirmed — check
+    if (checkout.isGuest) {
+      log.info('TelrReturn','Guest checkout, skipping authenticated endpoints');
+      markStep('step2','done');
+      markStep('step3','done');
+    } else {
+      // Step 2: Call markDone to complete the order
+      markStep('step2','active');
       try {
-        var confirmed = await API.isOrderConfirmed(parseInt(oid));
-        if(!confirmed){
-          // Try confirmOrderPayment as fallback using Demo Gateway ID
-          await API.confirmOrderPayment(parseInt(oid), 6);
-        }
-      } catch(_){}
+        // Use Demo Gateway ID (6) as requested to ensure Odoo backend confirmation logic succeeds
+        var demoGatewayId = 6;
+        await API.markDone(parseInt(oid), parseInt(txId), demoGatewayId);
+        log.info('TelrReturn','markDone ✓',{oid:oid,txId:txId,usedDemoId:demoGatewayId});
+      } catch(e) {
+        log.warn('TelrReturn','markDone failed — checking if order already confirmed',{message:e.message});
+        // markDone might fail if order is already confirmed — check
+        try {
+          var confirmed = await API.isOrderConfirmed(parseInt(oid));
+          if(!confirmed){
+            // Try confirmOrderPayment as fallback using Demo Gateway ID
+            await API.confirmOrderPayment(parseInt(oid), 6);
+          }
+        } catch(_){}
+      }
+      markStep('step2','done');
+  
+      // Step 3: Explicitly generate Invoice
+      markStep('step3','active');
+      try {
+        await API.createInvoice(parseInt(oid));
+        log.info('TelrReturn','createInvoice ✓',{oid:oid});
+      } catch(e) {
+        log.warn('TelrReturn','createInvoice failed or already exists',{message:e.message});
+      }
+      await new Promise(function(r){ setTimeout(r, 800); }); // Brief pause for backend processing
+      markStep('step3','done');
     }
-    markStep('step2','done');
-
-    // Step 3: Explicitly generate Invoice
-    markStep('step3','active');
-    try {
-      await API.createInvoice(parseInt(oid));
-      log.info('TelrReturn','createInvoice ✓',{oid:oid});
-    } catch(e) {
-      log.warn('TelrReturn','createInvoice failed or already exists',{message:e.message});
-    }
-    await new Promise(function(r){ setTimeout(r, 800); }); // Brief pause for backend processing
-    markStep('step3','done');
 
     // Clear checkout state
     sessionStorage.removeItem('telr_checkout');
@@ -182,6 +188,8 @@ function showError(msg){
 }
 
 function showCancelled(oid){
+  Cart.coid();
+  Cart.clearLineIds();
   document.getElementById('telrIcon').className = 'telr-ic error';
   document.getElementById('telrIcon').textContent = '🚫';
   document.getElementById('telrTitle').textContent = 'Payment Cancelled';
@@ -194,6 +202,8 @@ function showCancelled(oid){
 }
 
 function showDeclined(oid){
+  Cart.coid();
+  Cart.clearLineIds();
   document.getElementById('telrIcon').className = 'telr-ic error';
   document.getElementById('telrIcon').textContent = '⚠️';
   document.getElementById('telrTitle').textContent = 'Payment Declined';

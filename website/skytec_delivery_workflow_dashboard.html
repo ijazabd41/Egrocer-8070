@@ -139,7 +139,7 @@ function buttons(o,state){
   const allowed=o.allowed_actions;
   const role=document.getElementById('role').value;
   const isManager = role === 'store_manager' || role === 'stock_manager';
-  let b=`<button class="secondary" onclick="openOdoo(${id})">Open</button>`;
+  let b=`<button class="secondary" onclick="openOdoo(${id})">Open</button><button class="secondary" onclick="viewItems(${id})">Items</button>`;
   
   if (Array.isArray(allowed)) {
     if (allowed.includes('approve') && role !== 'store_keeper') b+=`<button class="green" onclick="doAction(${id},'approve',this)">Approve</button>`;
@@ -169,6 +169,48 @@ function buttons(o,state){
   return b;
 }
 function openOdoo(id){window.open(ODOO_URL+'/web#id='+id+'&model=stock.picking&view_type=form','_blank')}
+async function viewItems(id) {
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  overlay.innerHTML='<div style="background:#fff;padding:20px;border-radius:12px;width:400px;max-width:90%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 10px 25px rgba(0,0,0,0.2);"><h3 style="margin-top:0;margin-bottom:12px;font-size:16px;">🛒 Order Items</h3><div id="vi-content" style="overflow-y:auto;flex:1;padding-right:4px;"><div style="text-align:center;color:#666;padding:20px;">Loading...</div></div><button id="vi-close" style="width:100%;background:#f3f4f6;color:#374151;border:none;padding:12px;margin-top:15px;border-radius:8px;font-weight:700;cursor:pointer;">Close</button></div>';
+  document.body.appendChild(overlay);
+  document.getElementById('vi-close').onclick=()=>document.body.removeChild(overlay);
+  
+  try {
+    const o = currentItems.find(x => val(x,'id','picking_id') === id);
+    let lines = [];
+    if (o) {
+        if (o.sale_id && o.sale_id.order_line) lines = o.sale_id.order_line;
+        else if (o.move_ids_without_package) lines = o.move_ids_without_package;
+        else if (o.move_lines) lines = o.move_lines;
+        else if (o.move_ids) lines = o.move_ids;
+    }
+    
+    if (!lines || lines.length === 0) {
+        const r = await apiGet('/api/rider-delivery/'+id, {by_AJR:1});
+        const d = r.data && Array.isArray(r.data) ? r.data[0] : (r.data || r);
+        if (d) {
+            if (d.sale_id && d.sale_id.order_line) lines = d.sale_id.order_line;
+            else if (d.move_ids_without_package) lines = d.move_ids_without_package;
+            else if (d.move_lines) lines = d.move_lines;
+            else if (d.move_ids) lines = d.move_ids;
+        }
+    }
+    
+    if (lines && lines.length > 0) {
+        document.getElementById('vi-content').innerHTML = lines.map(l => {
+            const name = l.product_id ? (Array.isArray(l.product_id) ? (typeof l.product_id[0] === 'object' ? (l.product_id[0].display_name || l.product_id[0].name) : l.product_id[1]) : l.product_id.name || l.product_id) : (l.name || 'Item');
+            const qty = l.product_uom_qty || l.quantity_done || l.quantity || l.qty_done || 1;
+            const imgHtml = l.product_id && Array.isArray(l.product_id) && typeof l.product_id[0] === 'object' && l.product_id[0].image_1920 ? `<img src="${BASE_URL}${l.product_id[0].image_1920}" style="width:40px;height:40px;object-fit:contain;margin-right:12px;border-radius:6px;border:1px solid #e5e7eb">` : '<div style="width:40px;height:40px;background:#f3f4f6;border-radius:6px;margin-right:12px;display:flex;align-items:center;justify-content:center;font-size:16px;">📦</div>';
+            return '<div style="display:flex;align-items:center;font-size:13px;padding:10px 0;border-bottom:1px solid #f1f5f9">' + imgHtml + '<div style="flex:1;line-height:1.4;color:var(--text);font-weight:500;">' + name + '</div><div style="font-weight:800;margin-left:12px;background:#e0e7ff;color:#4338ca;padding:4px 8px;border-radius:6px;font-size:12px;">x' + qty + '</div></div>';
+        }).join('');
+    } else {
+        document.getElementById('vi-content').innerHTML = '<div style="text-align:center;color:var(--muted);padding:30px">No items found for this order.</div>';
+    }
+  } catch (e) {
+      document.getElementById('vi-content').innerHTML = '<div style="color:var(--red);padding:20px;text-align:center;">Failed to load items:<br>' + e.message + '</div>';
+  }
+}
 function setBtnState(btn,active){if(!btn)return;if(active){btn.dataset.origText=btn.innerHTML;btn.innerHTML='⏳ Wait...';btn.style.opacity='0.6';btn.style.pointerEvents='none'}else{if(btn.dataset.origText)btn.innerHTML=btn.dataset.origText;btn.style.opacity='1';btn.style.pointerEvents='auto'}}
 async function doAction(id,action,btn){setBtnState(btn,true);showErr('');try{const r=await apiPost('/api/skytec-delivery/action?by_AJR=1',{picking_id:id,action:action});console.log('doAction response:',r);if(!r || (r.success !== 1 && r.success !== true && String(r.success) !== '1'))throw new Error(r.message||'Action failed');btn.style.display='none';await loadDashboard()}catch(e){setBtnState(btn,false);showErr(e.message)}}
 let cachedDrivers=null;
