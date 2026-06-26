@@ -327,9 +327,12 @@ function renderDelList(dels){
       return `<div class="del-row" style="cursor:pointer" onclick="openOtp(${d.id},'${d.name||''}','${String(cust).replace(/'/g,"\\'")}',${geo.lat},${geo.lng},'${(d.partner_address||'').replace(/'/g,"\\'")}','${d.partner_phone||''}')">
       <div class="del-av">${String(cust)[0]?.toUpperCase()||'C'}</div>
       <div style="flex:1">
-        <div style="font-size:12px;color:var(--text-soft)">${d.name||''}</div>
-        <div style="font-size:11px;color:var(--text-soft);margin-bottom:2px">Created: ${d.create_date||''}</div>
-        <div style="font-size:11px;color:var(--text-soft)">Delivery: ${d.scheduled_date||d.date_deadline||''}</div>
+        <div style="font-size:12px;color:var(--text-soft)"><b>${d.name||''}</b></div>
+        <div style="margin:6px 0;font-size:11px;color:var(--text);background:#f8fafc;padding:6px;border-radius:4px;border:1px solid #e2e8f0;display:inline-block;min-width:180px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="color:var(--text-mid)">Created:</span> <b style="margin-left:8px">${(d.create_date||'').replace('T',' ').substring(0,16)||'-'}</b></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="color:var(--text-mid)">Schedule:</span> <b style="margin-left:8px">${(d.scheduled_date||d.date_deadline||'').replace('T',' ').substring(0,16)||'-'}</b></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-mid)">Warehouse:</span> <b style="margin-left:8px">${d.warehouse||d.warehouse_id||d.picking_type_id||'-'}</b></div>
+        </div>
         <div style="font-size:14px;font-weight:700">${cust}</div>
         ${phone}
         ${addr}
@@ -413,9 +416,12 @@ function renderRU(items){
     return `<div class="del-row">
       <div class="del-av">${String(cust)[0]?.toUpperCase()||'C'}</div>
       <div style="flex:1">
-        <div style="font-size:12px;color:var(--text-soft)">${d.name||''}</div>
-        <div style="font-size:11px;color:var(--text-soft);margin-bottom:2px">Created: ${d.create_date||''}</div>
-        <div style="font-size:11px;color:var(--text-soft)">Delivery: ${d.scheduled_date||d.date_deadline||''}</div>
+        <div style="font-size:12px;color:var(--text-soft)"><b>${d.name||''}</b></div>
+        <div style="margin:6px 0;font-size:11px;color:var(--text);background:#f8fafc;padding:6px;border-radius:4px;border:1px solid #e2e8f0;display:inline-block;min-width:180px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="color:var(--text-mid)">Created:</span> <b style="margin-left:8px">${(d.create_date||'').replace('T',' ').substring(0,16)||'-'}</b></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="color:var(--text-mid)">Schedule:</span> <b style="margin-left:8px">${(d.scheduled_date||d.date_deadline||'').replace('T',' ').substring(0,16)||'-'}</b></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-mid)">Warehouse:</span> <b style="margin-left:8px">${d.warehouse||d.warehouse_id||d.picking_type_id||'-'}</b></div>
+        </div>
         <div style="font-size:14px;font-weight:700">${cust}</div>
         ${phone}${addr}${mapBtn}
       </div>
@@ -446,9 +452,12 @@ async function loadRiderMine(){
       return `<div class="del-row" style="cursor:${done?'default':'pointer'}" onclick="${done?'':'openOtp('+x.id+',\''+x.name+'\',\''+String(cust).replace(/'/g,"\\'")+'\','+geo.lat+','+geo.lng+',\''+(x.partner_address?x.partner_address.replace(/'/g,"\\'"):'')+'\',\''+(x.partner_phone||'')+'\')'}">
         <div class="del-av" style="background:${done?'#16A34A':'var(--primary)'}">${String(cust)[0]?.toUpperCase()||'C'}</div>
         <div style="flex:1">
-          <div style="font-size:12px;color:var(--text-soft)">${x.name||''}</div>
-          <div style="font-size:11px;color:var(--text-soft);margin-bottom:2px">Created: ${x.create_date||''}</div>
-          <div style="font-size:11px;color:var(--text-soft)">Delivery: ${x.scheduled_date||x.date_deadline||''}</div>
+          <div style="font-size:12px;color:var(--text-soft)"><b>${x.name||''}</b></div>
+          <div style="margin:6px 0;font-size:11px;color:var(--text);background:#f8fafc;padding:6px;border-radius:4px;border:1px solid #e2e8f0;display:inline-block;min-width:180px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="color:var(--text-mid)">Created:</span> <b style="margin-left:8px">${(x.create_date||'').replace('T',' ').substring(0,16)||'-'}</b></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="color:var(--text-mid)">Schedule:</span> <b style="margin-left:8px">${(x.scheduled_date||x.date_deadline||'').replace('T',' ').substring(0,16)||'-'}</b></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-mid)">Warehouse:</span> <b style="margin-left:8px">${x.warehouse||x.warehouse_id||x.picking_type_id||'-'}</b></div>
+          </div>
           <div style="font-size:14px;font-weight:700">${cust}</div>
           ${phone}${addr}${mapBtn}
         </div>
