@@ -887,42 +887,67 @@ async function loadLoyalty(){
   }catch(e){ el.innerHTML='<div style="color:var(--red);font-size:13px;padding:20px">❌ '+e.message+'</div>'; }
 }
 
-async function downloadCertificate(shNum, lang) {
+async function handleCertificateAction(action, shNum, lang) {
   try {
-    toast('Generating certificate...', 'info');
+    toast((action === 'preview' ? 'Loading preview...' : 'Downloading certificate...'), 'info');
     var sessionToken = localStorage.getItem('cd_session') || localStorage.getItem('session_id') || '';
     
-    // Step 1: Generate Certificate
-    var genUrl = API.PX + '/api/shareholder/generate_certificate';
-    var genHeaders = { 'Content-Type': 'application/json' };
-    if (sessionToken) genHeaders['X-Session-Token'] = sessionToken;
-    try {
-      await fetch(genUrl, {
-        method: 'POST',
-        headers: genHeaders,
-        body: JSON.stringify({ shareholder_number: shNum, language: lang })
-      });
-    } catch(err) {
-      console.warn('Generate certificate warning:', err);
-    }
-
-    toast('Downloading certificate...', 'info');
-    var url = API.PX + '/api/shareholder/certificate/download?shareholder_number=' + encodeURIComponent(shNum) + '&lang=' + lang;
-    var headers = {};
+    var url = API.PX + '/api/shareholder/certificate/' + action;
+    var headers = { 'Content-Type': 'application/json' };
     if (sessionToken) headers['X-Session-Token'] = sessionToken;
-    var res = await fetch(url, { headers: headers });
+    
+    var res = await fetch(url, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({ shareholder_no: shNum, language: lang })
+    });
+    
     if (!res.ok) {
       var errTxt = await res.text();
-      throw new Error('HTTP ' + res.status + ': ' + errTxt.substring(0, 50));
+      throw new Error('HTTP ' + res.status + ': ' + errTxt.substring(0, 100));
     }
+    
+    var contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      var json = await res.json();
+      if (json.error) throw new Error(json.error);
+      if (json.attachment_id) {
+        // Fallback: If it returns an ID, fetch the attachment directly
+        url = API.PX + '/api/shareholder/certificate/attachment/' + json.attachment_id;
+        res = await fetch(url, { headers: headers });
+        if (!res.ok) throw new Error('Failed to fetch attachment');
+      } else {
+        throw new Error('Unexpected JSON response without attachment ID');
+      }
+    }
+    
     var blob = new Blob([await res.arrayBuffer()], { type: 'application/pdf' });
     var objUrl = window.URL.createObjectURL(blob);
-    window.open(objUrl, '_blank');
+    
+    if (action === 'preview') {
+      window.open(objUrl, '_blank');
+    } else {
+      var a = document.createElement('a');
+      a.href = objUrl;
+      a.download = 'certificate_' + shNum + '_' + lang + '.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+    
     setTimeout(() => window.URL.revokeObjectURL(objUrl), 5000);
   } catch(e) {
-    alert('Download Error: ' + e.message);
-    toast('Error: ' + e.message, 'error');
+    alert('Certificate Error: ' + e.message);
+    toast('Error: ' + e.message, 'err');
   }
+}
+
+function downloadCertificate(shNum, lang) {
+  return handleCertificateAction('download', shNum, lang);
+}
+
+function previewCertificate(shNum, lang) {
+  return handleCertificateAction('preview', shNum, lang);
 }
 
 async function loadShareholderCertificates() {
@@ -943,13 +968,15 @@ async function loadShareholderCertificates() {
       var val = cert.total_value || cert.total_share_value || 0;
       
       var btns = '';
+      btns += '<a href="javascript:void(0)" onclick="previewCertificate(\''+shNum+'\', \'en\')" class="sbtn" style="padding:6px 12px;font-size:11px;min-width:auto;background:#3b82f6;">EN Preview</a>';
       btns += '<a href="javascript:void(0)" onclick="downloadCertificate(\''+shNum+'\', \'en\')" class="sbtn" style="padding:6px 12px;font-size:11px;min-width:auto;">EN PDF</a>';
+      btns += '<a href="javascript:void(0)" onclick="previewCertificate(\''+shNum+'\', \'ar\')" class="sbtn" style="padding:6px 12px;font-size:11px;min-width:auto;background:#2563eb;">AR Preview</a>';
       btns += '<a href="javascript:void(0)" onclick="downloadCertificate(\''+shNum+'\', \'ar\')" class="sbtn" style="padding:6px 12px;font-size:11px;min-width:auto;background:#374151;">AR PDF</a>';
       
       return '<div class="fs" style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">'
         + '<div><div style="font-weight:800;font-size:14px;">Certificate #'+certNum+'</div>'
         + '<div style="font-size:12px;color:#6b7280;margin-top:2px;">Shares: '+parseFloat(shares).toLocaleString()+' | Value: AED '+parseFloat(val).toLocaleString()+'</div></div>'
-        + (btns ? '<div style="display:flex;gap:6px;">'+btns+'</div>' : '')
+        + (btns ? '<div style="display:flex;gap:6px;flex-wrap:wrap;">'+btns+'</div>' : '')
         + '</div>';
     }).join('');
     c.innerHTML = html;
