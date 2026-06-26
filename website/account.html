@@ -321,12 +321,18 @@ async function loadDashboard(){
 async function checkAccountDeletionStatus() {
   try {
     var res = await API.getAccountDeletionStatus();
-    var statusData = Array.isArray(res.data) ? res.data[0] : res.data;
+    var statusData = res.data !== undefined ? res.data : res;
+    if (Array.isArray(statusData)) statusData = statusData[0];
+
     var delStatusEl = document.getElementById('delAcctStatus');
     var btnReqDel = document.getElementById('btnReqDel');
     var btnCancelDel = document.getElementById('btnCancelDel');
     
-    if (statusData && statusData.status === 'pending') {
+    // Reset button states
+    if (btnReqDel) { btnReqDel.textContent = 'Request Account Deletion'; btnReqDel.disabled = false; }
+    if (btnCancelDel) { btnCancelDel.textContent = 'Cancel Deletion Request'; btnCancelDel.disabled = false; }
+    
+    if (statusData && (statusData.status === 'pending' || statusData.state === 'pending')) {
       delStatusEl.style.display = 'block';
       delStatusEl.style.background = '#fffbea';
       delStatusEl.style.color = '#b45309';
@@ -351,9 +357,9 @@ async function reqAcctDel() {
   try {
     await API.requestAccountDeletion();
     toast('Account deletion requested successfully.', 'ok');
-    checkAccountDeletionStatus();
+    await checkAccountDeletionStatus();
   } catch (e) {
-    toast('❌ ' + e.message, 'err');
+    toast('❌ ' + (e.message || 'Error requesting deletion'), 'err');
     btn.textContent = 'Request Account Deletion';
     btn.disabled = false;
   }
@@ -366,9 +372,9 @@ async function cancelAcctDel() {
   try {
     await API.cancelAccountDeletion();
     toast('Account deletion request canceled.', 'ok');
-    checkAccountDeletionStatus();
+    await checkAccountDeletionStatus();
   } catch (e) {
-    toast('❌ ' + e.message, 'err');
+    toast('❌ ' + (e.message || 'Error canceling deletion request'), 'err');
     btn.textContent = 'Cancel Deletion Request';
     btn.disabled = false;
   }
