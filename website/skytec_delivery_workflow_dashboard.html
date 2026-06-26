@@ -25,6 +25,9 @@
   .actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
   .actions button {flex:1}
 }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
+.actions button { padding: 8px 12px; font-size: 13px; border-radius: 6px; flex: 1 1 auto; text-align: center; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,.05); transition: all 0.2s; }
+.actions button:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,.1); }
 </style>
 </head>
 <body>
@@ -202,7 +205,8 @@ async function viewItems(id) {
             const name = l.product_id ? (Array.isArray(l.product_id) ? (typeof l.product_id[0] === 'object' ? (l.product_id[0].display_name || l.product_id[0].name) : l.product_id[1]) : l.product_id.name || l.product_id) : (l.name || 'Item');
             const qty = l.product_uom_qty || l.quantity_done || l.quantity || l.qty_done || 1;
             const imgHtml = l.product_id && Array.isArray(l.product_id) && typeof l.product_id[0] === 'object' && l.product_id[0].image_1920 ? `<img src="${BASE_URL}${l.product_id[0].image_1920}" style="width:40px;height:40px;object-fit:contain;margin-right:12px;border-radius:6px;border:1px solid #e5e7eb">` : '<div style="width:40px;height:40px;background:#f3f4f6;border-radius:6px;margin-right:12px;display:flex;align-items:center;justify-content:center;font-size:16px;">📦</div>';
-            return '<div style="display:flex;align-items:center;font-size:13px;padding:10px 0;border-bottom:1px solid #f1f5f9">' + imgHtml + '<div style="flex:1;line-height:1.4;color:var(--text);font-weight:500;">' + name + '</div><div style="font-weight:800;margin-left:12px;background:#e0e7ff;color:#4338ca;padding:4px 8px;border-radius:6px;font-size:12px;">x' + qty + '</div></div>';
+            const checkboxHtml = `<input type="checkbox" style="width:20px;height:20px;margin-right:12px;cursor:pointer;accent-color:#16a34a;flex-shrink:0;">`;
+            return '<div style="display:flex;align-items:center;font-size:13px;padding:10px 0;border-bottom:1px solid #f1f5f9">' + checkboxHtml + imgHtml + '<div style="flex:1;line-height:1.4;color:var(--text);font-weight:500;">' + name + '</div><div style="font-weight:800;margin-left:12px;background:#e0e7ff;color:#4338ca;padding:4px 8px;border-radius:6px;font-size:12px;">x' + qty + '</div></div>';
         }).join('');
     } else {
         document.getElementById('vi-content').innerHTML = '<div style="text-align:center;color:var(--muted);padding:30px">No items found for this order.</div>';
