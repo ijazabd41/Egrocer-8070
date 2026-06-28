@@ -1,0 +1,364 @@
+{
+  "info": {
+    "_postman_id": "7edeb78e-966d-42cc-87bf-778ef9480866",
+    "name": "Guest",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54566914",
+    "_collection_link": "https://go.postman.co/collection/54566914-7edeb78e-966d-42cc-87bf-778ef9480866?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Guest Login Copy",
+      "item": [
+        {
+          "name": "Go to Shop Page get session id and store",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://cooperp.freeddns.org:8076/shop",
+              "protocol": "http",
+              "host": [
+                "cooperp",
+                "freeddns",
+                "org"
+              ],
+              "port": "8076",
+              "path": [
+                "shop"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://cooperp.freeddns.org:8076/shop/product/75056",
+              "protocol": "http",
+              "host": [
+                "cooperp",
+                "freeddns",
+                "org"
+              ],
+              "port": "8076",
+              "path": [
+                "shop",
+                "product",
+                "75056"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add to product to cart test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Referer",
+                "value": "http://cooperp.freeddns.org:8076/shop/112839-aims-body-splash-secret-bliss-250ml-75056",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"jsonrpc\": \"2.0\",\r\n  \"method\": \"call\",\r\n  \"params\": {\r\n    \"add_qty\": 1,\r\n    \"no_variant_attribute_values\": [],\r\n    \"product_custom_attribute_values\": [],\r\n    \"product_template_id\": 75056,\r\n    \"product_id\": 73419,\r\n    \"quantity\":1\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://cooperp.freeddns.org:8076/shop/cart/add",
+              "protocol": "http",
+              "host": [
+                "cooperp",
+                "freeddns",
+                "org"
+              ],
+              "port": "8076",
+              "path": [
+                "shop",
+                "cart",
+                "add"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Cart Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://cooperp.freeddns.org:8076/shop/cart",
+              "protocol": "http",
+              "host": [
+                "cooperp",
+                "freeddns",
+                "org"
+              ],
+              "port": "8076",
+              "path": [
+                "shop",
+                "cart"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Checkout - This returns available address, delivery section, cart summary HTML.",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://cooperp.freeddns.org:8076/shop/checkout",
+              "protocol": "http",
+              "host": [
+                "cooperp",
+                "freeddns",
+                "org"
+              ],
+              "port": "8076",
+              "path": [
+                "shop",
+                "checkout"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Submit Address",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"id\": 0,\r\n  \"jsonrpc\": \"2.0\",\r\n  \"method\": \"call\",\r\n  \"params\": {\r\n    \"partner_id\": -1,\r\n    \"mode\": \"new\",\r\n    \"name\": \"Test Test\",\r\n    \"email\": \"test@example.com\",\r\n    \"phone\": \"0555944719\",\r\n    \"street\": \"test32\",\r\n    \"street2\": \"\",\r\n    \"city\": \"Dubai\",\r\n    \"zip\": \"7878\",\r\n    \"country_id\": 233,\r\n    \"state_id\": false\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://cooperp.freeddns.org:8076/shop/address/submit",
+              "protocol": "http",
+              "host": [
+                "cooperp",
+                "freeddns",
+                "org"
+              ],
+              "port": "8076",
+              "path": [
+                "shop",
+                "address",
+                "submit"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Submit Address",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"id\": 0,\r\n  \"jsonrpc\": \"2.0\",\r\n  \"method\": \"call\",\r\n  \"params\": {\r\n    \"partner_id\": -1,\r\n    \"mode\": \"new\",\r\n    \"name\": \"Test Test\",\r\n    \"email\": \"test@example.com\",\r\n    \"phone\": \"0555944719\",\r\n    \"street\": \"test32\",\r\n    \"street2\": \"\",\r\n    \"city\": \"Dubai\",\r\n    \"zip\": \"7878\",\r\n    \"country_id\": 233,\r\n    \"state_id\": false\r\n  }\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://cooperp.freeddns.org:8076/shop/address/submit",
+                  "protocol": "http",
+                  "host": [
+                    "cooperp",
+                    "freeddns",
+                    "org"
+                  ],
+                  "port": "8076",
+                  "path": [
+                    "shop",
+                    "address",
+                    "submit"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Server",
+                  "value": "Werkzeug/3.0.1 Python/3.12.12"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 22 Jun 2026 14:21:36 GMT"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "text/html;charset=utf-8"
+                },
+                {
+                  "key": "Content-Length",
+                  "value": "43611"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                }
+              ],
+              "cookie": [],
+              "body": "<!DOCTYPE html>\n<html lang=\"en-US\" data-website-id=\"1\" data-main-object=\"ir.ui.view(260,)\" data-can-optimize-seo=\"True\">\n    <head>\n        <meta charset=\"utf-8\"/>\n        <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"/>\n        <title>400 | COOP DISCOUNTS</title>\n        <link type=\"image/x-icon\" rel=\"shortcut icon\" href=\"/web/image/website/1/favicon?unique=f122749\"/>\n        <link rel=\"preload\" href=\"/web/static/src/libs/fontawesome/fonts/fontawesome-webfont.woff2?v=4.7.0\" as=\"font\" crossorigin=\"\"/>\n        <link type=\"text/css\" rel=\"stylesheet\" href=\"/web/assets/1/2404141/web.assets_frontend.min.css\"/>\n        <script id=\"web.layout.odooscript\" type=\"text/javascript\">\n            var odoo = {\n                csrf_token: \"0cfcde65f1af40534e72e45a3c985deeabdedec9o1813674096\",\n                debug: \"\",\n            };\n        </script>\n        <script type=\"text/javascript\">\n            odoo.__session_info__ = {\"is_admin\": false, \"is_system\": false, \"is_public\": false, \"is_internal_user\": true, \"is_website_user\": false, \"uid\": 160, \"registry_hash\": \"8b7543915ff4446d67c656a716026e8a51d8979837f99eb8f78ea898793e8d54\", \"is_frontend\": true, \"profile_session\": null, \"profile_collectors\": null, \"profile_params\": null, \"show_effect\": true, \"currencies\": {\"129\": {\"name\": \"AED\", \"symbol\": \"AED\", \"position\": \"after\", \"digits\": [69, 2]}, \"1\": {\"name\": \"USD\", \"symbol\": \"$\", \"position\": \"before\", \"digits\": [69, 2]}}, \"quick_login\": true, \"bundle_params\": {\"lang\": \"en_US\", \"website_id\": 1}, \"test_mode\": false, \"server_version\": \"19.0\", \"server_version_info\": [19, 0, 0, \"final\", 0, \"\"], \"websocket_worker_version\": \"19.0-2\", \"translationURL\": \"/website/translations\", \"geoip_country_code\": null, \"geoip_phone_code\": null, \"lang_url_code\": \"en\", \"add_to_cart_action\": \"stay\"};\n            if (!/(^|;\\s)tz=/.test(document.cookie)) {\n                const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;\n                document.cookie = `tz=${userTZ}; path=/`;\n            }\n        </script>\n        <script type=\"text/javascript\" defer=\"defer\" src=\"/web/assets/1/72a715f/web.assets_frontend_minimal.min.js\" onerror=\"__odooAssetError=1\"></script>\n        <script type=\"text/javascript\" data-src=\"/web/assets/1/542686b/web.assets_frontend_lazy.min.js\" onerror=\"__odooAssetError=1\"></script>\n        <meta name=\"robots\" content=\"noindex, nofollow\"/>\n        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/>\n        <meta name=\"generator\" content=\"Odoo\"/>\n        <meta property=\"og:type\" content=\"website\"/>\n        <meta property=\"og:title\" content=\"400 | COOP DISCOUNTS\"/>\n        <meta property=\"og:site_name\" content=\"COOP DISCOUNTS\"/>\n        <meta property=\"og:url\" content=\"http://cooperp.freeddns.org:8076/shop/address/submit\"/>\n        <meta property=\"og:image\" content=\"http://cooperp.freeddns.org:8076/web/image/website/1/logo?unique=f122749\"/>\n        <meta name=\"twitter:card\" content=\"summary_large_image\"/>\n        <meta name=\"twitter:title\" content=\"400 | COOP DISCOUNTS\"/>\n        <meta name=\"twitter:image\" content=\"http://cooperp.freeddns.org:8076/web/image/website/1/logo/300x300?unique=f122749\"/>\n        <link rel=\"canonical\" href=\"https://puppet-senorita-viral.ngrok-free.dev/shop/address/submit\"/>\n        <link rel=\"preconnect\" href=\"https://fonts.gstatic.com/\" crossorigin=\"\"/>\n        <script type=\"application/ld+json\">\n{\n    \"@context\": \"http://schema.org\",\n    \"@type\": \"Organization\",\n    \"name\": \"BEST COOP DISCOUNTS L.L.C\",\n    \"logo\": \"https://puppet-senorita-viral.ngrok-free.dev/logo.png?company=1\",\n    \"url\": \"https://puppet-senorita-viral.ngrok-free.dev\"\n}\n            </script>\n    </head>\n    <body>\n        <div class=\"o_frontend_to_backend_nav position-fixed d-none\">\n            <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"o_frontend_to_backend_icon position-absolute\" width=\"24px\" height=\"24px\" viewBox=\"-7 -7 24 24\" preserveAspectRatio=\"xMinYMin\">\n                <path fill=\"#FFF\" d=\"M8 8V1a1 1 0 1 1 2 0v8a1 1 0 0 1-1 1H1a1 1 0 1 1 0-2h7z\"></path>\n            </svg>\n            <div class=\"o_frontend_to_backend_buttons d-flex\">\n                <a href=\"#\" title=\"Go to your Odoo Apps\" class=\"o_frontend_to_backend_apps_btn fa fa-th d-flex align-items-center justify-content-center text-decoration-none\" data-bs-toggle=\"dropdown\"></a>\n                <div class=\"dropdown-menu o_frontend_to_backend_apps_menu\" role=\"menu\">\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-124\">Discuss</a>\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-560\">Calendar</a>\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-758\">Deal of Day Slider</a>\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-536\">Contacts</a>\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-307\">Dashboards</a>\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-1049\">Delivery</a>\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-536\">Shareholders</a>\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-1145\">EIC Shareholders</a>\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-1158\">Delivery</a>\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-1183\">Delivery</a>\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-734\">Website</a>\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-893\">Firebase Notify</a>\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-1059\">App Error Logger</a>\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-426\">Inventory</a>\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-507\">Employees</a>\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-570\">Time Off</a>\n                    <a role=\"menuitem\" class=\"dropdown-item\" href=\"/odoo/action-39\">Apps</a>\n                </div>\n            </div>\n        </div>\n        <div id=\"wrapwrap\" class=\"   \">\n            <div class=\"organic-topbar bg-organic-700 py-1\">\n                <div class=\"container\">\n                    <div class=\"mobile-center d-flex justify-content-between align-items-center\">\n                        <div class=\"d-flex align-items-center gap-3\">\n                            <span>Free shipping on orders over $50</span>\n                        </div>\n                        <div class=\"utility-links d-flex align-items-center gap-3\">\n                            <div class=\"d-flex align-items-center gap-1 bg-opacity-10 rounded-pill px-2 py-1\">\n                                <span class=\"small text-white\">\n                                        AED\n                                        (AED)\n                                </span>\n                            </div>\n                            <div class=\"d-flex align-items-center gap-1 bg-opacity-10 rounded-pill px-2 py-1\">\n\n                                \n\n                            </div>\n                        </div>\n                    </div>\n                </div>\n            </div>\n            <header class=\"organic-header bg-white shadow-sm\">\n                <div class=\"container py-3\">\n                    <div class=\"d-flex align-items-center justify-content-between Main-header\">\n                        <div class=\"mobile-menu-toggle d-lg-none me-2\">\n                            <button class=\"btn btn-outline-organic\" type=\"button\" data-bs-toggle=\"offcanvas\" data-bs-target=\"#mobileMenu\" aria-controls=\"mobileMenu\">\n                                <i class=\"bi bi-list\"></i>\n                            </button>\n                        </div>\n                        <a data-name=\"Navbar Logo\" href=\"/\" class=\"navbar-brand logo d-flex align-items-center\">\n                            <span role=\"img\" aria-label=\"Logo of COOP DISCOUNTS\" title=\"COOP DISCOUNTS\">\n                                <img src=\"/web/image/website/1/logo/COOP%20DISCOUNTS?unique=f122749\" class=\"img img-fluid\" width=\"95\" height=\"40\" alt=\"COOP DISCOUNTS\" loading=\"lazy\"/>\n                            </span>\n                        </a>\n                        <div class=\"organic-search d-none d-lg-block\">\n                            <form action=\"/shop\" method=\"get\" class=\"position-relative\">\n                                <input type=\"search\" name=\"search\" class=\"form-control o_searchbar_input\" placeholder=\"Search products...\" value=\"\"/>\n                                <button type=\"submit\" class=\"organic-search-btn border-0 position-absolute top-50 end-0 translate-middle-y me-2\">\n                                    <i class=\"bi bi-search\"></i>\n                                </button>\n                            </form>\n                        </div>\n                        <div class=\"d-flex align-items-center gap-3\">\n                            <a class=\"btn btn-light rounded-pill shadow-sm d-flex align-items-center gap-2 \" href=\"/my\">\n                                <i class=\"bi bi-person-circle\"></i>\n                                <span class=\"d-none d-sm-inline\">\n                                    My Account\n                                </span>\n                            </a>\n                            <div class=\"d-flex align-items-center gap-2\">\n                                <div class=\"o_wsale_my_wish \">\n                                    <a class=\"btn btn-light d-flex align-items-center gap-2 rounded-pill position-relative bg-white shadow-sm hover-organic\" href=\"/shop/wishlist\">\n                                        <i class=\"bi bi-heart text-danger\"></i>\n                                        <span class=\"d-none d-sm-inline fw-medium\">Wishlist</span>\n                                        <span class=\"position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger my_wish_quantity d-none\">0</span>\n                                    </a>\n                                </div>\n                                <li class=\"o_wsale_my_cart list-unstyled d-inline-block position-relative cart-dropdown-container\">\n                                    <a href=\"/shop/cart\" class=\"btn btn-light d-flex align-items-center gap-2 rounded-pill hover-organic position-relative bg-white shadow-sm\" aria-label=\"Shopping cart\" onmouseenter=\"showCartDropdown()\" onmouseleave=\"hideCartDropdown()\" onclick=\"if (window.matchMedia(&#39;(max-width: 991px)&#39;).matches) { return true; } showCartDropdown(); return false;\">\n                                        <i class=\"bi bi-cart3\"></i>\n                                        <span class=\"d-none d-sm-inline fw-medium\">Cart</span>\n                                        <span class=\"position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success shadow-sm my_cart_quantity \">1</span>\n                                    </a>\n                                    <div id=\"cart-dropdown\" class=\"position-absolute top-100 end-0 mt-2 bg-white rounded-3 shadow-lg border p-3 d-none\" onmouseenter=\"keepCartDropdown()\" onmouseleave=\"hideCartDropdown()\" style=\"min-width: 380px; z-index: 1055;\">\n                                        <div class=\"d-flex align-items-center justify-content-between mb-3\">\n                                            <h6 class=\"mb-0 fw-bold\">Shopping Cart</h6>\n                                            <span class=\"text-muted small\" id=\"cart-dropdown-items-count\">0 items</span>\n                                        </div>\n                                        <div id=\"cart-dropdown-items\"></div>\n                                        <div id=\"cart-dropdown-empty\" class=\"text-center py-3 text-muted small d-none\">\n                                            Your cart is empty\n                                        </div>\n                                        <hr class=\"my-3\"/>\n                                        <div class=\"d-flex align-items-center justify-content-between mb-3\">\n                                            <span class=\"fw-bold\">Total:</span>\n                                            <span class=\"fw-bold text-organic-600\" id=\"cart-dropdown-total\">$0.00</span>\n                                        </div>\n                                        <div class=\"row g-2\">\n                                            <div class=\"col-6\">\n                                                <a href=\"/shop/cart\" class=\"btn btn-outline-organic btn-lg w-100 rounded-5\">\n                                                    View Cart\n                                                </a>\n                                            </div>\n                                            <div class=\"col-6\">\n                                                <a href=\"/shop/checkout\" class=\"btn btn-organic btn-lg w-100 rounded-5\">\n                                                    Checkout\n                                                </a>\n                                            </div>\n                                        </div>\n                                    </div>\n                                </li>\n                            </div>\n                        </div>\n                    </div>\n                    <nav class=\"organic-nav d-none d-lg-block\">\n                        <ul class=\"nav d-flex align-items-center gap-3 justify-content-center\">\n                            <li class=\"nav-item\">\n                                <a class=\"nav-link\" href=\"/shop/category/1\">\n                                        Fresh Vegetables\n                                    </a>\n                            </li>\n                            <li class=\"nav-item\">\n                                <a class=\"nav-link\" href=\"/shop/category/2\">\n                                        Deli\n                                    </a>\n                            </li>\n                            <li class=\"nav-item\">\n                                <a class=\"nav-link\" href=\"/shop/category/3\">\n                                        Baby Products\n                                    </a>\n                            </li>\n                            <li class=\"nav-item\">\n                                <a class=\"nav-link\" href=\"/shop/category/4\">\n                                        Beauty &amp; Fragrance\n                                    </a>\n                            </li>\n                            <li class=\"nav-item\">\n                                <a class=\"nav-link\" href=\"/shop/category/5\">\n                                        Butchery\n                                    </a>\n                            </li>\n                            <li class=\"nav-item\">\n                                <a class=\"nav-link\" href=\"/shop/category/6\">\n                                        Electronics\n                                    </a>\n                            </li>\n                            <li class=\"nav-item\">\n                                <a class=\"nav-link\" href=\"/shop/category/7\">\n                                        Frozen Food\n                                    </a>\n                            </li>\n                            <li class=\"nav-item\">\n                                <a class=\"nav-link\" href=\"/shop/category/8\">\n                                        Garments\n                                    </a>\n                            </li>\n                            <li class=\"nav-item\">\n                                <a class=\"nav-link\" href=\"/shop/category/9\">\n                                        Organic Products\n                                    </a>\n                            </li>\n                            <li class=\"nav-item\">\n                                <a class=\"nav-link\" href=\"/shop/category/10\">\n                                        Toys &amp; Games\n                                    </a>\n                            </li>\n                            <li class=\"nav-item\">\n                                <a class=\"nav-link\" href=\"/shop/category/12\">\n                                        Pet Supplies\n                                    </a>\n                            </li>\n                            <li class=\"nav-item\">\n                                <a class=\"nav-link\" href=\"/shop/category/13\">\n                                        Beverages\n                                    </a>\n                            </li>\n                            <li class=\"nav-item\">\n                                <a class=\"nav-link\" href=\"/shop/category/14\">\n                                        Dairy\n                                    </a>\n                            </li>\n                            <li class=\"nav-item\">\n                                <a class=\"nav-link\" href=\"/shop/category/15\">\n                                        Roastery\n                                    </a>\n                            </li>\n                        </ul>\n                    </nav>\n                </div>\n            </header>\n            <div class=\"offcanvas offcanvas-start\" tabindex=\"-1\" id=\"mobileMenu\" aria-labelledby=\"mobileMenuLabel\">\n                <div class=\"offcanvas-header\">\n                    <h5 class=\"offcanvas-title w-100\" id=\"mobileMenuLabel\">\n                        <a data-name=\"Navbar Logo\" href=\"/\" class=\"navbar-brand logo d-flex align-items-center justify-content-center\">\n                            <span role=\"img\" aria-label=\"Logo of COOP DISCOUNTS\" title=\"COOP DISCOUNTS\">\n                                <img src=\"/web/image/website/1/logo/COOP%20DISCOUNTS?unique=f122749\" class=\"img img-fluid\" width=\"95\" height=\"40\" alt=\"COOP DISCOUNTS\" loading=\"lazy\"/>\n                            </span>\n                        </a>\n                    </h5>\n                    <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"offcanvas\" aria-label=\"Close\"></button>\n                </div>\n                <div class=\"utility-links d-flex align-items-center gap-3 bg-organic-100 p-2\">\n                    <div class=\"d-flex align-items-center gap-1 bg-opacity-10 rounded-pill px-2 py-1\">\n                        <i class=\"bi bi-currency-dollar\"></i>\n                        <select class=\"form-select form-select-sm border-0 bg-transparent\" style=\"font-size: 0.8rem; width: auto\" onchange=\"if (this.value) { window.location.href = &#39;/shop/change_pricelist/&#39; + this.value; }\" disabled=\"True\">\n                            <option value=\"1\" selected=\"True\">\n                                    AED\n                                </option>\n                        </select>\n                    </div>\n                    <div class=\"d-flex align-items-center gap-1 bg-opacity-10 rounded-pill px-2 py-1\">\n                        <i class=\"bi bi-globe\"></i>\n                        <select class=\"form-select form-select-sm border-0 bg-transparent\" style=\"font-size: 0.8rem; width: auto\" onchange=\"if (this.value) { var redirectUrl = window.location.pathname + window.location.search + window.location.hash; window.location.href = &#39;/website/lang/&#39; + this.value + &#39;?r=&#39; + encodeURIComponent(redirectUrl); }\">\n                            <option value=\"ar\">\n                                    Arabic / الْعَرَبيّة\n                                </option>\n                            <option value=\"en\" selected=\"True\">\n                                    English (US)\n                                </option>\n                        </select>\n                    </div>\n                </div>\n                <div class=\"offcanvas-body p-0\">\n                    <nav class=\"mobile-nav\">\n                        <ul class=\"nav flex-column\">\n                            <li class=\"nav-item\">\n                                <a href=\"/\" class=\"nav-link mobile-nav-link\">\n                                    <span>Home</span>\n                                </a>\n                            </li>\n                            <li class=\"nav-item\">\n                                <a href=\"/shop\" class=\"nav-link mobile-nav-link d-flex justify-content-between align-items-center\" data-submenu-target=\"#mobileShopCategoriesSubmenu\" aria-expanded=\"false\">\n                                    <span class=\"fw-semibold\">Shop by Category</span>\n                                    <i class=\"bi bi-chevron-down ms-1 small\"></i>\n                                </a>\n                                <div class=\"collapse\" id=\"mobileShopCategoriesSubmenu\">\n                                    <div class=\"mobile-mega-menu-content p-3\">\n                                        <ul class=\"list-unstyled mb-0\">\n                                            <li>\n                                                <a class=\"text-decoration-none d-block py-1 hover-organic-link mobile-mega-link\" href=\"/shop/category/1\">\n                                                        Fresh Vegetables\n                                                    </a>\n                                            </li>\n                                            <li>\n                                                <a class=\"text-decoration-none d-block py-1 hover-organic-link mobile-mega-link\" href=\"/shop/category/2\">\n                                                        Deli\n                                                    </a>\n                                            </li>\n                                            <li>\n                                                <a class=\"text-decoration-none d-block py-1 hover-organic-link mobile-mega-link\" href=\"/shop/category/3\">\n                                                        Baby Products\n                                                    </a>\n                                            </li>\n                                            <li>\n                                                <a class=\"text-decoration-none d-block py-1 hover-organic-link mobile-mega-link\" href=\"/shop/category/4\">\n                                                        Beauty &amp; Fragrance\n                                                    </a>\n                                            </li>\n                                            <li>\n                                                <a class=\"text-decoration-none d-block py-1 hover-organic-link mobile-mega-link\" href=\"/shop/category/5\">\n                                                        Butchery\n                                                    </a>\n                                            </li>\n                                            <li>\n                                                <a class=\"text-decoration-none d-block py-1 hover-organic-link mobile-mega-link\" href=\"/shop/category/6\">\n                                                        Electronics\n                                                    </a>\n                                            </li>\n                                            <li>\n                                                <a class=\"text-decoration-none d-block py-1 hover-organic-link mobile-mega-link\" href=\"/shop/category/7\">\n                                                        Frozen Food\n                                                    </a>\n                                            </li>\n                                            <li>\n                                                <a class=\"text-decoration-none d-block py-1 hover-organic-link mobile-mega-link\" href=\"/shop/category/8\">\n                                                        Garments\n                                                    </a>\n                                            </li>\n                                            <li>\n                                                <a class=\"text-decoration-none d-block py-1 hover-organic-link mobile-mega-link\" href=\"/shop/category/9\">\n                                                        Organic Products\n                                                    </a>\n                                            </li>\n                                            <li>\n                                                <a class=\"text-decoration-none d-block py-1 hover-organic-link mobile-mega-link\" href=\"/shop/category/10\">\n                                                        Toys &amp; Games\n                                                    </a>\n                                            </li>\n                                            <li>\n                                                <a class=\"text-decoration-none d-block py-1 hover-organic-link mobile-mega-link\" href=\"/shop/category/12\">\n                                                        Pet Supplies\n                                                    </a>\n                                            </li>\n                                            <li>\n                                                <a class=\"text-decoration-none d-block py-1 hover-organic-link mobile-mega-link\" href=\"/shop/category/13\">\n                                                        Beverages\n                                                    </a>\n                                            </li>\n                                            <li>\n                                                <a class=\"text-decoration-none d-block py-1 hover-organic-link mobile-mega-link\" href=\"/shop/category/14\">\n                                                        Dairy\n                                                    </a>\n                                            </li>\n                                            <li>\n                                                <a class=\"text-decoration-none d-block py-1 hover-organic-link mobile-mega-link\" href=\"/shop/category/15\">\n                                                        Roastery\n                                                    </a>\n                                            </li>\n                                        </ul>\n                                    </div>\n                                </div>\n                            </li>\n                            <li class=\"nav-item\">\n                                <a href=\"/shop/cart\" class=\"nav-link mobile-nav-link\">\n                                    <span class=\"fw-semibold\">Cart</span>\n                                </a>\n                            </li>\n                            <li class=\"nav-item\">\n                                <a class=\"nav-link mobile-nav-link\" href=\"/my\">\n                                    <span class=\"fw-semibold\">\n                                        My Account\n                                    </span>\n                                </a>\n                            </li>\n                        </ul>\n                    </nav>\n                    <div class=\"offcanvas-footer d-lg-none p-3 border-top\"></div>\n                </div>\n            </div>\n            <main>\n                <div id=\"wrap\">\n                    <div class=\"container\">\n                        <h1 class=\"mt-5\">400: Bad Request</h1>\n                        <p>The server couldn't understand the request. Take a look at the error message below.</p>\n                    </div>\n                    <div class=\"container\">\n                        <p>\n                            <strong>Error message:</strong>\n                            <pre>Session expired (invalid CSRF token)</pre>\n                        </p>\n                    </div>\n                </div>\n                <div id=\"o_shared_blocks\" class=\"oe_unremovable\"></div>\n            </main>\n            <footer>\n                <div class=\"footer-main py-5\">\n                    <div class=\"container\">\n                        <div class=\"row g-5\">\n                            <div class=\"col-lg-4\">\n                                <div class=\"footer-brand\">\n                                    <div class=\"d-flex align-items-center mb-4\">\n                                        <div class=\"d-flex align-items-center logo\">\n                                            <img alt=\"Vegetables\" class=\"w-100\" src=\"/theme_natural_foods/static/src/img/fotter-logo.png\" loading=\"lazy\"/>\n                                        </div>\n                                    </div>\n                                    <p class=\"text-muted mb-4 lh-lg\">\n                                        Your trusted source for premium organic groceries,\n                                        sourced directly from local farms and delivered fresh to your door.\n                                        We're committed to sustainability and your health.\n                                    </p>\n                                    <div class=\"social-media\">\n                                        <h6 class=\"text-white fw-semibold mb-3\">\n                                            Follow Our Journey\n                                        </h6>\n                                        <div class=\"d-flex gap-3\">\n                                            <a href=\"#\" class=\"social-link\" data-platform=\"facebook\">\n                                                <i class=\"bi bi-facebook\"></i>\n                                            </a>\n                                            <a href=\"#\" class=\"social-link\" data-platform=\"instagram\">\n                                                <i class=\"bi bi-instagram\"></i>\n                                            </a>\n                                            <a href=\"#\" class=\"social-link\" data-platform=\"twitter\">\n                                                <i class=\"bi bi-twitter\"></i>\n                                            </a>\n                                            <a href=\"#\" class=\"social-link\" data-platform=\"youtube\">\n                                                <i class=\"bi bi-youtube\"></i>\n                                            </a>\n                                        </div>\n                                    </div>\n                                </div>\n                            </div>\n                            <div class=\"col-lg-8\">\n                                <div class=\"row g-4\">\n                                    <div class=\"col-md-3 col-6\">\n                                        <div class=\"footer-section\">\n                                            <h6 class=\"text-white fw-bold mb-3 d-flex align-items-center\">\n                                                <i class=\"bi bi-basket me-2 text-organic-400\"></i>\n                                                Shop\n                                            </h6>\n                                            <ul class=\"footer-links\">\n                                                <li>\n                                                    <a href=\"#\">All Products</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Fresh Vegetables</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Organic Fruits</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Dairy Products</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Meat & Seafood</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Fresh Bakery</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Pantry Essentials</a>\n                                                </li>\n                                            </ul>\n                                        </div>\n                                    </div>\n                                    <div class=\"col-md-3 col-6\">\n                                        <div class=\"footer-section\">\n                                            <h6 class=\"text-white fw-bold mb-3 d-flex align-items-center\">\n                                                <i class=\"bi bi-headset me-2 text-organic-400\"></i>\n                                                Support\n                                            </h6>\n                                            <ul class=\"footer-links\">\n                                                <li>\n                                                    <a href=\"#\">Help Center</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Track Your Order</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Shipping & Delivery</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Returns & Refunds</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Size Guide</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Product Care</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Bulk Orders</a>\n                                                </li>\n                                            </ul>\n                                        </div>\n                                    </div>\n                                    <div class=\"col-md-3 col-6\">\n                                        <div class=\"footer-section\">\n                                            <h6 class=\"text-white fw-bold mb-3 d-flex align-items-center\">\n                                                <i class=\"bi bi-building me-2 text-organic-400\"></i>\n                                                Company\n                                            </h6>\n                                            <ul class=\"footer-links\">\n                                                <li>\n                                                    <a href=\"#\">About Us</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Our Story</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Sustainability</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Farm Partners</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Careers</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Press Kit</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Investor Relations</a>\n                                                </li>\n                                            </ul>\n                                        </div>\n                                    </div>\n                                    <div class=\"col-md-3 col-6\">\n                                        <div class=\"footer-section\">\n                                            <h6 class=\"text-white fw-bold mb-3 d-flex align-items-center\">\n                                                <i class=\"bi bi-book me-2 text-organic-400\"></i>\n                                                Resources\n                                            </h6>\n                                            <ul class=\"footer-links\">\n                                                <li>\n                                                    <a href=\"#\">Healthy Recipes</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Nutrition Guide</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Organic Certification</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Seasonal Calendar</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Blog & Tips</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">Mobile App</a>\n                                                </li>\n                                                <li>\n                                                    <a href=\"#\">API for Developers</a>\n                                                </li>\n                                            </ul>\n                                        </div>\n                                    </div>\n                                </div>\n                            </div>\n                        </div>\n                    </div>\n                </div>\n                <div class=\"footer-bottom py-4\">\n                    <div class=\"container\">\n                        <div class=\"row align-items-center\">\n                            <div class=\"col-lg-6 mb-3 mb-lg-0\">\n                                <div class=\"d-flex align-items-center flex-wrap gap-3\">\n                                    <p class=\"text-muted mb-0\">\n                                        © 2024 Natural Foods. All rights reserved.\n                                    </p>\n                                    <div class=\"payment-methods d-flex align-items-center gap-2\">\n                                        <span class=\"text-muted small\">We accept:</span>\n                                        <i class=\"bi bi-credit-card text-muted\"></i>\n                                        <i class=\"bi bi-paypal text-muted\"></i>\n                                        <i class=\"bi bi-apple text-muted\"></i>\n                                        <i class=\"bi bi-google text-muted\"></i>\n                                    </div>\n                                </div>\n                            </div>\n                            <div class=\"col-lg-6\">\n                                <div class=\"d-flex justify-content-lg-end align-items-center gap-4 flex-wrap\">\n                                    <a href=\"#\" class=\"footer-legal-link\">Privacy Policy</a>\n                                    <a href=\"#\" class=\"footer-legal-link\">Terms of Service</a>\n                                    <a href=\"#\" class=\"footer-legal-link\">Cookie Policy</a>\n                                    <a href=\"#\" class=\"footer-legal-link\">Accessibility</a>\n                                    <button class=\"btn btn-sm btn-outline-organic back-to-top\" onclick=\"window.scrollTo({top: 0, behavior: &#39;smooth&#39;})\">\n                                        <i class=\"bi bi-arrow-up me-2\"></i>\n                                        Back to Top\n                                    </button>\n                                </div>\n                            </div>\n                        </div>\n                    </div>\n                </div>\n            </footer>\n        </div>\n        <div>\n            <span id=\"oe_neutralize_banner\" style=\"                         text-align: center;                         color: #FFFFFF;                         background-color: #D0442C;                         position: relative;                         display: block;                         font-size: 16px;                         \">\n                    Database neutralized for testing: no emails sent, etc.\n                </span>\n        </div>\n        <div>\n            <span id=\"oe_neutralize_ribbon\" style=\"                         width: 400px;                         top: 55px;                         left: -100px;                         font-size: 32px;                         text-align: center;                         padding: 10px;                         line-height: 30px;                         color: #F0F0F0;                         transform: rotate(-45deg);                         position: fixed;                         box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);                         background: #D0442C;                         opacity: 0.6;                         pointer-events: none;                         text-transform: uppercase;                         z-index: 9999;                         \">\n                    Neutralized\n                </span>\n        </div>\n        <div id=\"loading-screen\" class=\"loading-screen\">\n            <div class=\"loading-content\">\n                <img src=\"/theme_natural_foods/static/src/img/loader.png\" alt=\"Loading...\" class=\"loading-spinner\" loading=\"lazy\"/>\n            </div>\n        </div>\n        <script src=\"/theme_natural_foods/static/src/js/swiper-bundle.min.js\"></script>\n        <script src=\"/theme_natural_foods/static/src/js/allswiper.js\"></script>\n        <script src=\"/theme_natural_foods/static/src/js/mobile-menu-enhancement.js\"></script>\n        <script src=\"/theme_natural_foods/static/src/js/product-tabs.js\"></script>\n        <script src=\"/theme_natural_foods/static/src/js/action-buttons.js\"></script>\n        <script src=\"/theme_natural_foods/static/src/js/loading-screen.js\"></script>\n    </body>\n</html>"
+            }
+          ]
+        },
+        {
+          "name": "Select Delivery Method -Pending",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"id\": 0,\r\n  \"jsonrpc\": \"2.0\",\r\n  \"method\": \"call\",\r\n  \"params\": {\r\n    \"dm_id\": \"2\"\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://cooperp.freeddns.org:8076/shop/set_delivery_method",
+              "protocol": "http",
+              "host": [
+                "cooperp",
+                "freeddns",
+                "org"
+              ],
+              "port": "8076",
+              "path": [
+                "shop",
+                "set_delivery_method"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Select Delivery Method Copy",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"id\": 0,\r\n  \"jsonrpc\": \"2.0\",\r\n  \"method\": \"call\",\r\n  \"params\": {\r\n    \"dm_id\": \"2\"\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://cooperp.freeddns.org:8076/shop/set_delivery_method",
+              "protocol": "http",
+              "host": [
+                "cooperp",
+                "freeddns",
+                "org"
+              ],
+              "port": "8076",
+              "path": [
+                "shop",
+                "set_delivery_method"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Delivery Rate",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"id\": 1,\r\n  \"jsonrpc\": \"2.0\",\r\n  \"method\": \"call\",\r\n  \"params\": {\r\n    \"dm_id\": \"2\"\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://cooperp.freeddns.org:8076/shop/get_delivery_rate",
+              "protocol": "http",
+              "host": [
+                "cooperp",
+                "freeddns",
+                "org"
+              ],
+              "port": "8076",
+              "path": [
+                "shop",
+                "get_delivery_rate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment Method - This returns available payment providers HTML.",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"id\": 1,\r\n  \"jsonrpc\": \"2.0\",\r\n  \"method\": \"call\",\r\n  \"params\": {\r\n    \"dm_id\": \"2\"\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://cooperp.freeddns.org:8076/shop/payment",
+              "protocol": "http",
+              "host": [
+                "cooperp",
+                "freeddns",
+                "org"
+              ],
+              "port": "8076",
+              "path": [
+                "shop",
+                "payment"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

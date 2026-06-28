@@ -94,12 +94,12 @@ function buildHeader(){
 
     <div class="r-main-hdr">
       <div class="ctr">
-        <a href="index.html" class="r-logo" style="display:flex; align-items:center; gap:10px; text-decoration:none;">
+        <a href="index.html" class="r-logo" style="display:flex; align-items:center; gap:8px; text-decoration:none;">
           <img src="" class="co-logo" style="display:none; max-height:48px;" alt="Coop Discounts Logo">
-          <div style="display:flex; flex-direction:column; justify-content:center;">
-            <div class="r-logo-text" style="color:var(--rd,#ED1C24); font-weight:900; font-size:18px; line-height:1.1; margin-bottom:1px;">COOP DISCOUNTS</div>
-            <div style="color:#374151; font-size:11px; font-weight:800; line-height:1.2; margin-bottom:2px;">Hyper Market</div>
-            <div style="color:#6b7280; font-size:9px; font-weight:600; line-height:1; letter-spacing:0.2px;">Customer Cooperation Society</div>
+          <div class="r-logo-fallback" style="display:flex; flex-direction:column; justify-content:center;">
+            <div class="r-logo-text" style="color:var(--rd,#ED1C24); font-weight:900; font-size:16px; line-height:1.1; margin-bottom:1px; white-space:nowrap;">COOP DISCOUNTS</div>
+            <div style="color:#374151; font-size:10px; font-weight:800; line-height:1.2; margin-bottom:2px; white-space:nowrap;">Hyper Market</div>
+            <div style="color:#6b7280; font-size:8px; font-weight:600; line-height:1; letter-spacing:0.2px; white-space:nowrap;">Customer Cooperation Society</div>
           </div>
         </a>
 

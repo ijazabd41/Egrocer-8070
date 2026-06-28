@@ -234,7 +234,8 @@ async function loadProds() {
     var prods = (r.data || []).filter(function(p){ return getProdPrice(p) > 0; });
     var total = currentCatPids ? currentCatPids.length : (r.total || prods.length);
     document.getElementById('shopCount').textContent = 'Showing ' + prods.length + ' products' + (total > PAGE_SIZE ? ' of ' + total : '');
-    el.innerHTML = prods.length ? prods.map(buildCard).join('') :
+    var cName = document.getElementById('shopTitle').textContent;
+    el.innerHTML = prods.length ? prods.map(function(p) { return buildCard(p, cName); }).join('') :
       '<div style="grid-column:1/-1;text-align:center;padding:52px;color:#9ca3af"><div style="font-size:40px;margin-bottom:12px">🔍</div><h3 style="font-size:14px;font-weight:700">No products found</h3><a href="shop.html" style="color:#ED1C24;font-weight:700;font-size:12px;display:block;margin-top:8px">Clear Filters →</a></div>';
     buildPagination(total);
   } catch(e) {

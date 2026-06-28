@@ -143,10 +143,11 @@ document.addEventListener('DOMContentLoaded', async function(){
     Cart.clear();
 
     // Show success and redirect
-    showSuccess(oid, orderName);
-    log.info('TelrReturn','complete — redirecting',{oid:oid,orderName:orderName});
+    var redirectOid = checkout.isGuest ? 'guest' : oid;
+    showSuccess(redirectOid, orderName);
+    log.info('TelrReturn','complete — redirecting',{oid:redirectOid,orderName:orderName});
     setTimeout(function(){
-      location.href = 'order-success.html?oid=' + oid + '&name=' + encodeURIComponent(orderName||'');
+      location.href = 'order-success.html?oid=' + redirectOid + '&name=' + encodeURIComponent(orderName||'');
     }, 2000);
 
   } catch(e) {
@@ -164,14 +165,14 @@ function markStep(id, state){
   if(state === 'fail' && si) si.textContent = '✗';
 }
 
-function showSuccess(oid, orderName){
+function showSuccess(redirectOid, orderName){
   document.getElementById('telrIcon').className = 'telr-ic success';
   document.getElementById('telrIcon').textContent = '✅';
   document.getElementById('telrTitle').textContent = 'Payment Successful!';
   document.getElementById('telrDesc').textContent = 'Your payment has been confirmed. Redirecting to your order details...';
   var actions = document.getElementById('telrActions');
   actions.style.display = 'flex';
-  actions.innerHTML = '<a href="order-success.html?oid='+oid+'&name='+encodeURIComponent(orderName||'')+'" class="telr-btn primary">📦 View Order</a>'
+  actions.innerHTML = '<a href="order-success.html?oid='+redirectOid+'&name='+encodeURIComponent(orderName||'')+'" class="telr-btn primary">📦 View Order</a>'
     + '<a href="index.html" class="telr-btn secondary">🏠 Continue Shopping</a>';
 }
 

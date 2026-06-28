@@ -12,6 +12,52 @@ function getProdPrice(p) {
   var lst = parseFloat(p.lst_price); return isNaN(lst) ? 0 : lst;
 }
 
+function isAlwaysAvailable(p) {
+  if (!p) return false;
+  if (p.always_available) return true;
+  
+  var c = '';
+  if (Array.isArray(p.categ_id)) c = p.categ_id[1] || '';
+  else if (typeof p.categ_id === 'string') c = p.categ_id;
+  
+  // 1. Check if category is available in product object
+  c = c.toLowerCase();
+  if (c.includes('hot food') || c.includes('roast') || c.includes('butcher')) return true;
+
+  // 2. Fallback: check product name
+  var n = (p.name || p.display_name || '').toLowerCase();
+  if (n.includes('hot food') || n.includes('roast') || n.includes('butcher')) return true;
+
+  // 3. Fallback: check unit of measure (weighted items are usually always available)
+  if (p.uom_name === 'KG' || (p.uom_id && p.uom_id[1] === 'KG')) return true;
+  if (p.barcode && String(p.barcode).startsWith('9999')) return true;
+
+  // 4. Fallback: check URL parameters if user is browsing a specific category page
+  try {
+    if (typeof window !== 'undefined' && window.location) {
+      var params = new URLSearchParams(window.location.search);
+      var catUrl = (params.get('category') || params.get('c') || '').toLowerCase();
+      if (catUrl.includes('hot food') || catUrl.includes('roast') || catUrl.includes('butcher')) {
+        return true;
+      }
+    }
+  } catch(e) {}
+
+  return false;
+}
+
+function getCatUrlParam() {
+  try {
+    if (typeof window !== 'undefined' && window.location) {
+      var params = new URLSearchParams(window.location.search);
+      var c = params.get('category') || params.get('c');
+      if (c) return '&c=' + encodeURIComponent(c);
+    }
+  } catch(e) {}
+  return '';
+}
+
+
 function isStorePickupMethod(m){
   if(!m) return false;
   var name=(m.name||'').toLowerCase();
@@ -263,8 +309,13 @@ const Cart=(()=>{
           clearLineIds();
           id=null;
         }catch(e){
-          L().warn('Cart','ensureOrder check failed, keeping oid',{orderId:id,message:e.message});
-          return parseInt(id);
+          if (API.isOdooAccessError && API.isOdooAccessError(e)) {
+            L().info('Cart','clearing unusable order due to access error',{orderId:id});
+            coid(); clearLineIds(); id=null;
+          } else {
+            L().warn('Cart','ensureOrder check failed, keeping oid',{orderId:id,message:e.message});
+            return parseInt(id);
+          }
         }
       }
     }
@@ -368,60 +419,113 @@ const Cart=(()=>{
     items.forEach(i=>{ delete i.line_id; });
     sv(items);
   }
-  async function add(prod){
+
+  const _syncTimers = {};
+  const _syncPromises = {};
+  const _syncPending = {};
+
+  function debounceSync(pid, syncFn) {
+    if (_syncTimers[pid]) clearTimeout(_syncTimers[pid]);
+    _syncPending[pid] = syncFn; // Always store the latest sync function
+    
+    _syncTimers[pid] = setTimeout(() => {
+      runNextSync(pid);
+    }, 400);
+  }
+
+  async function runNextSync(pid) {
+    if (_syncPromises[pid]) return; // A sync is already in flight
+    
+    const fn = _syncPending[pid];
+    if (!fn) return;
+    delete _syncPending[pid]; // consume the pending task
+    
+    _syncPromises[pid] = (async () => {
+      try {
+        await fn();
+      } catch(e) {
+        L().warn('Cart','debounced sync failed',{product_id:pid,message:e?.message});
+      }
+    })();
+    
+    await _syncPromises[pid];
+    delete _syncPromises[pid];
+    
+    // If user clicked again while the API request was in flight, process it now
+    if (_syncPending[pid]) {
+      runNextSync(pid);
+    }
+  }
+
+  function add(prod){
     const avail = typeof prod.qty_available === 'number' ? prod.qty_available : (typeof prod.free_qty === 'number' ? prod.free_qty : -1);
-    if(avail <= 0 && avail !== -1){toast('❌ Out of stock','err');return;}
+    if(!prod.always_available && avail <= 0 && avail !== -1){toast('❌ Out of stock','err');return;}
     const items=raw();const ex=items.find(i=>i.product_id===prod.product_id);
     if(ex){
       if(avail !== -1 && ex.qty >= avail) { toast('❌ Cannot add more than available stock ('+avail+')', 'err'); return; }
       ex.qty++;sv(items);
       L().info('Cart','add qty+1',{product_id:prod.product_id,variant_id:ex.variant_id||ex.product_id,qty:ex.qty});
-      if(!API.loggedIn()) {
-        const vid=ex.variant_id||ex.product_id;
-        if(vid){
-          if(!API.mySessionId()) await API.initGuestSession();
-          try{ await API.updateGuestCartQty(vid, ex.qty); }catch(e){L().error('Cart','guest add qty update failed',e.message);}
-        }
-      } else {
-        const ordId=await ensureOrder();
-        const vid=ex.variant_id||ex.product_id;
-        if(ordId&&vid){
-          try{
-            const r=await API.updateCartQty(parseInt(ordId),vid,ex.qty);
-            if(r.recId){ex.line_id=r.recId;sv(items);}
-          }catch(e){
-            L().warn('Cart','add update failed, retry create',{orderId:ordId,variantId:vid,message:e.message});
-            delete ex.line_id;sv(items);
+      tick();renderDrawer();toast('✅ Added to cart');
+      
+      debounceSync(prod.product_id, async () => {
+        const currItems=raw();
+        const currItem=currItems.find(i=>i.product_id===prod.product_id);
+        if(!currItem) return;
+        if(!API.loggedIn()) {
+          const vid=currItem.variant_id||currItem.product_id;
+          if(vid){
+            if(!API.mySessionId()) await API.initGuestSession();
+            await API.updateGuestCartQty(vid, currItem.qty);
+          }
+        } else {
+          const ordId=await ensureOrder();
+          const vid=currItem.variant_id||currItem.product_id;
+          if(ordId&&vid){
             try{
-              const r=await API.addLine(parseInt(ordId),vid,ex.qty);
-              if(r.data?.rec_id){ex.line_id=r.data.rec_id;sv(items);}
-            }catch(e2){L().error('Cart','add retry failed',{orderId:ordId,variantId:vid,message:e2.message});}
+              const r=await API.updateCartQty(parseInt(ordId),vid,currItem.qty);
+              if(r&&r.recId){currItem.line_id=r.recId;sv(currItems);}
+            }catch(e){
+              L().warn('Cart','add update failed, retry create',{orderId:ordId,variantId:vid,message:e.message});
+              delete currItem.line_id;sv(currItems);
+              const r=await API.addLine(parseInt(ordId),vid,currItem.qty);
+              if(r&&r.data?.rec_id){currItem.line_id=r.data.rec_id;sv(currItems);}
+            }
           }
         }
-      }
+      });
     }else{
       L().info('Cart','add new item',{product_id:prod.product_id,variant_id:prod.variant_id||prod.product_id,name:prod.name});
-      let lineId=null;
-      if(!API.loggedIn()) {
-        const vid=prod.variant_id||prod.product_id;
-        if(vid){
-          if(!API.mySessionId()) await API.initGuestSession();
-          try{ await API.addGuestCartItem(prod.product_id, vid, 1); }catch(e){L().error('Cart','guest add new item failed',e.message);}
+      items.push({...prod,qty:1,line_id:null});sv(items);
+      L().info('Cart','add ✓',{cartCount:count()});
+      tick();renderDrawer();toast('✅ Added to cart');
+
+      debounceSync(prod.product_id, async () => {
+        const currItems=raw();
+        const currItem=currItems.find(i=>i.product_id===prod.product_id);
+        if(!currItem) return;
+        let lineId=null;
+        if(!API.loggedIn()) {
+          const vid=currItem.variant_id||currItem.product_id;
+          if(vid){
+            if(!API.mySessionId()) await API.initGuestSession();
+            await API.addGuestCartItem(currItem.product_id, vid, currItem.qty);
+          }
+        } else {
+          const ordId=await ensureOrder();
+          const vid=currItem.variant_id||currItem.product_id;
+          if(ordId&&vid){
+            try{const r=await API.addLine(parseInt(ordId),vid,currItem.qty);lineId=r.data?.rec_id||null;}catch(e){L().error('Cart','add line failed',{orderId:ordId,variantId:vid,message:e.message});}
+          }
+          if(ordId&&lineId){
+            try{const qr=await API.getLineQty(lineId);const bq=qr.data?.product_uom_qty||qr.data?.qty||1;if(bq!==currItem.qty){const ix=currItems.findIndex(i=>i.product_id===prod.product_id);if(ix>-1){currItems[ix].qty=bq;sv(currItems);tick();renderDrawer();}}}catch(_){}
+          }
         }
-      } else {
-        const ordId=await ensureOrder();
-        const vid=prod.variant_id||prod.product_id;
-        if(ordId&&vid){
-          try{const r=await API.addLine(parseInt(ordId),vid,1);lineId=r.data?.rec_id||null;}catch(e){L().error('Cart','add line failed',{orderId:ordId,variantId:vid,message:e.message});}
+        if(lineId){
+          const ix=currItems.findIndex(i=>i.product_id===prod.product_id);
+          if(ix>-1){currItems[ix].line_id=lineId;sv(currItems);}
         }
-        if(ordId&&lineId){
-          try{const qr=await API.getLineQty(lineId);const bq=qr.data?.product_uom_qty||qr.data?.qty||1;if(bq!==1){const ix=items.findIndex(i=>i.product_id===prod.product_id);if(ix>-1){items[ix].qty=bq;sv(items);}}}catch(_){}
-        }
-      }
-      items.push({...prod,qty:1,line_id:lineId});sv(items);
-      L().info('Cart','add ✓',{lineId,cartCount:count()});
+      });
     }
-    tick();renderDrawer();toast('✅ Added to cart');
   }
   function remove(pid){
     const items=raw(),item=items.find(i=>i.product_id===pid);
@@ -430,6 +534,10 @@ const Cart=(()=>{
     sv(next);
     const o=oid();
     const vid=item?.variant_id||item?.product_id;
+    
+    tick();renderDrawer();
+    if (_syncTimers[pid]) clearTimeout(_syncTimers[pid]);
+
     if(!API.loggedIn() && vid) {
       API.updateGuestCartQty(vid, 0).catch(()=>{});
     } else if(o&&vid){
@@ -438,13 +546,13 @@ const Cart=(()=>{
       });
     }
     if(!next.length){ coid(); L().debug('Cart','cart empty — cleared oid'); }
-    tick();renderDrawer();
   }
-  async function setQty(pid,delta){
+  function setQty(pid,delta){
     const items=raw(),item=items.find(i=>i.product_id===pid);if(!item)return;
     if (delta > 0) {
       const avail = typeof item.qty_available === 'number' ? item.qty_available : (typeof item.free_qty === 'number' ? item.free_qty : -1);
-      if (avail !== -1 && item.qty >= avail) {
+      const isAlways = item.always_available || isAlwaysAvailable(item);
+      if (!isAlways && avail !== -1 && item.qty >= avail) {
          if(typeof toast==='function') toast('❌ Cannot add more than available stock ('+avail+')', 'err');
          return;
       }
@@ -452,23 +560,25 @@ const Cart=(()=>{
     item.qty=Math.max(0,item.qty+delta);
     if(item.qty===0){remove(pid);return;}
     sv(items);
-    const ordId2=oid();
-    if(!API.loggedIn() && item.variant_id) {
-      try {
-        await API.updateGuestCartQty(item.variant_id, item.qty);
-      } catch (e) {
-        L().warn('Cart','guest setQty sync failed',{product_id:pid,qty:item.qty,message:e.message});
-      }
-    } else if(ordId2&&item.variant_id){
-      try{
-        const r=await API.updateCartQty(parseInt(ordId2),item.variant_id||item.product_id,item.qty);
-        if(r.recId){ex.line_id=r.recId;sv(items);}
-      }catch(e){
-        delete item.line_id;sv(items);
-        L().warn('Cart','setQty sync failed',{product_id:pid,qty:item.qty,message:e.message});
-      }
-    }
     tick();renderDrawer();
+    
+    debounceSync(pid, async () => {
+      const currItems=raw();
+      const currItem=currItems.find(i=>i.product_id===pid);
+      if(!currItem) return;
+      const ordId2=oid();
+      if(!API.loggedIn() && currItem.variant_id) {
+        await API.updateGuestCartQty(currItem.variant_id, currItem.qty);
+      } else if(ordId2&&currItem.variant_id){
+        try{
+          const r=await API.updateCartQty(parseInt(ordId2),currItem.variant_id||currItem.product_id,currItem.qty);
+          if(r&&r.recId){currItem.line_id=r.recId;sv(currItems);}
+        }catch(e){
+          delete currItem.line_id;sv(currItems);
+          throw e;
+        }
+      }
+    });
   }
   function clear(){L().info('Cart','clear');localStorage.removeItem(CK);coid();tick();renderDrawer();}
   return{raw,sv,oid,soid,coid,wasPlaced,markPlaced,clearLineIds,count,total,add,remove,setQty,clear,ensureOrder,syncToOrder};
@@ -478,7 +588,7 @@ const Cart=(()=>{
 function tick(){
   const c=Cart.count();
   // Desktop badge in header
-  document.querySelectorAll('.cart-badge').forEach(el=>{
+  document.querySelectorAll('.cart-badge, .r-cart-badge').forEach(el=>{
     if(el.textContent!==String(c)) el.textContent=c;
     const shown=el.classList.contains('show');
     if(c>0&&!shown)el.classList.add('show');
@@ -501,6 +611,22 @@ function tick(){
     const btnCls = el.getAttribute('data-btnclass') || 'pc-atc';
     const item = Cart.raw().find(i => i.product_id === pid);
     const qty = item ? item.qty : 0;
+    
+    let oos = false;
+    try {
+      const pData = JSON.parse(decodeURIComponent(pdEnc));
+      oos = !pData.always_available && pData.qty_available <= 0 && pData.qty_available !== -1;
+    } catch(e) {}
+    
+    if (oos) {
+      if (btnCls === 'mini-atc') {
+        el.innerHTML = '<button class="pc-atc" disabled style="margin-top:0; border-radius:0 0 12px 12px;">Out of Stock</button>';
+      } else {
+        el.innerHTML = `<button type="button" class="${btnCls}" disabled>Out of Stock</button>`;
+      }
+      return;
+    }
+
     if (btnCls === 'mini-atc') {
       if (qty > 0) {
         el.innerHTML = `<div style="display:flex;background:var(--red, #ED1C24);color:#fff;height:28px"><button onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},-1)" style="flex:1;background:transparent;color:#fff;font-weight:700;border:none;cursor:pointer;font-size:17.6px;font-family:Montserrat,sans-serif;">−</button><span style="flex:1;text-align:center;font-size:13.2px;font-weight:800;line-height:28px;">${qty}</span><button onclick="event.preventDefault();event.stopPropagation();Cart.setQty(${pid},1)" style="flex:1;background:transparent;color:#fff;font-weight:700;border:none;cursor:pointer;font-size:17.6px;font-family:Montserrat,sans-serif;">+</button></div>`;
@@ -581,7 +707,7 @@ function openModal(id){document.getElementById(id)?.classList.add('open');}
 function closeModal(id){document.getElementById(id)?.classList.remove('open');}
 
 /* ── PRODUCT CARD — correct image handling ────────────── */
-function buildCard(p){
+function buildCard(p, catContext) {
   if(!p?.id)return'';
   const id=p.id;
   const name=(p.name||p.display_name||'').replace(/^\[.*?\]\s*/,'').trim()||'Product';
@@ -592,15 +718,20 @@ function buildCard(p){
   const imgSrc=p.image_1024?API.img(p.image_1024):API.prodImg(id);
   const varId=Array.isArray(p.product_variant_id)&&p.product_variant_id.length?p.product_variant_id[0].id:id;
   const qtyAvail=p.qty_available!==undefined?parseFloat(p.qty_available):-1;
-  const oos=qtyAvail<=0 && qtyAvail!==-1;
+  
+  if (catContext && !p.categ_id) p.categ_id = catContext;
+  const alwaysAvail = isAlwaysAvailable(p);
+  const oos= !alwaysAvail && qtyAvail<=0 && qtyAvail!==-1;
   const ribbon=Array.isArray(p.website_ribbon_id)&&p.website_ribbon_id.length?p.website_ribbon_id[0]?.name:null;
   const disc=std>price&&std>0?Math.round((1-price/std)*100):0;
-  const pdEnc=encodeURIComponent(JSON.stringify({product_id:id,variant_id:varId,name,price,image:imgSrc,qty_available:qtyAvail}));
+  const pdEnc=encodeURIComponent(JSON.stringify({product_id:id,variant_id:varId,name,price,image:imgSrc,qty_available:qtyAvail,always_available:alwaysAvail}));
+  const catParam = catContext ? '&c=' + encodeURIComponent(catContext) : getCatUrlParam();
+  const linkUrl = `product.html?id=${id}${catParam}`;
   return `<div class="pc">
     <div class="pc-img">
       ${ribbon?`<span class="ribbon">${ribbon}</span>`:''}
       ${oos?`<span class="oos-tag">Out of Stock</span>`:''}
-      <a href="product.html?id=${id}" style="display:block;width:100%;height:100%;position:relative">
+      <a href="${linkUrl}" style="display:block;width:100%;height:100%;position:relative">
         <img src="${imgSrc}" alt="${name.replace(/"/g,'&quot;')}" loading="lazy"
           style="width:100%;height:100%;object-fit:contain;display:block"
           onerror="this.style.display='none';this.nextSibling.style.display='flex'">
@@ -609,7 +740,7 @@ function buildCard(p){
       ${oos?'':`<button class="wish-btn" onclick="WL.toggle(${id},'${name.replace(/'/g,"\\'")}')">♡</button>`}
     </div>
     <div class="pc-body">
-      <a href="product.html?id=${id}" class="pc-nm">${name}</a>
+      <a href="${linkUrl}" class="pc-nm">${name}</a>
       ${p.barcode?`<div class="pc-bc">${p.barcode}</div>`:''}
       ${p.description_sale?`<div class="pc-desc" style="font-size:11px;color:#6b7280;margin:4px 0;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${p.description_sale}</div>`:''}
       <div class="pc-prices">
@@ -745,7 +876,8 @@ function cartPayloadFromProduct(p) {
     name,
     price,
     image,
-    qty_available: qty
+    qty_available: qty,
+    always_available: isAlwaysAvailable(p)
   };
 }
 
@@ -762,7 +894,10 @@ async function addToCart(json) {
       return;
     }
     const resolved = cartPayloadFromProduct(p);
-    if (resolved.qty_available <= 0 && resolved.qty_available !== -1) {
+    if (payload.always_available) {
+      resolved.always_available = true;
+    }
+    if (!resolved.always_available && resolved.qty_available <= 0 && resolved.qty_available !== -1) {
       toast('Out of stock', 'warn');
       return;
     }
@@ -851,11 +986,11 @@ async function enrichDealCards(items) {
 
     if (!p || !pid) {
       if (priceEl) priceEl.innerHTML = '<span style="color:#9ca3af;font-size:13.2px">Out of Stock</span>';
-      if (wrap) wrap.innerHTML = '<button type="button" class="dp-atc" disabled style="background:#cbd5e1;color:#fff;cursor:not-allowed">Out of Stock</button>';
+      if (wrap) wrap.innerHTML = '<button type="button" class="dp-atc" disabled>Out of Stock</button>';
       card?.removeAttribute('data-href');
       navEls?.forEach(n => { n.style.cursor = 'default'; });
-      if (imgWrap && !imgWrap.querySelector('.oos-bdg')) {
-        imgWrap.insertAdjacentHTML('beforeend', '<div class="oos-bdg" style="position:absolute;top:10px;right:10px;background:#64748b;color:#fff;font-size:12.1px;font-weight:700;padding:4px 8px;border-radius:6px;z-index:2">Out of Stock</div>');
+      if (imgWrap && !imgWrap.querySelector('.oos-tag')) {
+        imgWrap.insertAdjacentHTML('beforeend', '<span class="oos-tag">Out of Stock</span>');
         imgWrap.style.position = 'relative';
       }
       continue;
@@ -868,7 +1003,8 @@ async function enrichDealCards(items) {
     const price = getProdPrice(p);
     const std = parseFloat(p.standard_price || 0);
     const qty = p.qty_available !== undefined ? parseFloat(p.qty_available) : -1;
-    const oos = qty <= 0 && qty !== -1;
+    const alwaysAvail = isAlwaysAvailable(p);
+    const oos = !alwaysAvail && qty <= 0 && qty !== -1;
     const payload = cartPayloadFromProduct(p);
     const pdEnc = encodeURIComponent(JSON.stringify(payload));
     const imgSrc = payload.image;
@@ -899,14 +1035,14 @@ async function enrichDealCards(items) {
     if (wrap) {
       wrap.setAttribute('data-pdenc', pdEnc);
       if (oos) {
-        wrap.innerHTML = '<button type="button" class="dp-atc" disabled style="background:#cbd5e1;color:#fff;cursor:not-allowed">Out of Stock</button>';
-        if (imgWrap && !imgWrap.querySelector('.oos-bdg')) {
-          imgWrap.insertAdjacentHTML('beforeend', '<div class="oos-bdg" style="position:absolute;top:10px;right:10px;background:#64748b;color:#fff;font-size:12.1px;font-weight:700;padding:4px 8px;border-radius:6px;z-index:2">Out of Stock</div>');
+        wrap.innerHTML = '<button type="button" class="dp-atc" disabled>Out of Stock</button>';
+        if (imgWrap && !imgWrap.querySelector('.oos-tag')) {
+          imgWrap.insertAdjacentHTML('beforeend', '<span class="oos-tag">Out of Stock</span>');
           imgWrap.style.position = 'relative';
         }
       } else {
         renderDealQtyCtrl(wrap, pid, pdEnc, 'dp-atc');
-        const bdg = imgWrap?.querySelector('.oos-bdg');
+        const bdg = imgWrap?.querySelector('.oos-tag');
         if (bdg) bdg.remove();
       }
     }

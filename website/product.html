@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Product – Coop Discounts</title>
-<link rel="stylesheet" href="css/style.css?v=15.1">
+<link rel="stylesheet" href="css/style.css?v=15.5">
 </head>
 <body>
 <div id="site-header"></div>
@@ -145,13 +145,14 @@ document.addEventListener('DOMContentLoaded', async function(){
 
     // Stock
     var qtyAvail = pdData.qty_available !== undefined ? parseFloat(pdData.qty_available) : -1;
-    var oos = qtyAvail <= 0 && qtyAvail !== -1;
+    var alwaysAvail = typeof isAlwaysAvailable === 'function' ? isAlwaysAvailable(pdData) : false;
+    var oos = !alwaysAvail && qtyAvail <= 0 && qtyAvail !== -1;
     var stockEl = document.getElementById('pdStock');
     if(oos){
       stockEl.innerHTML='<span class="os os-cancel">Out of Stock</span>';
       document.getElementById('pdAddSec').style.display='none';
       document.getElementById('pdOosMsg').style.display='block';
-    } else if(qtyAvail > 0){
+    } else if(qtyAvail > 0 && !alwaysAvail){
       stockEl.innerHTML='<span class="os os-ok">✅ In Stock ('+(qtyAvail>99?'99+':qtyAvail)+' available)</span>';
     } else {
       stockEl.innerHTML='<span class="os os-ok">✅ In Stock</span>';
@@ -212,7 +213,9 @@ document.addEventListener('DOMContentLoaded', async function(){
 function chQty(d){
   if(!pdData)return;
   var qtyAvail = pdData.qty_available !== undefined ? parseFloat(pdData.qty_available) : 999;
-  pdQty = Math.max(1, Math.min(pdQty + d, qtyAvail > 0 ? qtyAvail : 999));
+  var alwaysAvail = typeof isAlwaysAvailable === 'function' ? isAlwaysAvailable(pdData) : false;
+  var maxLimit = (qtyAvail > 0 && !alwaysAvail) ? qtyAvail : 999;
+  pdQty = Math.max(1, Math.min(pdQty + d, maxLimit));
   updatePdCartState();
 }
 
@@ -224,7 +227,8 @@ function updatePdCartState(){
   if(!sec) return;
 
   var qtyAvail = pdData.qty_available !== undefined ? parseFloat(pdData.qty_available) : -1;
-  var oos = qtyAvail <= 0 && qtyAvail !== -1;
+  var alwaysAvail = typeof isAlwaysAvailable === 'function' ? isAlwaysAvailable(pdData) : false;
+  var oos = !alwaysAvail && qtyAvail <= 0 && qtyAvail !== -1;
 
   if (oos) {
     sec.innerHTML = '';
@@ -237,7 +241,7 @@ function updatePdCartState(){
         '<button onclick="Cart.setQty('+pdId+',1)" style="width:52px;background:#fef2f2;color:var(--red);font-size:24px;font-weight:700;border:none;cursor:pointer">+</button>' +
       '</div></div>';
   } else {
-    var availTxt = (qtyAvail > 0 && qtyAvail < 10) ? 'Only '+qtyAvail+' left!' : '';
+    var availTxt = (qtyAvail > 0 && qtyAvail < 10 && !alwaysAvail) ? 'Only '+qtyAvail+' left!' : '';
     sec.innerHTML = '<div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">' +
       '<div class="qty-ctrl">' +
         '<button class="qty-btn" onclick="chQty(-1)">−</button>' +
@@ -266,10 +270,11 @@ async function addPdToCart(){
   var imgSrc = pdData.image_1024 ? API.img(pdData.image_1024) : API.prodImg(pdId);
   var name = (pdData.name||'').replace(/^\[.*?\]\s*/,'').trim();
   var qtyAvail = pdData.qty_available !== undefined ? parseFloat(pdData.qty_available) : -1;
+  var alwaysAvail = typeof isAlwaysAvailable === 'function' ? isAlwaysAvailable(pdData) : false;
 
   // Add to local cart
   for(var i = 0; i < pdQty; i++){
-    await Cart.add({ product_id:pdId, variant_id:varId, name, price, image:imgSrc, qty_available:qtyAvail });
+    await Cart.add({ product_id:pdId, variant_id:varId, name:name, price:price, image:imgSrc, qty_available:qtyAvail, always_available:alwaysAvail });
   }
 
   // After adding, get line qty from backend using getLineQty

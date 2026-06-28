@@ -4,7 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>Checkout – Coop Discounts</title>
-<link rel="stylesheet" href="css/style.css?v=15.1">
+<link rel="stylesheet" href="css/style.css?v=15.5">
 <style>
 /* ── Checkout Skeleton Loader ──────────────────────────────── */
 #chkSkeleton {
@@ -47,7 +47,7 @@
 <section class="sec">
 <div class="ctr">
 <h1 style="font-size:22px;font-weight:900;margin-bottom:22px">Checkout</h1>
-<div style="display:grid;grid-template-columns:1fr 360px;gap:22px;align-items:start" class="chk-layout">
+<div style="display:grid;gap:22px;align-items:start" class="chk-layout">
 
 <!-- LEFT -->
 <div class="chk-sk-wrap">
@@ -310,7 +310,7 @@ function validateStep(step){
       if(selDeliveryKind==='store'){
         var fn = document.getElementById('fnPk') ? document.getElementById('fnPk').value.trim() : '';
         var ph = document.getElementById('phPk') ? document.getElementById('phPk').value.trim() : '';
-        var em = document.getElementById('em') ? document.getElementById('em').value.trim() : '';
+        var em = document.getElementById('emPk') ? document.getElementById('emPk').value.trim() : '';
         if(!fn || !ph || !em){
           toast('Please enter your name, email, and phone for pickup', 'warn');
           return false;
@@ -363,7 +363,7 @@ async function goStep(step){
         if(selDeliveryKind==='store'){
           var fn = document.getElementById('fnPk') ? document.getElementById('fnPk').value.trim() : '';
           var ph = document.getElementById('phPk') ? document.getElementById('phPk').value.trim() : '';
-          var em = document.getElementById('em') ? document.getElementById('em').value.trim() : '';
+          var em = document.getElementById('emPk') ? document.getElementById('emPk').value.trim() : '';
           await API.submitGuestAddress({
             name: fn,
             email: em,
@@ -478,7 +478,7 @@ function checkPlaceOrderBtnState() {
     if(selDeliveryKind === 'store') {
        var fn = document.getElementById('fnPk') ? document.getElementById('fnPk').value.trim() : '';
        var ph = document.getElementById('phPk') ? document.getElementById('phPk').value.trim() : '';
-       var em = document.getElementById('em') ? document.getElementById('em').value.trim() : '';
+       var em = document.getElementById('emPk') ? document.getElementById('emPk').value.trim() : '';
        if(!fn || !ph || !em) valid = false;
     } else {
        var fn = document.getElementById('fn').value.trim();
@@ -601,6 +601,7 @@ document.addEventListener('DOMContentLoaded', async function(){
       var p=Array.isArray(r.data)?r.data[0]:r.data;
       if(p){
         var phoneVal=p.phone||p.mobile||'';
+        if(!phoneVal && user.username && !user.username.includes('@')) phoneVal = user.username;
         if(phoneVal){ document.getElementById('ph').value=phoneVal; document.getElementById('phPk').value=phoneVal; }
         if(p.street) document.getElementById('addr').value=p.street;
         if(p.street2) document.getElementById('addr2').value=p.street2;
@@ -1243,8 +1244,17 @@ async function placeOrder(){
   if(currentStep!==3) goStep(3);
   if (!API.loggedIn()) {
     btn.disabled=true;btn.textContent='⏳ Placing order...';
+    var ol = document.createElement('div'); ol.id = 'placeOrderOverlay'; ol.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.95);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;backdrop-filter:blur(4px)'; ol.innerHTML = '<div style="font-size:40px;margin-bottom:16px" class="spin">⏳</div><h2 style="font-size:22px;font-weight:900;color:var(--red);margin-bottom:8px">Processing Order...</h2><p style="font-size:14px;color:#6b7280">Please wait while we secure your order.</p>'; document.body.appendChild(ol);
     try {
-      var result = await API.confirmGuestOrder(selProvider);
+      var actualProvider = selProvider;
+      if (selIsTelr) {
+        // Use COD Gateway ID (22) to force Odoo backend confirmation for Guest orders 
+        // since guests cannot call authenticated endpoints later. This also ensures 
+        // we get the REAL orderName back from Odoo instead of a random string.
+        // We use 22 because COD is guaranteed to be published for guests.
+        actualProvider = 22;
+      }
+      var result = await API.confirmGuestOrder(actualProvider);
       if (result.success && result.orderName) {
         Cart.clear();
         
@@ -1290,6 +1300,7 @@ async function placeOrder(){
         throw new Error('Order confirmation failed');
       }
     } catch (e) {
+      var po = document.getElementById('placeOrderOverlay'); if(po) po.remove();
       errEl.textContent='❌ '+(e.message||'Could not place order');
       errEl.style.display='flex';
       btn.disabled=false;btn.textContent='✅ Place Order';
@@ -1320,6 +1331,7 @@ async function placeOrder(){
   if(!Cart.raw().length){errEl.textContent='❌ Your cart is empty';errEl.style.display='flex';return;}
   if(!API.loggedIn()){errEl.textContent='❌ Please sign in to place an order';errEl.style.display='flex';return;}
   btn.disabled=true;btn.textContent='⏳ Placing order...';
+  var ol2 = document.createElement('div'); ol2.id = 'placeOrderOverlay'; ol2.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.95);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;backdrop-filter:blur(4px)'; ol2.innerHTML = '<div style="font-size:40px;margin-bottom:16px" class="spin">⏳</div><h2 style="font-size:22px;font-weight:900;color:var(--red);margin-bottom:8px">Processing Order...</h2><p style="font-size:14px;color:#6b7280">Please wait while we secure your order.</p>'; document.body.appendChild(ol2);
   var log=API.log;
   try{
     if(!API.ensureCleanCheckoutOrder||API.build!=='8.6'){
@@ -1528,6 +1540,7 @@ async function placeOrder(){
       location.href='order-success.html?oid='+oid+'&name='+(orderName||'');
     }
   }catch(e){
+    var po2 = document.getElementById('placeOrderOverlay'); if(po2) po2.remove();
     var savedOid=Cart.oid();
     if (e.message && e.message.includes('stale payment')) {
       Cart.coid();
